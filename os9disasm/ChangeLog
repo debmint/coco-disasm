@@ -1,5 +1,11 @@
 
   * cmdfile.c
+    + previous patch broke a few amode/boundary things..  fixed them
+      (all I hope)..
+
+-- davebree    Mon, 29 Nov 2004 22:22:09 -0600
+
+  * cmdfile.c
     + fixed bug where an open-ended range (such as "02d3-") was not
       interpreted correctly.
 
