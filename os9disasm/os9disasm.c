@@ -21,7 +21,7 @@
 #include "odis.h"
 
 int doingcmds=0; /* Flag: set if doing cmd file */
-char *DefDir;
+static char *DefDir;
 
 static char *myhome;	/* pointer to HOME environment name */
 char	rdbuf[500];
@@ -50,6 +50,79 @@ pass_eq(char *pr)
 	return (*pr == '=' ? ++pr : pr);
 }
 
+/* ********************************************* *
+ * build_path()  - locate a filename and build   *
+ *                 build a full pathlist.        *
+ * Passed:    the filename                       *
+ * Returned:  return ptr to full pathname        *
+ * Note:  fullname is only a temporary buffer,   *
+ *        Unless fname is unaltered, the         *
+ *        returned pointer is one to a newly     *
+ *        created string.                        *
+ * ********************************************* */
+
+static char *
+build_path(char *fname, char *fullname, int nsize)
+{
+    char *abslut[] = {"/", "./", "../", ""};
+    char **pt;
+    char *realname = NULL;
+
+    pt = &abslut[0];
+
+    /* is it an absolute pathame ? */
+    
+    while ( **pt )
+    {
+        if (!strncmp(*pt, fname, strlen(*pt)))
+        {
+            realname = fname;
+            break;
+        }
+        ++pt;
+    }
+
+    /* is it "~/xxx" ? */
+    
+    if ( !strncmp(fname, "~/", 2) )
+    {
+        strncpy (fullname, myhome, nsize);
+        nsize -= strlen(fullname);
+        strncat (fullname, &fname[1], nsize);
+        realname = strdup(fullname);
+    }
+    
+    if ( ! realname )
+    {
+        /* If we get here, fname is simply a basename.. */
+        if (!(access (fname, R_OK)))   /* Try in current directory */
+        {
+            realname = fname;
+        }
+        else {    /* OK.. one last shot..  assume it's in Defdir */
+            if( !strncmp(DefDir, "~/",2) )
+            {
+                int tmpsize = nsize;;
+                
+                strncpy (fullname, myhome, nsize);
+                tmpsize -= strlen (fullname);
+                
+                strncat (fullname, &DefDir[1],nsize);
+                nsize -= strlen (fullname);
+            }
+            else {
+                strncpy (fullname, DefDir, nsize);
+                nsize -= strlen (fullname);
+            }
+
+            strncat (fullname, fname, nsize);
+            realname = strdup(fullname);
+        }
+    }
+
+    return realname;
+}
+
 void
 do_opt(char *c)
 {
@@ -67,14 +140,20 @@ do_opt(char *c)
 				if(!doingcmds)
 					LblFNam[LblFilz] = pass_eq(pt);
 				else {
-					LblFNam[LblFilz]=malloc(strlen(pt)+2);
+					/*LblFNam[LblFilz]=malloc(strlen(pt)+2);
 					pt=pass_eq(pt);
 					if( !LblFNam[LblFilz] ) {
 						fprintf(stderr,
                                 "Cannot allocate memory for Label filename\n");
 						exit(1);
 					}
-					strcpy(LblFNam[LblFilz],pt);
+					strcpy(LblFNam[LblFilz],pt);*/
+                    pt = pass_eq(pt);
+                    if (!(LblFNam[LblFilz] = strdup(pt)))
+                    {
+                        fprintf (stderr,
+                                 "Cannot strdup() Label filename %s\n", pt);
+                    }
 				}
 				++LblFilz;
 			}
@@ -89,7 +168,9 @@ do_opt(char *c)
 				fprintf(stderr, "Ignoring %s\n",pass_eq(pt));
 			}
 			else {
-				cmdfilename = pass_eq(pt);
+                char tmpstr[500];
+                
+				cmdfilename = build_path(pass_eq(pt), tmpstr, sizeof (tmpstr));
 			}
 			break;
 		case 'u':	/* Translate to upper-case */
@@ -126,14 +207,15 @@ do_opt(char *c)
 				DefDir = pass_eq(pt);
 			}
 			else {
-				DefDir = malloc(strlen(pt)+2);
+				/*DefDir = malloc(strlen(pt)+2);*/
 				pt=pass_eq(pt);
-				if( !DefDir )
+				if( !(DefDir = strdup(pt)) )
 				{
-					fprintf(stderr,"Cannot allocate memory for Defs Dir\n");
+					fprintf(stderr,
+                            "Cannot allocate memory for Defs dirname\n");
 					exit(1);
 				}
-				strcpy(DefDir,pt);
+				/*strcpy(DefDir,pt);*/
 			}
 			break;
 		case '3':
@@ -164,75 +246,6 @@ pass1()
 		do_cmd_file();
 		doingcmds=0;
 	}
-}
-
-/* ************************************** *
- * build_path()  - locate a filename and  *
- *                 build a full pathlist  *
- * Passed:    the filename                *
- * Returned:  return ptr to full pathname *
- * ************************************** */
-
-static char *
-build_path(char *fname, char *fullname, int nsize)
-{
-    char *abslut[] = {"/", "./", "../", ""};
-    char **pt;
-    char *realname = NULL;
-
-    pt = &abslut[0];
-
-    /* is it an absolute pathame ? */
-    
-    while ( **pt )
-    {
-        if (!strncmp(*pt, fname, strlen(*pt)))
-        {
-            realname = fname;
-            break;
-        }
-        ++pt;
-    }
-
-    /* is it "~/xxx" ? */
-    
-    if ( !strncmp(fname, "~/", 2) )
-    {
-        strncpy (fullname, myhome, nsize);
-        nsize -= strlen(fullname);
-        strncat (fullname, &fname[1], nsize);
-        realname = fullname;
-    }
-    
-    if ( ! realname )
-    {
-        /* If we get here, fname is simply a basename.. */
-        if (!(access (fname, R_OK)))   /* Try in current directory */
-        {
-            realname = fname;
-        }
-        else {    /* OK.. one last shot..  assume it's in Defdir */
-            if( !strncmp(DefDir, "~/",2) )
-            {
-                int tmpsize = nsize;;
-                
-                strncpy (fullname, myhome, nsize);
-                tmpsize -= strlen (fullname);
-                
-                strncat (fullname, &DefDir[1],nsize);
-                nsize -= strlen (fullname);
-            }
-            else {
-                strncpy (fullname, DefDir, nsize);
-                nsize -= strlen (fullname);
-            }
-
-            strncat (fullname, fname, nsize);
-            realname = fullname;
-        }
-    }
-
-    return realname;
 }
 
 static void

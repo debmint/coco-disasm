@@ -9,6 +9,8 @@ os9disasm.c
       precede calling functions - so that they prototype themselves - and
       redefined many static functions (most in this module) as such.
     + Removed mkpath() {replaced by build_path()}.
+    + Replaced malloc() - strcpy() with strdup() in misc. filename storage
+      routines.
 
 -- davebree    Thu, 04 Nov 2004 20:12:31 -0600
 
