@@ -83,12 +83,12 @@ void PBFcat(char *dst, char *fmt,unsigned char *src, int sz)
 
 /* zalloc()  - mallocs memory and if successful, nulls out everything */
 
-void *zalloc(size_t size)
+/*void *zalloc(size_t size)
 {
 	void *myadr;
 
 	if( (myadr = malloc(size)) )
 		memset(myadr,0,size);
 	return myadr;
-}
+}*/
 

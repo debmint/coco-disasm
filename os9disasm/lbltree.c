@@ -44,11 +44,14 @@ struct nlist *ListRoot(char symbol)
 }
 
 
-/* dataget() : this will get Long or short labels, inserting them into
- *     the label list - for pass 1,
- *     Passed: beginning address l, ending address h, class c, and data size.
- *     		We may have to fix this one up!!!
- */
+/* ************************************************* *
+ * dataget() : this will get Long or short labels,   *
+ *     inserting them into                           *
+ *     the label list - for pass 1,                  *
+ *   Passed: beginning address l, ending address h,  *
+ *          class c, and data size.                  *
+ *      We may have to fix this one up!!!            *
+ * ************************************************* */
 
 void dataget(struct databndaries *bp,char c,int k)
 {
@@ -83,9 +86,11 @@ void dataget(struct databndaries *bp,char c,int k)
 	}
 }
 
-/* bGoBegin():	Go to the beginning of the tree, or branch of tree.
- * for Data Boundary tree
- */
+/* ********************************************* *
+ * bGoBegin():	Go to the beginning of the tree, *
+ *              or branch of tree.               *
+ *   for Data Boundary tree                      *
+ * ********************************************* */
 
 struct databndaries *bGoBegin(struct databndaries *pt)
 {
@@ -99,7 +104,9 @@ struct databndaries *bGoBegin(struct databndaries *pt)
 	return pt;
 }
 
-/* ClasHere()	See if an addressing mode is specified */
+/* *************************************************** *
+ * ClasHere()	See if an addressing mode is specified *
+ * *************************************************** */
 
 struct databndaries *ClasHere(struct databndaries *bp,int adrs)
 {
@@ -130,9 +137,10 @@ struct databndaries *ClasHere(struct databndaries *bp,int adrs)
 }
 
 
-/*LblCalc() - Calculate the Label for a location 
- *    Passed: size of postbyte (1 or 2)
- */
+/* ********************************************** *
+ * LblCalc() - Calculate the Label for a location *
+ *    Passed: size of postbyte (1 or 2)           *
+ * ********************************************** */
 
 int LblCalc(char *dst,int adr, int amod)
 {
@@ -418,7 +426,7 @@ struct nlist *addlbl(int loc, char C)
 		}
 	}
 						
-	if( !(me= zalloc(sizeof(struct nlist))) ) {
+	if( !(me= calloc (1, sizeof(struct nlist))) ) {
 		fprintf(stderr,"Cannot allocate memory for Label.\n");
 		exit(errno);
 	}
@@ -454,10 +462,14 @@ struct nlist *addlbl(int loc, char C)
 	return me;
 }
 
-/* FindLbl - starting at nl, search tree (or remainder) for a match
- * Passed:  nl=Ptr to starting tree member, loc=address to match
- * Returned: ptr to correct entry if match,  0 if not found
- */
+/* **************************************************** *
+ * FindLbl - starting at nl, search tree (or remainder) *
+ *           for a match                                *
+ * Passed:  nl=Ptr to starting tree member,             *
+ *          loc=address to match                        *
+ * Returned: ptr to correct entry if match,             *
+ *           0 if not found                             *
+ * **************************************************** */
 
 struct nlist *FindLbl(struct nlist *nl,int loc)
 {

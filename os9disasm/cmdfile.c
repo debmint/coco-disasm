@@ -71,7 +71,10 @@ int cmderr()
 	exit(1);
 }
 
-/* Process options found in command file line */
+/* ****************************************** *
+ * Process options found in command file line *
+ * ****************************************** */
+
 int optincmd(char *lpos)
 {
 	char st[80], *spt = st;
@@ -87,9 +90,10 @@ int optincmd(char *lpos)
 	return(0);
 }
 
-/* cmdsplit() :  split cmdline..  i.e. transfer characters up to
- * ';' or end of line - returns ptr to next char in cmdline buffer
- */
+/* ************************************************************** *
+ * cmdsplit() :  split cmdline..  i.e. transfer characters up to  *
+ * ';' or end of line - returns ptr to next char in cmdline buffer*
+ * ************************************************************** */
 
 char *cmdsplit(char *dest, char *src)
 {
@@ -112,7 +116,10 @@ char *cmdsplit(char *dest, char *src)
 }
 
 
-/* Process addressing modes found in command file line */
+/* *************************************************** *
+ * Process addressing modes found in command file line *
+ * *************************************************** */
+
 void cmdamode(char *pt)
 {
 	char buf[80];
@@ -182,7 +189,7 @@ int DoMode(char *lpos)
 	}
 	
 	if( *(lpos) == '(') {
-		otreept = zalloc(sizeof(struct ofsetree) );
+		otreept = calloc (1, sizeof(struct ofsetree) );
 		if( !otreept)
 			nerrexit("Cannot allocate memory for offset!");
 		lpos = setoffset(++lpos,otreept);
@@ -192,7 +199,7 @@ int DoMode(char *lpos)
 	getrange(lpos,&lo,&hi,bndty);
 	
 		/* Now insert new range into tree */
-	if( !(mptr=zalloc(sizeof(struct databndaries))) )
+	if( !(mptr=calloc (1, sizeof(struct databndaries))) )
 		nerrexit("Cannot allocate memory for data definition");
 
 	mptr->b_lo=lo;mptr->b_hi=hi;
@@ -238,7 +245,10 @@ int DoMode(char *lpos)
 }
 
 #define ILLBDRYNAM "Illegal boundary name in line %d\n"
-/* process boundaries found in command file line */
+
+/* ********************************************* *
+ * process boundaries found in command file line *
+ * ********************************************* */
 
 void boundsline(char *mypos)
 {
@@ -267,7 +277,9 @@ void boundsline(char *mypos)
 	}
 }
 
-/* set up offset (if there) for offset specification */
+/* ************************************************* *
+ * set up offset (if there) for offset specification *
+ * ************************************************* */
 
 char *setoffset(char *p, struct ofsetree *oft)
 {
@@ -357,7 +369,7 @@ void setupbounds(char *lpos)
 	/* Offset spec (if any) */
 	lpos=skipblank(++lpos);
 	if( *(lpos) == '(') {
-		otreept = zalloc(sizeof(struct ofsetree) );
+		otreept = calloc (1, sizeof(struct ofsetree) );
 		if( !otreept)
 			nerrexit("Cannot allocate memory for offset!");
 		lpos = setoffset(++lpos,otreept);
@@ -365,7 +377,7 @@ void setupbounds(char *lpos)
 
 	getrange(lpos,&rglo,&rghi,bdtyp);
 		/* Now create the addition to the list */
-	if( !(bdry = zalloc(sizeof( struct databndaries)) ) ) {
+	if( !(bdry = calloc (1, sizeof( struct databndaries)) ) ) {
 		fprintf(stderr,"Cannot allocate memory for boundary\n");
 		exit(1);
 	}
@@ -401,7 +413,10 @@ void bndoverlap()
 	exit(1);
 }
 
-/* bdinsert() - inserts an entry into the boundary table */
+/* ***************************************************** *
+ * bdinsert() - inserts an entry into the boundary table *
+ * ***************************************************** */
+
 void bdinsert(struct databndaries *bb)
 {
 	register struct databndaries *npt;
