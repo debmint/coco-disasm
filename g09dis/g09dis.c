@@ -5,8 +5,8 @@
 /* Id:$ */
 
 #define MAIN
-#define WWIDTH 800
-#define WHEIGHT 600
+#define WWIDTH 750
+#define WHEIGHT 540
 
 /*GtkWidget *tview;*/
 
@@ -29,16 +29,18 @@ cmdbuf_changed_cb (GtkTextBuffer *buffer, fileinf *cmdbuf)
 }
 
 /* ***************************************************** *
- * text_window()                                         *
- * - create and set up work area (the 3 display windows) *
+ * build_cmd_window() - create and set up a text window  *
+ *                 ( cmd file )                          *
+ *   Passed:   the box into which new window goes        *
+ *             ptr to valid fileinf data structure       *
  * ***************************************************** */
 
-GtkWidget *
-text_window (GtkWidget * mainbox, fileinf * fi)
+static GtkWidget *
+build_cmd_window (GtkWidget * mainbox, fileinf * fi)
 {
     GtkWidget *s_win;
 
-    /* Create list window on left side of mainwin */
+    /* Create a scrolled window */
     
     s_win = gtk_scrolled_window_new (NULL, NULL);
     gtk_container_set_border_width (GTK_CONTAINER (s_win), 2);
@@ -46,29 +48,39 @@ text_window (GtkWidget * mainbox, fileinf * fi)
                                     GTK_POLICY_AUTOMATIC,
                                     GTK_POLICY_AUTOMATIC);
 
+    /* Create a textview and add to scrolled window */
+    
     fi->tview = gtk_text_view_new ();
     gtk_widget_set_name (GTK_WIDGET (fi->tview), "txtwin");
     gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (s_win),
                                            fi->tview);
-/*	fi->tbuf = gtk_text_view_get_buffer( GTK_TEXT_VIEW(fi->tview) );*/
 
+    /* Add text buffer to textview */
+    
     fi->tbuf = gtk_text_buffer_new (NULL);
     gtk_text_view_set_buffer (GTK_TEXT_VIEW (fi->tview), fi->tbuf);
+    
     gtk_widget_show (s_win);
+    
     g_signal_connect (fi->tbuf, "changed",
                       G_CALLBACK(cmdbuf_changed_cb), &O9Dis.cmdfile);
     gtk_widget_show (fi->tview);
+
     return (s_win);
 
 }
 
-/* ****************************************** *
- * new_txt_win()                              *
- *  - Creates a single-column TreeView Window *
- * ****************************************** */
+/* ************************************************* *
+ * build_list_window() - Creates a Window containing *
+ *                 a Treeview for the listing        *
+ * Passed: Container for Treeview window             *
+ *         Associated fileinf structure              *
+ * Returns: The Window widget                        *
+ *                                                   *
+ * ************************************************* */
 
-GtkWidget *
-new_txt_win (GtkWidget * mainbox, fileinf * fi)
+static GtkWidget *
+build_list_window (GtkWidget * mainbox, fileinf * fi)
 {
     GtkWidget *view, *s_win;
     GtkCellRenderer *renderer;
@@ -80,7 +92,7 @@ new_txt_win (GtkWidget * mainbox, fileinf * fi)
     view = gtk_tree_view_new ();
     gtk_widget_set_name (GTK_WIDGET (view), "txtwin");
 
-    /* Create column */
+    /* Create columns */
 
     renderer = gtk_cell_renderer_text_new ();
     gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (view),
@@ -134,7 +146,15 @@ new_txt_win (GtkWidget * mainbox, fileinf * fi)
     return s_win;
 }
 
-GtkWidget *
+/* *************************************** *
+ * new_lbl_win () - create a window with   *
+ *         a TreeView for label file       *
+ * Passed:  &Os9Dis.lblfile.tview          *
+ * Returns: The new scrolled window Widget *
+ *                                         *
+ * *************************************** */
+
+static GtkWidget *
 new_lbl_win (GtkWidget **view)
 {
     GtkWidget *s_win;
@@ -286,12 +306,26 @@ main (int argc, char *argv[])
 
     GtkWidget *fw;
 
+    gchar *ho,
+          *rcpath;
+
     /* Go set defaults, etc */
     
     odis_init ();
 
     /* Initialize GTK */
-    gtk_rc_parse ("disrc");
+
+    if (!(ho=getenv ("HOME")))
+    {
+        if (!(ho=getenv ("home")))
+        {
+            ho = ".";   /* Assign a default value */
+        }
+    }
+
+    rcpath = g_strconcat (ho, "/", "disrc", NULL);
+    
+    gtk_rc_parse (rcpath);
     gtk_init (&argc, &argv);
 
     /* Create top-level window */
@@ -302,7 +336,7 @@ main (int argc, char *argv[])
     g_signal_connect (G_OBJECT(window), "delete-event",
                       G_CALLBACK (window_quit), NULL);
     gtk_window_set_title (GTK_WINDOW (window), "G-O9DisAsm");
-    gtk_widget_set_size_request (GTK_WIDGET (window), WWIDTH, WHEIGHT);
+    gtk_window_set_default_size(GTK_WINDOW (window), WWIDTH, WHEIGHT);
 
     /* Make a vbox to put the three menus in */
     
@@ -326,26 +360,26 @@ main (int argc, char *argv[])
 
     /*      create List window */
     
-    list_win = new_txt_win (main_vbox, &O9Dis.list_file);
+    list_win = build_list_window (main_vbox, &O9Dis.list_file);
     fw = gtk_frame_new ("Program Listing");
     gtk_container_add (GTK_CONTAINER (fw), list_win);
     gtk_paned_pack1 (GTK_PANED (work_area), /*list_win */ fw, TRUE, TRUE);
-    gtk_widget_set_size_request (GTK_WIDGET (list_win), WWIDTH / 3, -1);
+    /*gtk_widget_set_size_request (GTK_WIDGET (list_win), WWIDTH / 3, -1);*/
 
     /* add a vertically-paned window to the right-hand side */
     
     panedv = gtk_vpaned_new ();
     gtk_paned_pack2 (GTK_PANED (work_area), panedv, TRUE, TRUE);
-    gtk_widget_set_size_request (GTK_WIDGET (panedv), WWIDTH / 3, -1);
+    /*gtk_widget_set_size_request (GTK_WIDGET (panedv), WWIDTH / 3, -1);*/
 
     /* cmd window to top of right-hand window */
     
-    cmd_win = text_window (work_area, &O9Dis.cmdfile);
+    cmd_win = build_cmd_window (work_area, &O9Dis.cmdfile);
     fw = gtk_frame_new ("Command File");
     gtk_frame_set_label_align (GTK_FRAME (fw), 1.0, 0.5);
     gtk_container_add (GTK_CONTAINER (fw), cmd_win);
     gtk_paned_pack1 (GTK_PANED (panedv), /*cmd_win */ fw, TRUE, TRUE);
-    gtk_widget_set_size_request (GTK_WIDGET (cmd_win), -1, WHEIGHT / 2);
+    /*gtk_widget_set_size_request (GTK_WIDGET (cmd_win), -1, WHEIGHT / 2);*/
 
     /* and the label file window to the bottom of right window */
     
@@ -354,7 +388,7 @@ main (int argc, char *argv[])
     gtk_frame_set_label_align (GTK_FRAME (fw), 1.0, 0.5);
     gtk_container_add (GTK_CONTAINER (fw), lbl_win);
     gtk_paned_pack2 (GTK_PANED (panedv), fw, TRUE, TRUE);
-    gtk_widget_set_size_request (GTK_WIDGET (lbl_win), -1, WHEIGHT / 2);
+    /*gtk_widget_set_size_request (GTK_WIDGET (lbl_win), -1, WHEIGHT / 2);*/
 
     /* Show the widgets */
 

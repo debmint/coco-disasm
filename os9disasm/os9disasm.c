@@ -29,6 +29,8 @@ char rdbuf[500];
 static void
 usage ()
 {
+    fprintf (stderr, "os9disasm V %s\n", VERSION);
+    fprintf (stderr, "    Disassembles 6809/6309 code, sending a formatted listing to stdout\n");
     fprintf (stderr, "Syntax: os9dis [opts] <module filename> [opts]\n");
     fprintf (stderr, " Options:\n");
     fprintf (stderr, "	-c[=]<command file>\n");
@@ -41,6 +43,7 @@ usage ()
     fprintf (stderr,
              "	-d  -  define path to defs files  (default=$HOME/coco/defs)\n");
     fprintf (stderr, "	-3  -  target CPU is 6309 (accept 6309 opcodes)\n");
+    fprintf (stderr, "  -g  -  Output listing in tabbed format suitable for g09dis to interpret\n");
     fprintf (stderr, "  -x[=]<type> - Target OS\n");
     fprintf (stderr, "                C=Coco (default = OS9)\n");
     return;
@@ -147,6 +150,7 @@ do_opt (char *c)
         {
             case 'C':
                 OSType = OS_Coco;
+                DfltLbls = CocoDflt;
                 fprintf(stderr, "You are disassembling for coco\n");
                 break;
             default:
@@ -541,6 +545,12 @@ main (int argc, char **argv)
     GetLabels ();               /* Read in Label files */
     Pass2 = 1;
     rewind (progpath);
+
+    if (OSType == OS_Coco)
+    {
+        rsdoshdr();   /* Reset header pointers to first header */
+    }
+
     progdis ();
     exit (0);
 }

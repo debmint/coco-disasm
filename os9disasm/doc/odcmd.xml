@@ -1,4 +1,4 @@
-<chapter>
+<chapter id="thecmdfile">
  <title>The Command File in Detail</title>
  <para>The <filename>command file</filename>, specified by option
   <command>-c</command> on the command line, is a text file consiting of
@@ -455,7 +455,7 @@
    capability saves a lot of repetitious command entry.
   </para>
  </section>
- <section><title>The Label File</title>
+ <section id="labelfile"><title>The Label File</title>
   <para>&odis; label files are used to supply the equivalence between label
    value/class combinations and the standard name by which that label is to be
    referenced. In the absence of a standard name, the label generated for a
@@ -746,27 +746,49 @@
    single module per object file. Any code following the
    <computeroutput>EMOD</computeroutput> is assumed to be non-module code.
   </simpara>
- </section>
- <section><title>TODO LIST</title>
-  <formalpara><title>Add Coco Dos capability</title><para>
-   Add capability to disassemble CoCo Dos (at least) and maybe Flex.  Then
-   add documentation here!
-  </para></formalpara>
-  <formalpara><title>Improve 6309 workings</title><para>
-   As of this release, the 6309 capability is sort of a hack.  More
-   improvements are needed.
-   <itemizedlist>
-    <listitem><para>Make sure all opcodes are working.  Many are, but not
-    all have been checked.
-    </para></listitem>
-    <listitem><para>Add label class configuration for the extra fields in
-     the 6309 specific calls.  No attempt was made at this time to add these,
-     above those already provided.  It would be beneficial to add label class
-     definitions for the raw byte in the <command>aim/tim/oim </command>
-     fields, perhaps the bit fields in the <command>band </command> family, as
-     well as others.  This can be added later.
-    </para></listitem>
-   </itemizedlist>
-  </para></formalpara>
+  <section><title>Particulars about RS Dos mode</title>
+    <para>There are no especially outstanding quirks regarding the RS Dos
+      mode.  You man need to go through and add several entries in the
+      <literal>command file</literal> to get the addressing modes the way
+      you like.  Many will need to be given the <literal>direct</literal>
+      class.  Of course, you'll need to be able to acces the
+      <command>cocolbl</command> file to get acceptable modes.
+    </para>
+    <para>There is one quirk that needs to be noted.  The assemblers -
+      <command>edtasm</command>, at least - have a tendency to break up the
+      file into smaller load blocks.  Of course there will be a break where
+      a data segment appears in the midst of the program.
+    </para>
+    <para>In addition, I've noted where there are also breaks at random
+      places, even in the middle of a string.  If you find that after declaring
+      data boundaries, the disassembly stops short of the end and doesn't
+      include all the files, check to see that you haven't declared a boundary
+      overlapping a break.  The code could be fixed to allow for this, but it
+      may incur some extensive modifying.  This may be addressed later.  To
+      help in finding all the block addresses, A notice of the Load Address
+      and length is sent to <literal>stderr</literal> during the disassembly
+      process.  You can view this on the console, or redirect <literal>
+      stderr</literal> to a file for a permanent record.  Of course this
+      file will also contain any other error messages you get (hopefully
+      none of these>
+    </para>
+    <para>There is one quirk in the disassembly.  The source will build, but
+      it's a bit nontypical to normal programming.  If a program has an inline
+      data area, the load block ends and another begins.  Also, the data
+      area is not included in the program if a value is not assigned to
+      it.  Therefore, &odis; will not have any data to process to get the
+      proper <literal>fcb</literal>'s.  These addresses will be disassembled
+      in the following manner:
+    </para>
+    <para>
+      <programlisting>LABEL fcb *=&lt;number&gt;</programlisting>
+    </para>
+    <note><para>These will be generated <emphasis>after</emphasis> the
+      <literal>org</literal> statement.</para>
+    </note>
+    <para>This is another thing that might be worked around, but for now,
+      hopefully this will suffice.
+    </para>
+  </section>
  </section>
 </chapter>

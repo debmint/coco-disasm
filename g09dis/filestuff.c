@@ -1,7 +1,8 @@
 /* *********************************** *
  * filestuff.c - handles file I/O, etc *
- * $Id: *
  * *********************************** */
+
+/* $Id$ */
 
 #include <gtk/gtk.h>
 #include "g09dis.h"
@@ -9,6 +10,7 @@
 #include <string.h>
 /*#include <unistd.h>*/
 #include <stdlib.h>
+#include <ctype.h>
 
 #ifdef WIN32
 #define DIRSTR "\\"
@@ -126,17 +128,27 @@ onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
  * select a file to open *
  * ********************* */
 void
-selectfile_open (glbls * hbuf, gchar * type)
+selectfile_open (glbls * hbuf, gchar * type, gboolean IsFile)
 {
     GtkWidget *fsel;
     gchar *title = g_strconcat ("Select a ", type, NULL);
 /*	gchar     *utf8 = g_locale_to_utf8( title, -1, NULL, NULL, NULL );*/
+    gint action_type;
+
+    if (IsFile)
+    {
+        action_type = GTK_FILE_CHOOSER_ACTION_OPEN;
+    }
+    else
+    {
+        action_type = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
+    }
 
     hbuf->filename_to_return = NULL;
 
     fsel = gtk_file_chooser_dialog_new (title,
                                         GTK_WINDOW (window),
-                                        GTK_FILE_CHOOSER_ACTION_OPEN,
+                                        action_type,
                                         GTK_STOCK_CANCEL,
                                         GTK_RESPONSE_CANCEL,
                                         GTK_STOCK_OPEN,
@@ -308,7 +320,14 @@ save_lbl(fileinf *fdat, GtkWidget *my_win, gchar **newfile)
                                 LBL_ADDR, &addr,
                                 LBL_CLASS, &mode,
                                 -1);
-            fprintf (outfile, "%s equ %s %c\n", label, addr, *mode);
+            if (*label != '*')
+            {
+                fprintf (outfile, "%s equ %s %c\n", label, addr, *mode);
+            }
+            else {  /* do differently for comment */
+                fprintf (outfile, "%s %s\n", label, mode);
+            }
+            
             g_free(label); g_free(addr), g_free(mode);
         } while (gtk_tree_model_iter_next(model, &iter));
     }
@@ -521,7 +540,9 @@ load_list_tree (fileinf * fdat, FILE *infile)
         
         splits = g_strsplit (buffer, "\t", LST_NCOLS);
 
-        if (splits[0] && splits[1])
+        if (splits[LST_LIN] && splits[LST_ADR] && splits[LST_OPCO] &&
+                             splits[LST_PBYT] && splits[LST_LBL] &&
+                             splits[LST_MNEM] && splits[LST_OPER])
         {
             gtk_list_store_append (fdat->l_store, &iter);
             gtk_list_store_set (fdat->l_store, &iter,
@@ -564,30 +585,94 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     while (fgets (buffer, 160, infile))
     {
         register char *newbuf;
+        gchar **splits;
 
         /* get rid of newline, leading/trailing whitespaces
          * if present
          */
         g_strstrip(buffer);
 
-        /* get rid of leading whitespaces */
-        newbuf = g_strchug (buffer);
-
         if ((strlen (buffer)) && (*buffer != ' '))
         {
-            gchar **splits;
-            splits = g_strsplit (buffer, " ", LBL_NCOLS);
+            if (*buffer != '*')
+            {
+                gchar *tmppt;
+                gint bcnt;
 
-            /* Now add to GtkTree */
-            if ((splits) && (*splits[0] != '*'))
+                /* convert tabs to spaces  
+                 * if file is saved, spaces will be used */
+               
+                while ((tmppt = strchr(buffer, '\t')))
+                {
+                    *tmppt = ' ';
+                }
+                
+                tmppt = buffer;
+
+                for (bcnt = 1; bcnt<4; ++bcnt)
+                {
+                    if (tmppt = strchr(tmppt, ' '))
+                    {
+                        ++tmppt;
+                        g_strchug (tmppt);
+                    }
+                }
+                splits = g_strsplit (buffer, " ", LBL_NCOLS);
+            }
+            else   /* A comment line */
+            {
+                GString * tmpstr = NULL;
+                int sspos = 1;  /* Default separator to second position */
+                
+                if (buffer[1] == '\\')
+                {
+                    gchar *modestr;
+                    
+                    ++sspos;   /* Bump separator past '\' */
+                    
+                    /* AMode def - add to AMode list */
+                    amode_add_from_string (&buffer[sspos]);
+                }
+
+                tmpstr = g_string_new_len (buffer, sspos);
+
+                if ((!isspace (buffer[sspos])) && (buffer[sspos] != '\t'))
+                {
+                    g_string_append (tmpstr, " ");
+                }
+                
+                tmpstr = g_string_append (tmpstr, &buffer[sspos]);
+                
+                splits = g_strsplit (tmpstr->str, " ", 2);
+
+                g_string_free (tmpstr, TRUE);
+            }
+
+            /* Now add to ListStore */
+            if ((splits) )
             {
                 GtkTreeIter iter;
+                gint lpos = 0;
 
                 gtk_list_store_append (fdat->l_store, &iter);
-                gtk_list_store_set (fdat->l_store, &iter,
-                                    LBL_LBL, splits[0], LBL_EQU, splits[1],
-                                    LBL_ADDR, splits[2], LBL_CLASS, splits[3],
-                                    -1);
+
+                if (*splits[0] != '*')  /* Label definition */
+                {
+                    while (splits[lpos] != NULL)
+                    {
+                        gtk_list_store_set (fdat->l_store, &iter,
+                                            lpos, splits[lpos], -1);
+                        ++lpos;
+                    }
+                }
+                else   /* else a comment */
+                {
+                    gtk_list_store_set (fdat->l_store, &iter,
+                                        LBL_LBL, splits[0],
+                                        LBL_EQU, "", LBL_ADDR, "",
+                                        LBL_CLASS, splits[1],
+                                        -1);
+                }
             }
             g_strfreev (splits);
         }
@@ -598,6 +683,32 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     fclose (infile);
 }
 
+/* **************************************** *
+ * sysfailed() - report failure of system() *
+ *     call                                 *
+ * **************************************** */
+
+void
+sysfailed (char *msg)
+{
+    GtkWidget *dialog;
+
+    dialog = gtk_message_dialog_new (GTK_WINDOW(window),
+                                     GTK_DIALOG_DESTROY_WITH_PARENT ||
+                                         GTK_DIALOG_MODAL,
+                                     GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
+                                     msg);
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+}
+
+
+/* ************************************ *
+ * run_disassembler  - a callback from  *
+ *          the menu                    *
+ * Passed: action, the global variables *
+ * ************************************ */
+
 void
 run_disassembler (GtkAction * action, glbls * hbuf)
 {
@@ -606,6 +717,8 @@ run_disassembler (GtkAction * action, glbls * hbuf)
     gboolean PipeIt = FALSE;
 
     CmdL = g_string_new("os9disasm ");
+
+    /* We MUST have a binary file to disassemble */
     
     if( !bin_file )
     {
@@ -636,6 +749,15 @@ run_disassembler (GtkAction * action, glbls * hbuf)
         g_string_append (CmdL, cmd_cmd);
     }
 
+    if (alt_defs)
+    {
+        g_string_append_printf (CmdL, " -d=%s", alt_defs_path);
+    }
+   
+    if (isrsdos)
+    {
+        g_string_append (CmdL, " -x=c");
+    }
     if (write_obj)
     {
         g_string_append (CmdL, " -o=");
@@ -662,10 +784,6 @@ run_disassembler (GtkAction * action, glbls * hbuf)
         g_string_append_printf (CmdL, " -pd=%d", pgdpth);
     }
 
-   /* if (write_list)
-    {
-        g_string_append_printf (CmdL, " > %s", listing_output);
-    }*/
 
     switch (write_list) {
         case LIST_FILE:
@@ -684,25 +802,37 @@ run_disassembler (GtkAction * action, glbls * hbuf)
             break;
     }
 
-    cmdline = g_string_free(CmdL, FALSE);
+    cmdline = g_string_free (CmdL, FALSE);
     
-    g_print ("The command line is...\n");
-    g_print ("      %s\n",cmdline);
-
-    if ( !(PipeIt))
+    if ( !(PipeIt))   /* Output is to stdout or a file */
     {
-        system(cmdline);
+        int retval;
+        char *msg = NULL;
+        
+        switch (retval = system (cmdline))
+        {
+            case 0: /* sucess */
+                break;
+            case -1:  /* failed fork */
+                msg = "Could not fork \"os9disasm\"\nIs \"os9disasm\" in your path?";
+                sysfailed(msg);
+                break;
+            default:
+                msg = "Error in executing \"os9disasm\"\nPlease check console for error messages";
+                sysfailed(msg);
+        }
     }
-    else {
+    else {  /* else we're piping to the GUI */
         FILE *infile;
         
         /* Now open the file and read it */
         if (!(infile = popen (cmdline, "r")))
         {
-            fprintf (stderr, "Cannot pipe \"%s\" for read!\n",
+            g_print ("Cannot pipe \"%s\" for read!\n",
                               cmdline);
         }
         else {
+            gtk_list_store_clear ((hbuf->list_file).l_store);
             load_list_tree (&hbuf->list_file, infile);
             pclose (infile);
         }
@@ -726,13 +856,12 @@ free_filename_to_return (gchar ** fname)
 /* *************************************** *
  * Callbacks for file selection            *
  * Passed: GtkAction *action,              *
- *       gpointer user_data                *
+ *       address of global data pointer    *
  * *************************************** */
 
 void
 compile_listing (GtkAction * action, glbls * hbuf)
 {
-    FILE *infile;
     int old_write_list = write_list;
 
     /* temporarily flag that we're writing to GUI */
@@ -743,12 +872,18 @@ compile_listing (GtkAction * action, glbls * hbuf)
     write_list = old_write_list;   /* restore write_list */
 }
 
+/* *************************************** *
+ * load_listing() - A callback from the    *
+ *    menu(s),  This is the "top-level"    *
+ *    function for loading a listing       *
+ * *************************************** */
+
 void
 load_listing (GtkAction * action, glbls * hbuf)
 {
     FILE *infile;
 
-    selectfile_open (hbuf, "Prog Listing");
+    selectfile_open (hbuf, "Prog Listing", TRUE);
 
     if (hbuf->filename_to_return != NULL)
     {                           /* Leak? */
@@ -763,7 +898,7 @@ load_listing (GtkAction * action, glbls * hbuf)
         /* Now open the file and read it */
         if (!(infile = fopen ((hbuf->list_file).fname, "r")))
         {
-            fprintf (stderr, "Cannot file \"%s\" for read!\n",
+            fprintf (stderr, "Cannot open file \"%s\" for read!\n",
                               (hbuf->list_file).fname);
         }
         else {
@@ -776,7 +911,7 @@ load_listing (GtkAction * action, glbls * hbuf)
 void
 load_cmdfile (GtkAction * action, glbls * hbuf)
 {
-    selectfile_open (hbuf, "Command file");
+    selectfile_open (hbuf, "Command file", TRUE);
     if (hbuf->filename_to_return != NULL)       /* Leak? */
     {
         load_text (&hbuf->cmdfile, list_win, &(hbuf->filename_to_return));
@@ -788,7 +923,7 @@ load_cmdfile (GtkAction * action, glbls * hbuf)
 void
 load_lblfile (GtkAction * action, glbls * hbuf)
 {
-    selectfile_open (hbuf, "Label File");
+    selectfile_open (hbuf, "Label File", TRUE);
     
     if (hbuf->filename_to_return != NULL)       /* Leak? */
     {

@@ -4,7 +4,7 @@
 HTMLDIR	=html
 VPATH	=$(HTMLDIR)
 STYLSHEET	=/usr/share/sgml/docbook/stylesheet/xsl/ldp/ldp-html-chunk.xsl
-index_SOURCES	=odcmd.xml odisinst.xml odrun.xml os9disasm.xml
+index_SOURCES	=odcmd.xml odisinst.xml odrun.xml os9disasm.xml g09dis.xml
 
 all: index.html
 

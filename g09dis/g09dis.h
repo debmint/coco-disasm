@@ -10,6 +10,10 @@
 #	define GLOBAL extern
 #endif
 
+#ifdef HAVE_CONFIG_H
+#   include <config.h>
+#endif
+
 #include <gtk/gtk.h>
 
 /* Label file Treeview column defs */
@@ -81,11 +85,14 @@ GLOBAL glbls O9Dis;
 GLOBAL gint pgwdth;
 GLOBAL gint pgdpth;
 GLOBAL gint cputype;
+GLOBAL gboolean isrsdos;
 GLOBAL gint upcase;
 GLOBAL gchar *bin_file;
 GLOBAL gchar *cmd_cmd;
-GLOBAL gboolean write_obj;
-GLOBAL gchar *obj_file;
+GLOBAL gboolean write_obj,
+                alt_defs;
+GLOBAL gchar *obj_file,
+             *alt_defs_path;
 GLOBAL gint write_list;
 GLOBAL gchar *listing_output;
 

@@ -41,12 +41,16 @@ tabinit ()
     pseudcmd = "%5d\t%04X\t%s\t\t%s\t%s\t%s\n";
 }
 
-void
-PrintLine (char *pfmt, struct printbuf *pb)
+/* ************************************** *
+ * OutputLine () - does the actual output *
+ * to the listing and/or source file      *
+ * ************************************** */
+
+static void
+OutputLine (char *pfmt, struct printbuf *pb)
 {
     struct nlist *nl;
 
-    NonBoundsLbl ();            /*Check for non-boundary labels */
     if (InProg
         && (nl = FindLbl (SymLst[(int) strpos (lblorder, 'L')], CmdEnt)))
     {
@@ -61,17 +65,39 @@ PrintLine (char *pfmt, struct printbuf *pb)
         UpString (pb->mnem);
         /*UpString(pb->operand); */
     }
+    
     PrintFormatted (pfmt, pb);
 
     if (WrtSrc)
         fprintf (outpath, "%s %s %s\n", pb->lbnm, pb->mnem, pb->operand);
+}
 
-    /* Now straighten/clean up - prepare for next line  */
+    /* Straighten/clean up - prepare for next line  */
+
+static void
+PrintCleanup (struct printbuf *pb)
+{
     PrevEnt = CmdEnt;
     memset (pb, 0, sizeof (struct printbuf));
     CmdLen = 0;
     ++PgLin;
     ++LinNum;
+}
+
+/* *********************************************** *
+ * PrintLine () - The generic, global printline    *
+ *    function.  It checks for unlisted boundaries *
+ *    prints the line, and then does cleanup       *
+ * *********************************************** */
+
+void
+PrintLine (char *pfmt, struct printbuf *pb)
+{
+    NonBoundsLbl ();            /*Check for non-boundary labels */
+
+    OutputLine (pfmt, pb);
+
+    PrintCleanup (pb);
 }
 
 void
@@ -166,9 +192,13 @@ NonBoundsLbl ()
             strcpy (bf->lbnm, nl->sname);
             strcpy (bf->mnem, "equ");
             if (x > CmdEnt)
+            {
                 sprintf (bf->operand, "*+%d", x - CmdEnt);
+            }
             else
+            {
                 sprintf (bf->operand, "*-%d", CmdEnt - x);
+            }
             printf (pseudcmd, LinNum++, nl->myaddr, bf->instr,
                     bf->lbnm, bf->mnem, bf->operand);
             ++PgLin;
@@ -184,14 +214,44 @@ NonBoundsLbl ()
  * ****************************** */
 
 void
-RsOrg ()
+RsOrg (void)
 {
     struct printbuf PBf,  *prtbf = &PBf;
 
     memset (prtbf, 0, sizeof (struct printbuf));
     strcpy (prtbf->mnem, "org");
-    sprintf (prtbf->operand, "%04x", ModLoad);
+    sprintf (prtbf->operand, "$%04x", ModLoad);
+
+    /* The following block prints out the line */
+    BlankLine ();
+    OutputLine (realcmd, prtbf);
+
+    /* Call NonBoundsLbl() after OutputLine to try to get any unlisted
+     * labels listed with the correct Pc offsets */
+
+    NonBoundsLbl ();
+    PrintCleanup (prtbf);
+    BlankLine ();
+    
+    fseek (progpath, HdrLen, SEEK_SET);
+}
+
+/* *************************************** *
+ * RsEnd() - Print end statement for RSDos *
+ * *************************************** */
+
+void
+RsEnd (void)
+{
+    struct printbuf PBf,
+                    *prtbf = &PBf;
+
+    memset (prtbf, 0, sizeof (struct printbuf));
+    strcpy (prtbf->mnem, "end");
+    sprintf (prtbf->operand, "$%04x", ModExe);
+    BlankLine ();
     PrintLine (realcmd, prtbf);
+    BlankLine ();
 }
 
 /* ************************************** *

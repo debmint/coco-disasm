@@ -107,13 +107,13 @@ PBFcat (char *dst, char *fmt, unsigned char *src, int sz)
     strcat (dst, buf);
 }
 
-/* zalloc()  - mallocs memory and if successful, nulls out everything */
+#ifndef HAVE_STPCPY
+    char *
+    stpcpy (char *dest, char *src)
+    {
+        char *str;
 
-/*void *zalloc(size_t size)
-{
-	void *myadr;
-
-	if( (myadr = malloc(size)) )
-		memset(myadr,0,size);
-	return myadr;
-}*/
+        str = strcpy (dest, src);
+        return (str += strlen(str));
+    }
+#endif

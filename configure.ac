@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(cocodis, 0.1)
+AC_INIT(cocodis, 0.3)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([g09dis/dasmedit.c])
 AC_CONFIG_HEADER([config.h])
@@ -14,6 +14,7 @@ AC_PROG_CC
 
 # Checks for header files.
 AC_HEADER_STDC
+dnl AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
 AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -25,20 +26,33 @@ AC_STRUCT_TM
 AC_FUNC_MALLOC
 AC_FUNC_STAT
 
-AC_CHECK_FUNCS([memset strcasecmp strchr strncasecmp strstr])
+AC_CHECK_FUNCS([memset strcasecmp strchr strdup stpcpy strncasecmp strstr])
 
 # Establish pkg-config paths
-PKG_CHECK_MODULES(pkgcfg, gtk+-2.0)
+AC_ARG_WITH([g09dis],
+               [AS_HELP_STRING([--with-g09dis],
+	                       [include g09dis (requires pkg-config) (default=no)])],
+	       [case "${withval}" in
+	         yes) compile_g09dis=true
+	              PKG_CHECK_MODULES(pkgcfg, gtk+-2.0);;
+		 no)  compile_g09dis=false;;
+		 *) AC_MSG_ERROR(bad value ${withval} for --with-g09dis) ;;
+	       [esac]],[compile_g09dis=false])
+AM_CONDITIONAL(WITHG09DIS, test x$compile_g09dis = xtrue)
+
+AC_SUBST(compile_g09dis)
 
 AC_CANONICAL_HOST
 case $host_os in
     *mingw32*)
-        CFLAGS="$CFLAGS -mms-bitfields -mno-cygwin"
+        winflags="-mms-bitfields -mno-cygwin"
     ;;
     *cygwin)
-        CFLAGS="$CFLAGS -mms-bitfields"
+        winflags="-mms-bitfields"
    ;;
 esac
+
+AC_SUBST(winflags)
 
 AC_CONFIG_FILES([Makefile
                  g09dis/Makefile

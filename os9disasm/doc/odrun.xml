@@ -1,542 +1,773 @@
-<chapter>
- <title>Invoking and Running &odis;</title>
- <section>
-  <title>Invoking &odis;</title>
-  <para>
-   &odis; is invoked by issuing the command in the following format: 
-   <screen><command>
-    os9disasm &lt;options&gt; [module-name] &lt;options&gt;
-   </command></screen>
-  </para>
-  <section>
-   <title>Options Used by &odis;</title>
-    <para>&odis; uses the following options. Some of these options will be more
-     fully explained later.  The options cannot be grouped, and must be
-     preceded by a minus sign (-).
+<chapter><title>Invoking and Running &odis;</title>
+  <section><title>Invoking &odis;</title>
+    <para>
+      &odis; is invoked by issuing the command in the following format: 
+      <screen><command>
+      os9disasm &lt;options&gt; [module-name] &lt;options&gt;
+      </command></screen>
     </para>
-   <informaltable frame="none">
-    <tgroup cols="2">
-     <tbody>
-      <row>
-       <entry><command>c[=]&lt;command-file&gt;</command></entry>
-       <entry>Use &lt;command-file&gt; for disassembly commands.  This is
-        the only option that cannot be specified in the command file (which
-        would be itself).
-       </entry>
-      </row>
-      <row>
-       <entry><command>s[=]&lt;label-file&gt;</command></entry>
-       <entry>Use &lt;label-file&gt; for label assignments</entry>
-      </row>
-      <row>
-       <entry><command>o[=]&lt;asm-source-filename&gt;</command></entry>
-       <entry>Output assembly source code to filename (off by default)</entry>
-      </row>
-      <row>
-       <entry><command>ls</command></entry>
-       <entry>Generate short (6-char) labels (Default is 8 chars)</entry>
-      </row>
-      <row>
-       <entry><command>u</command></entry>
-       <entry>Fold output to upper-case</entry>
-      </row>
-      <row>
-       <entry><command>pw[=]&lt;pagewidth&gt;</command></entry>
-       <entry>Set page width for listing output (Default=80)</entry>
-      </row>
-      <row>
-       <entry><command>pd[=]&lt;pagedepth&gt;</command></entry>
-       <entry>Set page deptth for listing output (Default=80)</entry>
-      </row>
-      <row>
-       <entry><command>d</command></entry>
-       <entry>Define path to defs.  This is the directory under which the
-         default label files are found.  The default is
-         <filename>$HOME/coco/defs</filename>
-       </entry>
-      </row>
-      <row>
-        <entry><command>3</command></entry>
-        <entry>Disassemble for 6309 CPU.  By default, &odis; assumes 6809
-          code and ignores 6309 mnemonics, usually generating 
-          <command>fcb</command>'s for these commands.
-        </entry>
-      </row>
-      <row>
-       <entry><command>?</command></entry>
-       <entry>Print a brief help screen.</entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
-    <para>Most of the above command options are self-explanatory. Briefly, you
-     can (and ought to) use a single <filename>command file</filename>. This
-     file provides all the disassembly details. It defines the class by which a
-     label is defined at a given location, it defines data (non-code) regions
-     in the program, and also can specify command-line options whereby you are
-     not required to insert them on the command line each time you run &odis;
-     on that particular program.</para>
-    <para>You can use one or more <filename>label files</filename> (up to 16)
-     where you can specify the name of labels generated during the disassembly.
-     There are some label files used by default, where some standard labels are
-     defined. The default label files used are dependent upon what OS the
-     module was designed for.</para>
+    <section><title>Output from &odis; - what goes where</title>
+      <para>To be clear on the output from &odis; and where everything
+        goes, a note about the difference between the formatted listing
+        and the assembly source may be in order.
+      </para>
+      <formalpara><title>The formatted listing</title>
+        <para>The formatted listing - something like you'd get with the
+          <command>l</command> option with most assemblers, goes to
+          the standard output path.  If you invoke &odis; with no
+          redirection ( "> something"), the output will go to the screen,
+          or wherever normal output would go.  This holds true if the
+          <command>-g</command> option is invoked.  The output for this
+          goes to the same place as the regular listing would go.
+        </para>
+      </formalpara>
+      <formalpara><title>The assembly source file</title>
+        <para>The assembly source file, the one that would be used to
+          generate the binary, is not produced unless the <command>o
+          </command>option is used.  This is because normally, several
+          invocations of &odis; will probably be called before there will
+          be any interest in the source file.
+        </para>
+        <para>Of course, at any time when you become curious if the source
+          will assemble identically to the original binary, one can generate
+          a source file at any time.  In reality, the source file <emphasis>
+          should</emphasis> compile back identically at any time, but,
+          remember Murphy's law.
+        </para>
+      </formalpara>
+    </section>
+    <section><title>Options Used by &odis;</title>
+      <para>&odis; uses the following options. Some of these options will
+        be more fully explained later.  The options cannot be grouped, and must
+        be preceded by a minus sign (-).
+      </para>
+      <informaltable frame="none">
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry><command>c[=]&lt;command-file&gt;</command></entry>
+              <entry>Use &lt;command-file&gt; for disassembly commands.  This
+                is the only option that cannot be specified in the command file
+                (which would be itself).
+              </entry>
+            </row>
+            <row>
+              <entry><command>s[=]&lt;label-file&gt;</command></entry>
+              <entry>Use &lt;label-file&gt; for label assignments</entry>
+            </row>
+            <row>
+              <entry><command>o[=]&lt;asm-source-filename&gt;</command></entry>
+              <entry>Output assembly source code to filename (off by
+                default)
+              </entry>
+            </row>
+            <row>
+              <entry><command>ls</command></entry>
+              <entry>Generate short (6-char) labels (Default is 8 chars)</entry>
+            </row>
+            <row>
+              <entry><command>u</command></entry>
+              <entry>Fold output to upper-case</entry>
+            </row>
+            <row>
+              <entry><command>pw[=]&lt;pagewidth&gt;</command></entry>
+              <entry>Set page width for listing output (Default=80)</entry>
+            </row>
+            <row>
+              <entry><command>pd[=]&lt;pagedepth&gt;</command></entry>
+              <entry>Set page deptth for listing output (Default=80)</entry>
+            </row>
+            <row>
+              <entry><command>d</command></entry>
+              <entry>Define path to defs.  This is the directory under which the
+                default label files are found.  The default is
+                <filename>$HOME/coco/defs</filename>
+              </entry>
+            </row>
+            <row>
+              <entry><command>x[=]&lt;OS&gt;</command></entry>
+              <entry>Program is for &lt;OS&gt;.  By default, &odis; assumes
+                the file to be an OS9 Module.  Currently the only option is
+                "C" (Coco RSDOS).
+              </entry>
+            </row>
+            <row>
+              <entry><command>g</command></entry>
+              <entry>Output <command>Listing</command> using a <command>tab
+                </command> rather than spaces to separate fields.  This is not
+                an ideal mode for printouts. See <xref linkend="gmode"/>
+                for further details.
+              </entry>
+            </row>
+            <row>
+              <entry><command>3</command></entry>
+              <entry>Disassemble for 6309 CPU.  By default, &odis; assumes 6809
+                code and ignores 6309 mnemonics, usually generating 
+                <command>fcb</command>'s for these commands.
+              </entry>
+            </row>
+            <row>
+             <entry><command>?</command></entry>
+             <entry>Print a brief help screen.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>Most of the above command options are self-explanatory. Briefly,
+        you can (and ought to) use a single <filename>command file</filename>.
+        This file provides all the disassembly details. It defines the class by
+        which a label is defined at a given location, it defines data
+        (non-code) regions in the program, and also can specify command-line
+        options whereby you are not required to insert them on the command line
+        each time you run &odis; on that particular program.
+      </para>
+      <para>You can use one or more <filename>label files</filename> (up to 16)
+        where you can specify the name of labels generated during the
+        disassembly.  There are some label files used by default, where some
+        standard labels are defined. The default label files used are dependent
+        upon what OS the module was designed for.
+      </para>
+    </section>
+    <section id="gmode"><title>Option "g" not good for general printouts</title>
+      <para>
+        It should be noted that the option <literal>-g</literal> is not
+        really ideal for general printouts.  It uses tabs and there are
+        disadvantages for this.
+        <itemizedlist>
+          <listitem>Tabs are not uniform between all systems.</listitem>
+          <listitem>A field where the element is longer than the tab will cause
+            the columns to not align properly.</listitem>
+        </itemizedlist>
+      </para>
+      <para>The real purpose for this option is to output a listing that
+        can be interpreted by <literal>g09dis</literal>.  It was decided that
+        <literal>g09dis</literal> would use tabs to be the field delimiter
+        rather than trying to keep up with column widths in the listing
+        printout.  Therefore, <literal>g09dis</literal> <emphasis>
+        must</emphasis> use this specially formatted file.  It cannot even load
+        a standard space-formatted listing.
+      </para>
+      <para><literal>G09dis</literal> can load files in one of two ways,
+        either by running &odis; separately with the <literal>-g</literal>
+        option and loading that file, or by generating the file directly
+        from within <literal>g09dis</literal> itself.
+      </para>
+    </section>
   </section>
- </section>
- <section>
-  <title>The command file</title>
-  <para>If you simply issue the command <command>os9disasm
-  &lt;programfile&gt;</command> on a program file, the resultant code
-    generated <emphasis>should</emphasis> assemble back into an identical
-    module or program file as that from which it was disassembled. However, in
-    this form, the source might not be very intelligible in places. Without
-    some direction, &odis; blindly disassembles all byte sequences as machine
-    code.  Most programs have non-code areas - string data, lookup tables, and
-    other data - which, if parsed as machine code, produces nothing but
-    gibberish from an assembly perspective. Often the data being disassembled
-    in this way will not work out to end at the actual end of the data area,
-    and genuine machine code which follows will be obliterated, also. This is
-    where the <filename>command file</filename> comes into play.</para>
-  <section>
-   <title>Data bounds</title>
-    <para>Data areas can be specified in different ways. These areas are, as
-     previously mentioned, areas of data storage which are not assembler code,
-     but rather are constant values that the program might use. These can be
-     string constants, lookup tables, or simply numeric constants. These blocks
-     of data code can be specified in one of five ways</para>
-   <orderedlist>
-    <listitem>
-      <para><filename>ASCII</filename> data will generate
-      <command>FCB</command>, <command>FCC</command>, or <command>FCS</command>
-      (if appliable) statements with strings automatically delimited, and ASCII
-      control characters delimited by their standard names.</para>
-    </listitem>
-    <listitem>
-     <para><filename>Word</filename> data areas will produce
-      <command>FDB</command>'s of hex data double bytes.
+  <section><title>The command file</title>
+     <para>If you simply issue the command <computeroutput>os9disasm
+       &lt;programfile&gt;</computeroutput> on a program file, the resultant
+       code generated <emphasis>should</emphasis> assemble back into an
+       identical module or program file as that from which it was disassembled.
      </para>
-    </listitem>
-    <listitem>
-     <para><filename>Byte</filename> data areas will produce
-      <command>FCB</command>'s of hex data byte.
+     <para>However, in this form, the source might not be very intelligible in
+       places. Without some direction, &odis; blindly disassembles all byte
+       sequences as machine code.  Most programs have non-code areas - string
+       data, lookup tables, and other data - which, if parsed as machine code,
+       produces nothing but gibberish from an assembly perspective. Often the
+       data being disassembled in this way will not work out to end at the
+       actual end of the data area, and genuine machine code which follows will
+       be obliterated, also. This is where the <filename>command
+       file</filename> comes into play.
      </para>
-    </listitem>
-    <listitem>
-      <para><filename>Long label</filename> data areas will produce
-      <command>FDB</command>'s of label references to the program. Many
-       programs have data tables in them which are used for indirect addressing
-       or for performing multi-direction jumps. Such tables are best
-       disassembled as a seried of labels.</para>
-    </listitem>
-    <listitem>
-     <para><filename>Short label</filename> data areas are the 8-bit
-      equivalent of <filename>Long labels</filename>.  These will produce
-      <command>FCB</command>'s of labels.
-     </para>
-    </listitem>
-   </orderedlist>
-   <para>The generation of labels in operands can be completely controlled.
-    Whenever a label might conceivably be generated in an instruction, you can
-    specify whether a data value or a label should be used. Further, it is
-    possible to specify labels in several label classes. With this ability,
-    the address $10 in the direct page instruction <command>LDA
-    &lt;$10</command> can be given a different label than that given the
-    address $10 in the extended instruction <command>LDB &gt;$0010</command>.
-   </para>
-   <para>All calls to the OS/9 operating system via the
-    '<command>OS9</command>' opcode can be automatically disassembled using
-    the standard system names. This automatic generation of
-    '<command>OS9</command>' calls can be turned off if desired.
-   </para>
+     <section id="databounds">
+       <title>Data bounds</title>
+         <para>Data areas can be specified in different ways. These areas are,
+           as previously mentioned, areas of data storage which are not
+           assembler code, but rather are constant values that the program
+           might use. These can be string constants, lookup tables, or simply
+           numeric constants. These blocks of data code can be specified in one
+           of five ways
+         </para>
+       <variablelist>
+         <varlistentry><term><filename>A</filename></term>
+           <listitem>
+             <formalpara><title>ASCII data</title>
+               <para>
+                 will generate <command>FCB</command>, <command>FCC</command>,
+                 or <command>FCS</command> (if appliable) statements with
+                 strings automatically delimited, and ASCII control characters
+                 delimited by their standard names.
+               </para>
+               <para>In OS9 mode, <command>fcs</command> statements will be
+                 generated if a character with the MSB set is encountered.
+               </para>
+             </formalpara>
+           </listitem>
+         </varlistentry>
+         <varlistentry><term>W</term>
+           <listitem>
+             <formalpara><title>Word data</title>
+               <para>areas will produce<computeroutput>FDB</computeroutput>'s
+                 of hex data double bytes.  This is equivalent to
+                 <command>Long</command> labels of label class
+                 <computeroutput>&amp;</computeroutput>.
+               </para>
+             </formalpara>
+           </listitem>
+         </varlistentry>
+         <varlistentry><term>B</term>
+           <listitem>
+             <formalpara><title>Byte data</title>
+               <para>areas will produce <computeroutput>FCB</computeroutput>'s
+                 of hex data byte.  This is equivalent to <command>Short
+                 </command> labels of label class
+                 <computeroutput>&amp;</computeroutput>.
+               </para>
+            </formalpara>
+           </listitem>
+         </varlistentry>
+         <varlistentry><term>L</term>
+           <listitem>
+             <formalpara><title>Long Label Data</title>
+               <para>data areas will produce<computeroutput>FDB
+                 </computeroutput>'s of label references to the program. Many
+                 programs have data tables in them which are used for indirect
+                 addressing or for performing multi-direction jumps. Such
+                 tables are best disassembled as a series of labels.
+               </para>
+             </formalpara>
+           </listitem>
+         </varlistentry>
+         <varlistentry><term>S</term>
+           <listitem>
+             <formalpara><title>Short label</title>
+               <para>data areas are the 8-bit equivalent of <filename>Long
+                 labels</filename>.  These will produce <computeroutput>FCB
+                 </computeroutput>'s with labels as the operand.
+               </para>
+             </formalpara>
+           </listitem>
+         </varlistentry>
+       </variablelist>
+       <para>These Data bounds are further described in <xref
+         linkend="datadescr"/>
+       </para>
+       <formalpara>
+         <title>The generation of labels in operands can be completely
+           controlled.
+         </title>
+         <para> Whenever a label might conceivably be generated in an
+           instruction, you can specify whether a data value or a label should
+           be used.  Further, it is possible to specify labels in several label
+           classes.
+         </para>
+         <para>With this ability, the address $10 in the direct page instruction
+           <computeroutput>LDA &lt;$10</computeroutput> can be given a different
+           label than that given the address $10 in the extended instruction
+           <computeroutput>LDB &gt;$0010</computeroutput>.
+         </para>
+       </formalpara>
+       <para>All calls to the OS/9 operating system via the
+        '<command>OS9</command>' opcode can be automatically disassembled using
+        the standard system names. This automatic generation of
+        '<command>OS9</command>' calls can be turned off if desired.
+       </para>
+     </section>
   </section>
- </section>
- <section>
-  <title>CONCEPTS</title>
-  <para>Before discussing the actual commands used to instruct &odis; to
-    disassemble an object file, it is perhaps wise to study the various ways in
-    which a file can be disassembled. In particular, it is important that the
-    concepts of label classes, standard labels, offsets, and data areas be
-    understood. </para>
   <section>
-   <title>Label Class</title>
-    <para>One of the more important jobs in disassembling a program is the
-     proper generation of labels. This is the creation of a label name from an
-     address, usually by preceding the address with a letter (e.g. address
-     <command>$1234</command> becomes <command>L1234</command>). (Note - In
-     this manual, 'label' refers to an assembler symbol, that is, a name
-     beginning with an alphabetic character. This is not the same as the
-     standard usage of the word in conjunction with assemblers.) At its
-     simplest, it would appear that a disassembler should generate a label
-     whenever a memory reference is implied by an instruction, as in the
-     instruction <command>LDA L1234</command>. A little study, though, quickly
-     shows how much more complicated the situation really is. for instance, in
-     an OS/9 program, the three instructions <command>LDA &lt;$10</command>
-     (direct), <command>LDA &gt;$0010</command> (extended), and <command>BRA
-     $0010</command> (relative), all seem to refer to the same address
-     <command>$0010</command>, but in fact refer to three different memory
-     locations. The direct reference is to an address in the module data area,
-     the extended reference is to an absolute address in page 0 of memory, and
-     the relative reference is to an address actually within the module.
-     Obviously, a disassembler assigning the same label (e.g.
-     <command>L0010</command>) to all three instructions is quite limited in
-     usefulness. In order to allow a different label to be assigned in such
-     cases, &odis; uses the concept of label classes. Basically, a label class
-     is simply the letter used as the first character in a generated label
-     name.  Thus, if direct references are assigned to the label class
-     <command>D</command>, extended references to class <command>X</command>,
-     and program (relative) references to class <command>L</command>, then the
-     three instructions above could be disassembled as <command>LDA
-     X0010</command>, and <command>BRA L0010</command>. &odis; expands the use
-     of label classes beyond the 26 basic classes <command>A</command> to
-     <command>Z</command> to include the generation of various forms of data
-     values or standard system defined names. There are 5 additional label
-     classes, denoted by the special characters <command>'$', '&amp;', '@',
-     '^',</command> and '<command>!</command>'. With these forms, operands may
-     be disassembled as hexadecimal or decimal data, or as ASCII characters, or
-     as the standard names used by the OS/9 operating system in the OS9 opcode:
+    <title>CONCEPTS</title>
+    <para>Before discussing the actual commands used to instruct &odis; to
+      disassemble an object file, it is perhaps wise to study the various ways
+      in which a file can be disassembled. In particular, it is important that
+      the concepts of label classes, standard labels, offsets, and data areas
+      be understood.
     </para>
-   <informaltable frame="none">
-    <tgroup cols="2"><colspec colwidth='1.0in'/>
-     <tbody valign="top">
-      <row>
-       <entry><command>$</command></entry>
-       <entry><emphasis>Generates a hexadeciamal constant </emphasis>
-         &odis; will generate a data value consisting of a dollar sign,
-         '$', followed by either a four digit or a two digit hexadecimal
-         number.The two digit form will be used, when possible, in operands
-         which are one byte long (for instance, <command>LDA #$12)</command>.
-        </entry>
-      </row>
-      <row>
-       <entry><command>&amp;</command></entry>
-       <entry><emphasis>Generates a decimal constant.</emphasis>
-         &odis; will generate a signed decimal number. Only full 16 bit values
-         with the highest bit set will be generated as negative numbers
-         (negative indexed offsets will be sign extended).
-        </entry>
-      </row>
-      <row>
-       <entry><command>@</command></entry>
-       <entry><emphasis>Generates a decimal or hex constant </emphasis>
-         If the value is from 0 to 9, then &odis; will generate a decimal
-         constant, otherwise, it will generate a hexadecimal constant.
-        </entry>
-      </row>
-      <row>
-       <entry><command>^</command></entry>
-       <entry><emphasis>Generates an ASCII constant. </emphasis>
-        The particular form which &odis; will generate depends upon
-         the value of the constant. For a one byte value from $00 to $20, or
-         $7F, &odis; will generate the standard name of the control character
-         (<command>SPACE</command> for $20, <command>DEL</command> for $7f).
-         For a one byte value from $21 to $7E, &odis; will generate an ASCII
-         constant consisting of an apostrophe (') followed by the ASCII graphic
-         for that particular code value. For a one byte value from $80 to $FF,
-         &odis; will generate the proper form for the value without the high bit
-         set, appending an offset of +$80 (e.g.  disassemble <command>LDA
-         #$C1</command> as <command>LDA #'A+$80</command>). For two byte values
-         to be disassembled as an ASCII constant, &odis; will break the value
-         apart into the two separate bytes, and generate each as a one byte
-         ASCII constant, taking into account the possible presence of a parity
-         bit on each byte. As an option, if both bytes are the codes for ASCII
-         graphic characters, &odis; can generate a double ASCII constant
-         consisting of a double quote (") followed by the two characters. Some
-         examples: <command>LDD #$8D3F</command> is disassembled as
-         <command>LDD #CR*256+'?+$8000</command>, <command>LDD #$4142</command>
-         is disassembled as <command>LDD #"AB</command> (double ASCII enabled)
-         or <command>LDD #'A*256+'B</command> (double ASCII disabled).
-        </entry>
-      </row>
-      <row>
-       <entry><command>!</command></entry>
-       <entry><emphasis>Generates a system function name. </emphasis>
-        When disassembling OS/9 code, &odis; will automatically use a
-         standard name in the OS9 opcode. Thus, <command>SWI2</command>,
-         <command>FCB $06</command> is disassembled as <command>OS9
-         F$Exit</command>. With the '<command>!</command>' label class, odis
-         will generate this standard system name (e.g.
-         <command>F$Exit</command> for $06) if such a standard name exists. If
-         no standard system function name exists, then &odis; will generate a
-         hexadecimal constant for the value.
-        </entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
-   <para>As a further example of the use of label classes, consider the
-     instruction <command>LDA #$30</command>. Under label classes
-     <filename>'A', '$', '&amp;', '@'</filename>, and '<filename>!</filename>',
-     the value $30 would be disassembled as <command>A0030</command>,
-     <command>$30</command>, <command>48</command>, <command>$30</command>,
-     <command>'0</command>, and <command>F$All64</command> respectively. Given
-     these 31 different label classes, you must have some way to specify which
-     instructions are to use which label classes. &odis; accomplishes this by
-     assigning label classes based on the addressing mode of the instructions
-     in which they are to be used. For instance, in the default OS/9
-     configuration, all direct page instructions are disassembled using label
-     class <filename>D</filename>, and all extended instructions are
-     disassembled using label class <filename>X</filename>. &odis; recognizes 13
-     different addressing modes which have an operand consisting of a value,
-     and therefore require a label class assignment to specify the proper form
-     o label or data value to generate. These 13 addressing modes are (with
-     examples of each):
-    </para>
-   <informaltable>
-    <tgroup cols="2">
-     <tbody>
-      <row>
-       <entry>1 byte immediate</entry>
-       <entry><command>LDA #$12</command>; <command>ORCC #$FE</command></entry>
-      </row>
-      <row>
-       <entry>D immediate</entry>
-       <entry><command>ADDD #$1234</command></entry>
-      </row>
-      <row>
-       <entry>X immediate</entry>
-       <entry><command>LDX #$0000</command></entry>
-      </row>
-      <row>
-       <entry>Y immediate</entry>
-       <entry><command>CMPY #$A5A5</command></entry>
-      </row>
-      <row>
-       <entry>U immediate</entry>
-       <entry><command>CMPU #$5678</command></entry>
-      </row>
-      <row>
-       <entry>S immediate</entry>
-       <entry><command>LDS #$C000</command></entry>
-      </row>
-      <row>
-       <entry>X indexed</entry>
-       <entry><command>STA 5,X; CLR ,X</command></entry>
-      </row>
-      <row>
-       <entry>Y indexed</entry>
-       <entry><command>LDB $1234,Y</command></entry>
-      </row>
-      <row>
-       <entry>U indexed</entry>
-       <entry><command>CMPD -52,U</command></entry>
-      </row>
-      <row>
-       <entry>S indexed</entry>
-       <entry><command>LEAS -20,S</command></entry>
-      </row>
-      <row>
-       <entry>direct page</entry>
-       <entry><command>STX $20</command></entry>
-      </row>
-      <row>
-       <entry>extended</entry>
-       <entry><command>LDY $1234</command>; 
-         <command>JMP [$0030]</command></entry>
-      </row>
-      <row>
-       <entry>relative</entry>
-       <entry><command>LBRA $1000</command>; 
-         <command>LEAX $0FF0,PCR</command></entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </informaltable>
-   <para>Note that the relative addressing mode, for purposes of label
-     generation, includes both branch instructions (<command>BRA</command>,
-     <command>LBSR</command>, etc.) and <command>PC</command> relative
-     references. both of these forms usually refer to code within a single
-     program or module, and are thus grouped together. Note further the
-     example, under the <command>X</command> indexed addressing mode, of a zero
-     offset indexed instruction. Normally, no offset should be printed in such
-     an instruction.  There are occasions, though, in which you might want a
-     named offset, which is assembled to the zero offset form. For instance,
-     suppose an index register points to the start of a data structure, each
-     part of which should be given a label name. In that case, &odis; should
-     generate a label name for a reference to the zero entry in the structure.
-     To take care of this problem, &odis; will automatically generate a label
-     name for zero offset indexing if the label class for the instruction is
-     one which generates a label ('A' to 'Z', '^', '!'), and will generate no
-     offset if the label class is one which generates a data value ('$',
-     '&amp;', '@').  The assignment of label classes to addressing modes is
-     allowed by &odis; in three forms. First, the assignment can be made
-     globally, so that all instructions with a particular addressing mode
-     encountered in the object code are disassembled with one label class.
-     Second, the assignment can be made for a range of program addresses. This
-     is especially useful for indexed addressing modes. Often, an index
-     register will point to a particular data structure only within a certain
-     subroutines in a program, and the assignment of a label class for that
-     structure should only be made for those subroutines. Finally, the
-     assignment can be made for a single instruction in the object code. This
-     will often be used with the 1 byte immediate addressing mode, in which a
-     single instruction refers to an ASCII value or some mask value (as in the
-     <command>ORCC</command> instruction). The actual method used to specify
-     label classes by addressing modes is taken up under the discussion of the
-     command file later in this manual.
-    </para>
+    <section>
+      <title>Label Class</title>
+        <para>One of the more important jobs in disassembling a program is the
+          proper generation of labels. This is the creation of a label name
+          from an address, usually by preceding the address with a letter (e.g.
+          address <command>$1234</command> becomes
+          <computeroutput>L1234</computeroutput>).
+        </para>
+        <note><title>Our definition of a Label</title>
+          <para>In this manual, 'label' refers to an assembler symbol,
+            that is, a name beginning with an alphabetic character. This is not
+            the same as the standard usage of the word in conjunction with
+            assemblers.)
+          </para>
+        </note>
+        <para>At its simplest, it would appear that a disassembler should
+          generate a label whenever a memory reference is implied by an
+          instruction, as in the instruction <computeroutput>LDA
+          L1234</computeroutput>. A little study, though, quickly shows how
+          much more complicated the situation really is.
+        </para>
+        <para>For instance, in an OS/9 program, consider the three
+          instructions
+        </para>
+        <programlisting>
+          LDA &lt;$10   (direct)
+          LDA &gt;$0010  (extended)
+          BRA $0010      (relative),
+        </programlisting>
+        <para>All seem to refer to the same address <command>$0010</command>,
+          but in fact refer to three different memory locations. The direct
+          reference is to an address in the module data area, the extended
+          reference is to an absolute address in page 0 of memory, and the
+          relative reference is to an address actually within the module.
+          Obviously, a disassembler assigning the same label (e.g.
+          <computeroutput>L0010</computeroutput>) to all three instructions is
+          quite limited in usefulness.
+        </para>
+        <para>In order to allow a different label to be assigned in such
+          cases, &odis; uses the concept of <command>label classes</command>.
+          Basically, a label class is simply the letter used as the first
+          character in a generated label name.  Thus, if <command>direct
+          </command>references are assigned to the label class
+          <computeroutput>D</computeroutput>, <command>extended</command>
+          references to class <computeroutput>X</computeroutput>, and
+          <command>program</command> (relative) references to class
+          <computeroutput>L</computeroutput>, then the three instructions above
+          could be disassembled as <computeroutput>LDA X0010</computeroutput>,
+          and <computeroutput>BRA L0010</computeroutput>. &odis; expands the
+          use of label classes beyond the 26 basic classes
+          <computeroutput>A</computeroutput> to
+          <computeroutput>Z</computeroutput> to include the generation of
+          various forms of data values or standard system defined names. There
+          are 5 additional label classes, denoted by the special characters
+          <command>'$', '&amp;', '@', '^',</command>, '<command>!</command>',
+          and '<command>%</command>. With these forms, operands may be
+          disassembled as hexadecimal or decimal data, or as ASCII characters,
+          or as the standard names, used by the OS/9 operating system in the
+          OS9 opcode, or binary:
+        </para>
+      <informaltable frame="none">
+       <tgroup cols="2"><colspec colwidth='1.0in'/>
+        <tbody valign="top">
+         <row>
+          <entry><command>$</command></entry>
+          <entry><emphasis>Generates a hexadeciamal constant </emphasis>
+            &odis; will generate a data value consisting of a dollar sign,
+            '$', followed by either a four digit or a two digit hexadecimal
+            number.The two digit form will be used, when possible, in operands
+            which are one byte long (for instance, <computeroutput>
+            LDA #$12)</computeroutput>.
+           </entry>
+         </row>
+         <row>
+          <entry><command>&amp;</command></entry>
+          <entry><emphasis>Generates a decimal constant.</emphasis>
+            &odis; will generate a signed decimal number. Only full 16 bit
+            values with the highest bit set will be generated as negative
+            numbers (negative indexed offsets will be sign extended).
+           </entry>
+         </row>
+         <row>
+          <entry><command>@</command></entry>
+          <entry><emphasis>Generates a decimal or hex constant </emphasis>
+             If the value is from 0 to 9, then &odis; will generate a decimal
+             constant, otherwise, it will generate a hexadecimal constant.
+           </entry>
+         </row>
+         <row>
+           <entry><command>^</command></entry>
+           <entry><emphasis>Generates an ASCII constant. </emphasis>
+             The particular form which &odis; will generate depends upon the
+             value of the constant. For a one byte value from $00 to $20, or
+             $7F, &odis; will generate the standard name of the control
+             character (<computeroutput>SPACE</computeroutput> for $20,
+             <computeroutput>DEL</computeroutput> for $7f).  For a one byte
+             value from $21 to $7E, &odis; will generate an ASCII constant
+             consisting of an apostrophe (') followed by the ASCII graphic for
+             that particular code value. For a one byte value from $80 to $FF,
+             &odis; will generate the proper form for the value without the
+             high bit set, appending an offset of +$80 (e.g.  disassemble
+             <computeroutput>LDA #$C1</computeroutput> as <computeroutput>LDA
+             #'A+$80</computeroutput>). For two byte values to be disassembled
+             as an ASCII constant, &odis; will break the value apart into the
+             two separate bytes, and generate each as a one byte ASCII
+             constant, taking into account the possible presence of a parity
+             bit on each byte. As an option, if both bytes are the codes for
+             ASCII graphic characters, &odis; can generate a double ASCII
+             constant consisting of a double quote (") followed by the two
+             characters. Some examples: <computeroutput>LDD
+             #$8D3F</computeroutput> is disassembled as <computeroutput>LDD
+             #CR*256+'?+$8000</computeroutput>, <computeroutput>LDD
+             #$4142</computeroutput> is disassembled as <computeroutput>LDD
+             #"AB</computeroutput> (double ASCII enabled) or
+             <computeroutput>LDD #'A*256+'B</computeroutput> (double ASCII
+             disabled).
+           </entry>
+         </row>
+         <row>
+          <entry><command>!</command></entry>
+          <entry><emphasis>Generates a system function name. </emphasis>
+            When disassembling OS/9 code, &odis; will automatically use a
+            standard name in the OS9 opcode. Thus, <command>SWI2</command>,
+            <command>FCB $06</command> is disassembled as <command>OS9
+            F$Exit</command>. With the '<command>!</command>' label class, odis
+            will generate this standard system name (e.g.
+            <command>F$Exit</command> for $06) if such a standard name exists.
+            If no standard system function name exists, then &odis; will
+            generate a hexadecimal constant for the value.
+           </entry>
+         </row>
+         <row>
+          <entry><command>%</command></entry>
+          <entry><emphasis>Generate a binary representation.</emphasis>  This
+            will generate a binary representation of the value of the operand.
+            For example,<programlisting>lda #$f3</programlisting> would generate
+            <programlisting>lda #%11110011</programlisting>  It works with
+            either 8-bit or 16-bit numbers.
+          </entry>
+         </row>
+        </tbody>
+       </tgroup>
+      </informaltable>
+      <para>As a further example of the use of label classes, consider the
+        instruction <computeroutput>LDA #$30</computeroutput>. Under label
+        classes <filename>'A', '$', '&amp;', '@'</filename>, and
+        '<filename>!</filename>', the value $30 would be disassembled as
+        <computeroutput>A0030</computeroutput>,
+        <computeroutput>$30</computeroutput>,
+        <computeroutput>48</computeroutput>,
+        <computeroutput>$30</computeroutput>,
+        <computeroutput>'0</computeroutput>, and
+        <computeroutput>F$All64</computeroutput> respectively.
+      </para>
+    </section>
+    <section id="lclassdefined"><title>Label Classes Defined</title>
+      <para>Given these 31 different label classes, you must have some way to
+        specify which instructions are to use which label classes. &odis;
+        accomplishes this by assigning label classes based on the addressing
+        mode of the instructions in which they are to be used.
+      </para>
+      <para>For instance, in the default OS/9 configuration
+        <itemizedlist>
+          <listitem>direct page instructions are disassembled using
+            label class <filename>D</filename></listitem>
+          <listitem>extended instructions are disassembled using label
+            class <filename>X</filename></listitem>
+        </itemizedlist>
+        &odis; recognizes 13 different addressing modes which have an
+        operand consisting of a value, and therefore require a label
+        class assignment to specify the proper form of label or data value to
+        generate.
+       </para>
+       <para>These 13 addressing modes are (with examples of each):
+       </para>
+       <informaltable>
+         <tgroup cols="2">
+           <tbody>
+             <row>
+               <entry>1 byte immediate</entry>
+               <entry><command>LDA #$12</command>; <command>ORCC #$FE</command>
+               </entry>
+             </row>
+             <row>
+               <entry>D immediate</entry>
+               <entry><command>ADDD #$1234</command></entry>
+             </row>
+             <row>
+               <entry>X immediate</entry>
+               <entry><command>LDX #$0000</command></entry>
+             </row>
+             <row>
+              <entry>Y immediate</entry>
+              <entry><command>CMPY #$A5A5</command></entry>
+             </row>
+             <row>
+              <entry>U immediate</entry>
+              <entry><command>CMPU #$5678</command></entry>
+             </row>
+             <row>
+              <entry>S immediate</entry>
+              <entry><command>LDS #$C000</command></entry>
+             </row>
+             <row>
+              <entry>X indexed</entry>
+              <entry><command>STA 5,X; CLR ,X</command></entry>
+             </row>
+             <row>
+              <entry>Y indexed</entry>
+              <entry><command>LDB $1234,Y</command></entry>
+             </row>
+             <row>
+              <entry>U indexed</entry>
+              <entry><command>CMPD -52,U</command></entry>
+             </row>
+             <row>
+              <entry>S indexed</entry>
+              <entry><command>LEAS -20,S</command></entry>
+             </row>
+             <row>
+              <entry>direct page</entry>
+              <entry><command>STX $20</command></entry>
+             </row>
+             <row>
+              <entry>extended</entry>
+              <entry><command>LDY $1234</command>; 
+                <command>JMP [$0030]</command></entry>
+             </row>
+             <row>
+              <entry>relative</entry>
+              <entry><command>LBRA $1000</command>; 
+                <command>LEAX $0FF0,PCR</command></entry>
+             </row>
+           </tbody>
+         </tgroup>
+       </informaltable>
+       <para>Note that the relative addressing mode, for purposes of label
+         generation, includes both branch instructions (<command>BRA</command>,
+         <command>LBSR</command>, etc.) and <command>PC</command> relative
+         references. both of these forms usually refer to code within a single
+         program or module, and are thus grouped together.
+       </para>
+       <para>Note further the example, under the <command>X</command> indexed
+         addressing mode, of a zero offset indexed instruction.  Normally, no
+         offset should be printed in such an instruction.
+       </para>
+       <para>There are occasions, though, in which you might want a named
+         offset, which is assembled to the zero offset form. For instance,
+         suppose an index register points to the start of a data structure,
+         each part of which should be given a label name. In that case, &odis;
+         should generate a label name for a reference to the zero entry in the
+         structure.  To take care of this problem, &odis; will automatically
+         generate a label name for zero offset indexing if the label class for
+         the instruction is one which generates a label ('A' to 'Z', '^', '!'),
+         and will generate no offset if the label class is one which generates
+         a data value ('$', '&amp;', '@').
+       </para>
+       <para>The assignment of label classes to addressing modes is
+         allowed by &odis; in three forms.
+         <orderedlist>
+           <listitem>The assignment can be made globally, so that all
+             instructions with a particular addressing mode encountered in the
+             object code are disassembled with one label class.
+           </listitem>
+           <listitem>The assignment can be made for a range of program
+             addresses. This is especially useful for indexed addressing
+             modes. Often, an index register will point to a particular data
+             structure only within a certain subroutines in a program, and
+             the assignment of a label class for that structure should only
+             be made for those subroutines.
+           </listitem>
+           <listitem>The assignment can be made for a single instruction in
+             the object code. This will often be used with the 1 byte
+             immediate addressing mode, in which a single instruction refers
+             to an ASCII value or some mask value (as in the <command>ORCC
+             </command> instruction). The actual method used to specify label
+             classes by addressing modes is taken up under the discussion of
+             the command file later in this manual.  See <xref
+             linkend="laddrmod"/>.
+           </listitem>
+         </orderedlist>
+       </para>
+    </section>
+    <section><title>Standard Labels</title>
+     <para>
+       As can be seen in the above section, &odis; can generate many labels
+       within a program. These labels, though, formed by appending a label
+       class letter to a four digit hexadecimal value, do not produce
+       particularly meaningful names. It is possible, of course, to edit the
+       output from &odis;, and globally change some default label name to
+       something more meaningful, but this can be difficult if the program is
+       very large, and is an error-prone process in any case.
+     </para>
+     <para>Instead, it is more useful to specify to &odis;, before the
+       disassembly, that all
+       references to a certain label are to be output using some standard
+       name.  This way, there is no need to do a later edit, and there is no
+       chance of
+       accidentally missing a reference to a label in the program.
+     </para>
+     <para>You have already encountered, in the previous section, this
+       substitution of standard names for labels. When the ASCII label class is
+       specified for a value or $20, for instance, the name
+       '<computeroutput>SPACE</computeroutput>' is generated. Also, the system
+       function name label class, '!', will generate standard names for certain
+       values, e.g.  F$Link for $00.
+     </para>
+     <section><title>Generating your own Label names</title>
+       <para>With the standard label abilities of &odis;, you can generate
+         your own standard names (in fact, it is possible to use your own
+         standard names for ASCII control characters of system functions).
+       </para>
+       <para>One use of standard labels is simply giving meaningful names to
+         references to program lines or data area variables.  For instance,
+         it is possible to take the <computeroutput>MOD</computeroutput>
+         statement at the start of an OS/9 module, which might, without
+         standard labels, look like
+       </para>
+       <para>
+        <programlisting>MOD L1000,L000D,$C1,$81,L0050,D0200</programlisting>
+       </para>
+       <para>and, by assigning standard labels, give it the much more
+        readable form
+       </para>
+       <para>
+        <programlisting>MOD LENGTH,NAMEPTR,$C1,$81,ENTRY,DATASIZE
+        </programlisting>
+       </para>
+       <para>
+         Another use of standard labels is to give useful names to such values
+         as bit masks or code values in immediate addressing mode instructions.
+       </para>
+       <para> By assigning the standard name <computeroutput>CARRY
+         </computeroutput> to the value $01, label class
+         <computeroutput>C</computeroutput>, and then assigning label class
+         <computeroutput>C</computeroutput> to a single 1 byte immediate
+         instruction <computeroutput>ORCC #1</computeroutput>, the instruction
+         would be disassembled as <computeroutput>ORCC #CARRY</computeroutput>,
+         obviously a much clearer form.
+       </para>
+       <para>As can be seen in the above examples, there are two things which
+         must be specified when giving a label a standard name. A standard
+         label has both a value and a label class.  Thus, in the
+         <computeroutput>MOD</computeroutput> statement, the name
+         <computeroutput>LENGTH</computeroutput> is assigned to the value $1000
+         and the label class <computeroutput>L</computeroutput>. The actual
+         specification of standard labels is detailed in the section on label
+         files - <xref linkend="labelfile"/>.
+       </para>
+     </section>
+    </section> 
+    <section id="offsets"><title>Offsets</title>
+      <para> 
+        Occasionally, when a routine searches through a data table, it will
+        start the search by loading an index register with an address which is
+        less than the address of the actual table. For instance, a search of a
+        table at address $1000 might start by loading <command>X</command> with
+        the address $0FFF. When this is disassembled, you want a label to be
+        generated for the value $1000 instead of the value $0FFF. To do this,
+        &odis; allows the use of offsets, so that an instruction may be
+        disassembled as, say <computeroutput>LEAX L1000-1,PCR</computeroutput>
+        instead of <computeroutput>LEAX L0FFF,PCR</computeroutput>.
+      </para>
+      <para>
+        There are times when a positive offset is also useful. Suppose a two
+        byte variable is declared within the data area of an OS/9 module. That
+        the variable is two bytes long might be obvious by the use of
+        <computeroutput>LDD</computeroutput> or
+        <computeroutput>STX</computeroutput> instructions in referring to it.
+        The program may, though, sometimes refer to only the second byte of the
+        variable. Rather than assigning a separate label to this second byte,
+        the program is much cleaner and clearer if the second byte is referred
+        to by the name given the first byte with an offset of 1, e.g.
+        <computeroutput>D0020+1</computeroutput> instead of
+        <computeroutput>D0021</computeroutput>.
+      </para>
+      <section><title>More complex offsets</title>
+        <para>While most offsets are one of these simple forms, a small offset
+          to be printed as plus or minus some decimal value, &odis; also
+          allows more complicated variations.
+        </para>
+        <para>When specifying an offset to be used in an instruction, &odis;
+          allows you to specify both the value
+          of the offset, whether it is to be added or subtracted, and the label
+          class to be assigned to the offset. As an example, take the
+          instruction <computeroutput>ORCC #$50</computeroutput>. Assign class
+          <command>C</command> standard names <command>FIRQM</command> to $40,
+          <command>IRQM</command> to $10, and assign class <command>C</command>
+          label generation for the instruction.  Finally, specify an offset of
+          <command>+$10</command> for the instruction, with class
+          <command>C</command> for the offset value. The resultant disassembled
+          instruction would be <computeroutput>ORCC
+          #FIRQM+IRQM</computeroutput>.
+        </para>
+        <note><para>That the label class of the operand value and that of the
+          offset need not be the same. Thus, it is possible to disassemble the
+          instruction <computeroutput>LDA #40</computeroutput> as
+          <computeroutput>LDA #'A-1</computeroutput> by specifying an operand
+          label class of <command>^</command> (ASCII), and a subtracted offset
+          of 1 with a label class of <command>&amp;</command> (decimal).</para>
+        </note>
+        <para>There is one further offset form which you can instruct &odis;
+          to use. This
+          is program counter offset. By using
+          <computeroutput>PC</computeroutput> offset, instructions can be
+          disassembled with the form <computeroutput>LEAX
+          L1000-*,Y</computeroutput>. A <command>PC</command> offset is always
+          subtracted from the operand, and may be mixed with a constant offset.
+          This is most useful in data areas (<xref linkend="dataaddr"/>).
+        </para>
+        <para>For instance, when using the OS/9 system calls <command>F$SSvc
+          </command>, a data table is
+          required which includes an entry giving the offset of a service
+          routine from the byte following the entry. This is best disassembled
+          as, say <computeroutput>FDB L1000-*-2</computeroutput>, which is
+          simply a long label data element, class <command>L</command>, with
+          <command>PC</command> offset and a decimal class negative offset of
+          2. The specification of offsets to be used in executable code is
+          explained in the section on the command file. This specification is
+          done as part of the assignment of label classes to addressing modes.
+          Offsetting is also possible within data areas, and is discussed in
+          the next section, as well as in <xref linkend="thecmdfile"/>.
+        </para>
+      </section>
+    </section>
+    <section id="datadescr"><title>Data Areas</title>
+      <para>Few programs to be disassembled consist entirely of executable
+        code.  Most programs will include some areas which are to be
+        disassembled as data.
+      </para>
+      <para>For instance, there may be ASCII strings or tables of bytes
+        within a program. &odis; gives you complete control over the
+        specification of data areas within the program.
+      </para>
+      <para>Five basic data area types lie at the heart of this control.
+        These types are also discussed at <xref linkend="databounds"/>. In
+        addition, to these basic types, you may specify both PC and constant
+        offsets to be applied to the data.
+      </para>
+      <para>
+       ASCII data areas are those which contain ASCII characters, and should be
+       disassembled using <command>FCC</command> or <command>FCS</command>
+       statements, if possible. Graphic ASCII characters are collected together
+       and output in <command>FCC</command> or <command>FCS</command> statements,
+       with a double quote (") delimiter. The <command>FCS</command> statement
+       will be used, if enabled (it can be optionally disabled), whenever a
+       character with the high bit set.  Nongraphic ASCII characters, which
+       include the control characters, <command>DEL</command> ($7F), and
+       characters with the high bit set (if <command>FCS</command> is disabled),
+       will be output in <command>FCB</command> statements, with the same format
+       as that described in the ASCII label class.
+     </para>
+     <para>Byte data areas are disassembled using <command>FCB</command>
+       statements, with two digit
+       hexadecimal operands.  Byte data areas are equivalent to short label data
+       areas with a label class of '<command>$</command>' (hexadecimal).
+     </para>
+     <para>Long label data areas are disassembled using <command>FDB
+       </command> statements, with operands whose form depends on the label
+       class to be used.  Thus, when specifying long label areas, you must also
+       specify which of the 31 label classes is desired. Long label data is
+       often used, with class <command>L</command>, to hold addresses of
+       routines within a program, for multiple direction jumps. These tables
+       will also often use PC offsets or a constant class <command>L</command>
+       offset (<command>FDB L1234-*</command> or <command>FDB
+       L1234-L1000</command>).
+     </para>
+     <para>Short label data areas are disassembled using <command>FCB
+       </command> statements, and also require a label class to be specified.
+       Short labels are less often used for program labels, but are often used
+       for direct page labels, code values, or bit masks. It is also possible,
+       using the ASCII label class, to set up ASCII constants separated out
+       letter by letter. For instance, a four byte long ASCII data area may be
+       disassembled as <computeroutput>FCS "ABCD"</computeroutput>, while the
+       same four bytes disassembled as short labels with label class ASCII
+       would be disassembled as <command>FCB 'A, 'B, 'C, 'D+$80</command>. This
+       is occasionally useful.
+     </para>
+     <para>Word data areas are disassembled using <command>FDB</command>
+       statements, with four digit hexadecimal operands.  Word data areas are
+       equivalent to long label data areas with a label class or
+       '<command>$</command>' (hexadecimal).
+      </para>
+      <para>Obviously, the proper selection of all the many forms of label
+        classes, standard labels, offsets, and data areas can be quite
+        difficult.  It requires a careful examination of the disassembled
+        output, so that at least two complete disassemblies are required (often
+        more). In return, though, it is possible to disassemble a large
+        program, and have as output a file requiring no extensive editing,
+        except for the adding of your own comments. A thorough use of standard
+        labels and label class specifications will result in output filled with
+        meaningful operands, so that the real work of understanding a
+        disassembled program, that of deciphering the algorithms used instead
+        of the opcodes used, is much easier.
+      </para>
+    </section>
   </section>
-  <section><title>Standard Labels</title>
-   <para>
-    As can be seen in the above section, &odis; can generate many labels within
-    a program. These labels, though, formed by appending a label class letter
-    to a four digit hexadecimal value, do not produce particularly meaningful
-    names. It is possible, of course, to edit the output from &odis;, and
-    globally change some default label name to something more meaningful, but
-    this can be difficult if the program is very large, and is an error-prone
-    process in any case. Instead, it is more useful to specify to &odis;,
-    before the disassembly, that all references to a certain label are to be
-    output using some standard name. This way, there is no need to do a later
-    edit, and there is no chance of accidentally missing a reference to a label
-    in the program. You have already encountered, in the previous section, this
-    substitution of standard names for labels. When the ASCII label class is
-    specified for a value or $20, for instance, the name
-    '<command>SPACE</command>' is generated. Also, the system function name
-    label class, '!', will generate standard names for certain values, e.g.
-    F$Link for $00. With the standard label abilities of &odis;, you can
-    generate your own standard names (in fact, it is possible to use your own
-    standard names for ASCII control characters of system functions). One use
-    of standard labels is simply giving meaningful names to references to
-    program lines or data area variables. For instance, it is possible to take
-    the <command>MOD</command> statement at the start of an OS/9 module, which
-    might, without standard labels, look like
-   </para>
-   <para>
-    <programlisting>MOD L1000,L000D,$C1,$81,L0050,D0200</programlisting>
-   </para>
-   <para>and, by assigning standard labels, give it the much more
-    readable form
-   </para>
-   <para>
-    <programlisting>MOD LENGTH,NAMEPTR,$C1,$81,ENTRY,DATASIZE</programlisting>
-   </para>
-   <para>
-    Another use of standard labels is to give useful names to such values as
-    bit masks or code values in immediate addressing mode instructions. By
-    assigning the standard name <command>CARRY</command> to the value $01,
-    label class <command>C</command>, and then assigning label class
-    <command>C</command> to a single 1 byte immediate instruction <command>ORCC
-    #1</command>, the instruction would be disassembled as <command>ORCC
-    #CARRY</command>, obviously a much clearer form. As can be seen in the
-    above examples, there are two things which must be specified when giving a
-    label a standard name. A standard label has both a value and a label class.
-    Thus, in the <command>MOD</command> statement, the name
-    <command>LENGTH</command> is assigned to the value $1000 and the label
-    class <command>L</command>. The actual specification of standard labels is
-    detailed in the section on label files.  </para>
-  </section> 
-  <section><title>Offsets</title>
-   <para> 
-    Occasionally, when a routine searches through a data table, it will start
-    the search by loading an index register with an address which is less than
-    the address of the actual table. For instance, a search of a table at
-    address $1000 might start by loading <command>X</command> with the address
-    $0FFF. When this is disassembled, you want a label to be generated for the
-    value $1000 instead of the value $0FFF. To do this, Os9Disasm allows the
-    use of offsets, so that an instruction may be disassembled as, say
-    <command>LEAX L1000-1,PCR</command> instead of <command>LEAX
-    L0FFF,PCR</command>.  </para>
-   <para>
-    There are times when a positive offset is also useful. Suppose a two byte
-    variable is declared within the data area of an OS/9 module. That the
-    variable is two bytes long might be obvious by the use of
-    <command>LDD</command> or <command>STX</command> instructions in referring
-    to it.  The program may, though, sometimes refer to only the second byte of
-    the variable. Rather than assigning a separate label to this second byte,
-    the program is much cleaner and clearer if the second byte is referred to
-    by the name given the first byte with an offset of 1, e.g.
-    <command>D0020+1</command> instead of <command>D0021</command>.
-   </para>
-   <para>While most offsets are one of these simple forms, a small offset
-    to be printed as plus or minus some decimal value, &odis; also allows more
-    complicated variations. When specifying an offset to be used in an
-    instruction, &odis; allows you to specify both the value of the offset,
-    whether it is to be added or subtracted, and the label class to be assigned
-    to the offset. As an example, take the instruction <command>ORCC
-    #$50</command>. Assign class <command>C</command> standard names
-    <command>FIRQM</command> to $40, <command>IRQM</command> to $10, and assign
-    class <command>C</command> label generation for the instruction.  Finally,
-    specify an offset of <command>+$10</command> for the instruction, with
-    class <command>C</command> for the offset value. The resultant disassembled
-    instruction would be <command>ORCC #FIRQM+IRQM</command>.
-   </para>
-   <para>Note that the label class of the operand value and that of the
-    offset need not be the
-    same. Thus, it is possible to disassemble the instruction <command>LDA
-    #40</command> as <command>LDA #'A-1</command> by specifying an operand
-    label class of <command>^</command> (ASCII), and a subtracted offset of 1
-    with a label class of <command>&amp;</command> (decimal). There is one
-    further offset form which you can instruct &odis; to use. This is program
-    counter offset. By using <command>PC</command> offset, instructions can be
-    disassembled with the form <command>LEAX L1000-*,Y</command>. A
-    <command>PC</command> offset is always subtracted from the operand, and may
-    be mixed with a constant offset. This is most useful in data areas (below).
-    For instance, when using the OS/9 system calls <command>F$SSvc</command>, a
-    data table is required which includes an entry giving the offset of a
-    service routine from the byte following the entry. This is best
-    disassembled as, say <command>FDB L1000-*-2</command>, which is simply a
-    long label data element, class <command>L</command>, with
-    <command>PC</command> offset and a decimal class negative offset of 2. The
-    specification of offsets to be used in executable code is explained in the
-    section on the command file. This specification is done as part of the
-    assignment of label classes to addressing modes. Offsetting is also
-    possible within data areas, and is discussed in the next section, as well
-    as in the command file section.
-   </para>
-  </section>
-  <section><title>Data Areas</title>
-   <para>Few programs to be disassembled consist entirely of executable
-    code.  Most programs will include some areas which are to be disassembled
-    as data.  For instance, there may be ASCII strings or tables of bytes
-    within a program. &odis; gives you complete control over the specification
-    of data areas within the program. Five basic data area types lie at the
-    heart of this control. These types are ASCII data, byte data, long label
-    data, short label data, and word data. In addition, to these basic types,
-    you may specify both PC and constant offsets to be applied to the data.
-    ASCII data areas are those which contain ASCII characters, and should be
-    disassembled using <command>FCC</command> or <command>FCS</command>
-    statements, if possible. Graphic ASCII characters are collected together
-    and output in <command>FCC</command> or <command>FCS</command> statements,
-    with a double quote (") delimiter. The <command>FCS</command> statement
-    will be used, if enabled (it can be optionally disabled), whenever a
-    character with the high bit set.  Nongraphic ASCII characters, which
-    include the control characters, <command>DEL</command> ($7F), and
-    characters with the high bit set (if <command>FCS</command> is disabled),
-    will be output in <command>FCB</command> statements, with the same format
-    as that described in the ASCII label class. Byte data areas are
-    disassembled using <command>FCB</command> statements, with two digit
-    hexadecimal operands.  Byte data areas are equivalent to short label data
-    areas with a label class of '<command>$</command>' (hexadecimal). Long
-    label data areas are disassembled using <command>FDB</command> statements,
-    with operands whose form depends on the label class to be used.  Thus, when
-    specifying long label areas, you must also specify which of the 31 label
-    classes is desired. Long label data is often used, with class
-    <command>L</command>, to hold addresses of routines within a program, for
-    multiple direction jumps. These tables will also often use PC offsets or a
-    constant class <command>L</command> offset (<command>FDB L1234-*</command>
-    or <command>FDB L1234-L1000</command>). Short label data areas are
-    disassembled using <command>FCB</command> statements, and also require a
-    label class to be specified. Short labels are less often used for program
-    labels, but are often used for direct page labels, code values, or bit
-    masks. It is also possible, using the ASCII label class, to set up ASCII
-    constants separated out letter by letter. For instance, a four byte long
-    ASCII data area may be disassembled as <command>FCS "ABCD"</command>, while
-    the same four bytes disassembled as short labels with label class ASCII
-    would be disassembled as <command>FCB 'A, 'B, 'C, 'D+$80</command>. This is
-    occasionally useful. Word data areas are disassembled using
-    <command>FDB</command> statements, with four digit hexadecimal operands.
-    Word data areas are equivalent to long label data areas with a label class
-    or '<command>$</command>' (hexadecimal).
-   </para>
-   <para>Obviously, the proper selection of all the many forms of labeli
-    classes, standard labels, offsets, and data areas can be quite difficult.
-    It requires a careful examination of the disassembled output, so that at
-    least two complete disassemblies are required (often more). In return,
-    though, it is possible to disassemble a large program, and have as output a
-    file requiring no extensive editing, except for the adding of your own
-    comments. A thorough use of standard labels and label class specifications
-    will result in output filled with meaningful operands, so that the real
-    work of understanding a disassembled program, that of deciphering the
-    algorithms used instead of the opcodes used, is much easier.
-   </para>
-  </section>
- </section>
 </chapter>

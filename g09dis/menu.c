@@ -17,7 +17,7 @@ hlp_about (GtkAction * action, glbls * hbuf)
     GtkWidget *dialog;
     gchar *msg;
 
-    msg = g_strconcat ("  -- G09Dis V 0.0.1 --\n\n",
+    msg = g_strconcat ("  -- G09Dis V ",VERSION," --\n\n",
                        "  A graphical front-end to \"os9disasm\"\n",
                        "  This version is strictly BETA!!!",
                        NULL);
@@ -32,6 +32,27 @@ hlp_about (GtkAction * action, glbls * hbuf)
     gtk_widget_destroy (dialog);
 }
 
+/*static void
+hlp_about (GtkAction * action, glbls * hbuf)
+{
+    GtkWidget *dialog;
+    GString *msg;
+
+    msg = g_string_new (" ");
+
+    msg = g_string_printf (msg,"  -- G09Dis V %s --\n\n%s\n%s", "2.0",
+                       "  A graphical front-end to \"os9disasm\"\n",
+                       "  This version is strictly BETA!!!");
+
+    dialog = gtk_message_dialog_new (GTK_WINDOW (window),
+                                     GTK_DIALOG_DESTROY_WITH_PARENT,
+                                     GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
+                                     msg->str);
+
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+    g_string_free (msg, TRUE);
+}*/
 static void
 listing_new_cb (GtkAction * action, glbls * hbuf)
 {

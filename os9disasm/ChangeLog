@@ -1,4 +1,11 @@
+os9disasm (0.3.0)
+  * documentation - improved the readability (hopefully)
+  * os9disasm.c - Added mention of -g option in help screen
+
+ -- davebree    Wed, 22 Dec 2004 11:42:56 -0600
+
 os9disasm (0.2.0)
+  * all - Added RSDos capability
   * dprint.c, lbltree.c, os9disasm.c, progdis.c, util_dis.c, dtble.h, odis.h
     + Input method for binary module/file changed from loading module into
       memory and reading from memory, to reading data from file directly.

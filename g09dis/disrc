@@ -1,7 +1,7 @@
 style "fixedfont"
 {
-	font_name = "monospace 9"
-#	font_name = " Courier Italic 10 "
+#	font_name = "monospace 9"
+	font_name = "Roman 16"
 }
 
 #class "GtkText" style "fixedfont"

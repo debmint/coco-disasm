@@ -950,23 +950,26 @@ listlbls ()
 void
 rsdoshdr (void)
 {
-    char *here = ModBegin;
+    char here = fgetc (progpath);
+    int length;
     
-    if ( *(here++) )
+    if (here)
     {
         fprintf (stderr, "First character in file %s not 0\n", modfile);
         exit (1);
     }
 
-    CodEnd = o9_int (here);
-    here += 2;
-    ModLoad = o9_int (here);
-    /*EndAdr = (int)ModBegin + CodEnd;*/
+    length = o9_fgetword (progpath);
+    ModLoad = o9_fgetword (progpath);
     CmdEnt = ModLoad;
     Pc = ModLoad;
-    CodEnd += ModLoad;
-    cofset = ModLoad - 5;
-    fprintf(stderr, "ModLoad = %x   CodEnd = %x\n", ModLoad, CodEnd);
+    CodEnd = ModLoad + length;
+    HdrLen = (int)ftell (progpath);
+
+    if (Pass2)
+    {
+        fprintf(stderr, "ModLoad = %x   CodEnd = %x\n", ModLoad, CodEnd);
+    }
 }
 
 /* ****************************** *
@@ -1039,13 +1042,9 @@ progdis ()
 
     if (Pass2)
     {
-        switch (OSType)
+        if (OSType == OS_9)
         {
-            case OS_Coco:
-                RsOrg ();
-                break;
-            default: /* OS_9 */
-                OS9Modline ();
+            OS9Modline ();
         }
         
         WrtEquates (1);         /* now do standard named labels */
@@ -1064,6 +1063,10 @@ progdis ()
     {
         case OS_Coco:
             Pc = ModLoad;
+            if (Pass2)
+            {
+                RsOrg ();
+            }
             break;
         default:               /* Os9 */
             Pc = HdrLen;       /* Entry point for executable code */
@@ -1086,10 +1089,8 @@ progdis ()
         }
         else
         {
-            old_pos = ftell (progpath);
+            old_pos = ftell (progpath); /* Remember position on entry */
             
-            /* CodEnd added so code won't be generated past
-             * CRC bytes for OS9 Module     */
             if (GetCmd () && (Pc <= CodEnd))
             {
                 if (Pass2)
@@ -1098,13 +1099,24 @@ progdis ()
                 }
 
                 /* allocate byte */
-            }                   /* if ! GetCmd  */
-            else
+            }
+            else   /* if ! GetCmd  */
             {
+                /* Condition at this point:  Either GetCmd returned
+                 * NULL, implying illegal code, or we've run past the
+                 * end of the module, in this case, This wasn't a legal
+                 * code, so must either be data or garbage.
+                 * In either case, we'll simply pick off a single byte and
+                 * write an "fcb" command, bump Pc to next byte and continue.
+                 */
+                
+                int bcode;
+
                 /* Restore file position to orig */
 
                 fseek (progpath, old_pos, SEEK_SET);
-                int bcode = fgetc (progpath);
+                bcode = fgetc (progpath);
+                Pc = CmdEnt;
                 
                 if (Pass2)
                 {
@@ -1131,29 +1143,45 @@ progdis ()
         if ((OSType == OS_Coco) && (Pc == CodEnd))
         {
             int hstart;
-            
+           
             if ((hstart = fgetc (progpath)) == 0)  /* Another Block of code follows */
             {
-                int newlgth;
+                int prevcmdent = CmdEnt;  /*Save for Coco block change (see below)*/
+                
+                ungetc (hstart, progpath);  /* Restore byte for rsdoshdr() */
+                rsdoshdr();
 
-                newlgth = o9_fgetword (progpath);
-                ModLoad = o9_fgetword (progpath);
-                CodEnd = ModLoad+newlgth;
-                Pc = ModLoad;
+                if (Pass2)
+                {
+                    /* The following CmdEnt juggling is to try to get
+                     * any label equ's just before the new org to print
+                     * with the correct offset */
+                    
+                    int newcmdent = CmdEnt;
+                    
+                    /*CmdEnt = prevcmdent;*/
+                    RsOrg();
+                    /*CmdEnt = newcmdent;*/
+                }
             }
-            else
+            else   /* else it's the end */
             {
-                ungetc (hstart, progpath);
+                o9_fgetword (progpath); /* Skip two null bytes in Postamble */
+                ModExe = o9_fgetword (progpath);
+                addlbl (ModExe, strpos (lblorder, 'L'));
+
+                /* Now everything should be set to do another block */
             }
         }
     }
 
+    /* Write end-of-file lines */
     if (Pass2)
     {
         switch (OSType)
         {
             case OS_Coco:
-                coco_wrt_end ();
+                RsEnd ();
                 break;
             default:
                 WrtEmod ();

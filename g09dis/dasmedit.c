@@ -13,23 +13,8 @@
 
 GList *amode_list = NULL;
 
-struct mode_tbl {
-    int mode;
-    char m_def[4];
-};
-
-/* a structure to hold the addressing mode line components
- * in the amode selection window
- */
-
-typedef struct {
-    gchar *adrmode,
-          *newmode,
-          *a_offset,
-          *arange;
-} modetable;
-
 /* structure to pass to "response" callbacks for dialogs */
+
 struct adr_widgets {
     gchar *cmd_mode;
     GtkWidget *label_combo,
@@ -43,12 +28,13 @@ struct adr_widgets {
  * the gtkcombobox                   *
  * ********************************* */
 
-gchar *amode_std[] = {"L - Program code",
-                      "D - Data variable",
-                      "$ - Hexadecimal constant",
+gchar *amode_std[] = {"$ - Hexadecimal constant",
                       "& - Decimal constant",
                       "@ - Decimal<10 or hex>=10",
                       "^ - ASCII constant",
+                      "% - Binary bit mode",
+                      "L - Program code",
+                      "D - Data variable",
                       "X - External reference",
                       "E - Error code definition",
                       "S - Set/GetStat call",
@@ -115,7 +101,10 @@ amode_init()
     }
 }
 
-/* callback for click on "add" button to add an addressing mode */
+/* ************************************************************ *
+ * callback for click on "add" button to add an addressing mode *
+ * ************************************************************ */
+
 static void
 add_amode_man (GtkButton *button, GtkWidget *entry)
 {
@@ -163,13 +152,13 @@ clear_entry( GtkButton *button, GtkWidget *entry)
     gtk_entry_set_text (GTK_ENTRY(entry), "");
 }
 
-/* ********************************** *
- * bounds_aligned_frame () - create   *
- * a frame with alignment             *
- * Passed: box = box to contain frame *
- *         title = label for frame    *
- * Returns: alignment in frame        *
- * ********************************** */
+/* ************************************ *
+ *   bounds_aligned_frame () - create   *
+ *      a frame with alignment          *
+ *   Passed: box = box to contain frame *
+ *           title = label for frame    *
+ *   Returns: alignment in frame        *
+ * ************************************ */
 
 static GtkWidget *
 bounds_aligned_frame (GtkBox *box, gchar *title)
@@ -189,10 +178,11 @@ bounds_aligned_frame (GtkBox *box, gchar *title)
 
 /* ****************************************** *
  * build_label_selector() - build a combobox  *
- *    and include the selections              *
+ *      and include the selections            *
  * PASSED: modept - if NULL, build addressing *
  *      modes from GList amode_list, else     *
  *      build label class from gchar **       *
+ * Returns: the combo_box_entry               *
  * ****************************************** */
 
 static GtkWidget *
@@ -230,25 +220,60 @@ build_label_selector(gchar **modept, gboolean with_entry)
     
 }
 
-/* ************************************* *
- * amodes_from_file - get list of amodes *
- * from a file                           *
- * ************************************* */
+/* ******************************* *
+ * amode_add_from_string ()        *
+ *   Add an amode to amode_list    *
+ *     provided by a string        *
+ *     (usually loaded from a file *
+ * ******************************* */
+void
+amode_add_from_string (gchar *ptr)
+{
+    gchar *str;
+
+    /* Work with a copy since ptr is temporary, plus we're going to modify
+     * it */
+    
+    str = g_strdup (ptr);
+    
+    /* Get rid of any leading and trailing whitespaces */
+    
+    g_strstrip (str);
+
+    /* In case amode_list has never been initialized */
+    
+    if (!amode_list)
+    {
+        amode_init();
+    }
+
+    /* Try to see if this entry has been already been inserted *
+     * Note that this is very unreliable.  It's basically a    *
+     * strcmp(), and a difference of a single character will   *
+     * cause a match to fail                                   */
+    
+    if (!g_list_find (amode_list, str))
+    {
+        g_print("Adding : %s\n",str);/*DEBUG*/
+
+        amode_list = g_list_append (amode_list, str);
+    }
+}
+
+/* *************************************** *
+ * amodes_from_file() - get list of amodes *
+ *                      from a file        *
+ * *************************************** */
 
 static void
 amodes_from_file (GtkButton *button, glbls *fdat)
 {
-    selectfile_open (fdat, "Label Descriptor");
+    selectfile_open (fdat, "Label Descriptor", TRUE);
 
     if (fdat->filename_to_return)
     {
         FILE *infile;
 
-        if (!amode_list)
-        {
-            amode_init();
-        }
-        
         if ((infile = fopen(fdat->filename_to_return, "rb")))
         {
             char buf[500];
@@ -265,14 +290,7 @@ amodes_from_file (GtkButton *button, glbls *fdat)
                     {
                         ++pt;
 
-                        g_strstrip (pt);
-
-                        if (!g_list_find (amode_list, pt))
-                        {
-                            g_print("Adding : %s\n",pt);
-                            amode_list = g_list_append (amode_list,
-                                                        g_strdup (pt));
-                        }
+                        amode_add_from_string (pt);
                     }
                 }
             }
@@ -330,11 +348,11 @@ delete_combo_changed (GtkComboBox *cbox, GtkWidget *call_win)
     }
 }
 
-/* ************************** *
- * delete_amode_cb ()         *
- * dialog to choose an amode  *
- * entry to delete            *
- * ************************** */
+/* *************************** *
+ * delete_amode_cb ()          *
+ *  dialog to choose an amode  *
+ *  entry to delete            *
+ * *************************** */
 
 static void
 delete_amode_cb (GtkButton *button, gpointer zilch)
@@ -358,6 +376,7 @@ delete_amode_cb (GtkButton *button, gpointer zilch)
     gtk_widget_show_all (dialog);
 
     /* Nothing returned, all processing done within dialog */
+    
     gtk_dialog_run (GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
 }
@@ -379,7 +398,7 @@ amode_list_edit_cb(GtkAction * action, glbls *fdat)
 
     dialog = gtk_dialog_new_with_buttons ("Modify Addressing Mode List",
                                           GTK_WINDOW (window),
-                                          GTK_DIALOG_MODAL|
+                                          /*GTK_DIALOG_MODAL|*/
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
                                           GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
                                           NULL);
@@ -509,6 +528,7 @@ static char
           ++reg;
 
           /* take care of ",-R" and ",--R" */
+          
           while ( *reg == '-' ) {
               ++reg;
           }
@@ -601,6 +621,9 @@ on_adr_mode_response( GtkDialog *dialog, gint resp,
         default:
             break;
     }
+
+    g_free (data);
+    gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 /* Try to guess a usable Addressing Mode from the mnemonic */
 
@@ -628,6 +651,7 @@ guess_addr_mode(gchar *mnem)
 /* ******************************************* *
  * callback function to handle addressing mode *
  * ******************************************* */
+
 void
 adr_mode_cb(GtkAction * action, glbls *fdat)
 {
@@ -635,7 +659,7 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
     GtkTreeModel *model;
     GtkTreeIter iter;
     GtkTreeSelection *selection;
-    struct adr_widgets cb_data;
+    struct adr_widgets *cb_data;
 
     selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(
                                                  (fdat->list_file).tview));
@@ -649,7 +673,14 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
         
         char adr_mode[4];
 
-        cb_data.cmd_mode = adr_mode;
+        if (!(cb_data = g_malloc(sizeof (struct adr_widgets))))
+        {
+            /* print error */
+            g_print("adr_mode_cb() :   Error, cannot malloc memory!\n");
+            return;
+        }
+        
+        cb_data->cmd_mode = adr_mode;
         
         gtk_tree_model_get (model, &iter, LST_ADR, &addr,
                                           LST_OPCO, &opcod,
@@ -661,7 +692,7 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
          * Get addressing mode for current command *
          * *************************************** */
         
-        if ( !(cb_data.cmd_mode =
+        if ( !(cb_data->cmd_mode =
                     get_addressing_mode(adr_mode, opcod, mnem, oprand)) )
         {
             GtkWidget *errdialog;
@@ -685,7 +716,7 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
         
         dialog = gtk_dialog_new_with_buttons("Set Addressing Mode",
                                              GTK_WINDOW(window),
-                                             GTK_DIALOG_MODAL |
+                                             /*GTK_DIALOG_MODAL |*/
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
                                              GTK_STOCK_CANCEL,
                                              GTK_RESPONSE_REJECT,
@@ -694,10 +725,10 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
                                              NULL);
        
         g_signal_connect(dialog, "response",
-                G_CALLBACK(on_adr_mode_response), &cb_data);
+                G_CALLBACK(on_adr_mode_response), cb_data);
         gtk_container_set_border_width (GTK_CONTAINER(dialog),15);
         
-        pack_label (GTK_BOX(GTK_DIALOG(dialog)->vbox), cb_data.cmd_mode);
+        pack_label (GTK_BOX(GTK_DIALOG(dialog)->vbox), cb_data->cmd_mode);
         
         /* Build selection for desired Addressing Mode */
         
@@ -705,11 +736,11 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
         align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Addressing Mode");
         
-        cb_data.label_combo = build_label_selector(NULL, TRUE);
+        cb_data->label_combo = build_label_selector(NULL, TRUE);
 
-        gtk_entry_set_text(GTK_ENTRY(GTK_BIN(cb_data.label_combo)->child),
+        gtk_entry_set_text(GTK_ENTRY(GTK_BIN(cb_data->label_combo)->child),
                            guess_addr_mode(mnem));
-        gtk_container_add(GTK_CONTAINER(align), cb_data.label_combo);
+        gtk_container_add(GTK_CONTAINER(align), cb_data->label_combo);
 
         /* *********************** *
          * Select address or range *
@@ -718,18 +749,62 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
         align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Select address or address range");
         
-        cb_data.address_entry = gtk_entry_new();
-        gtk_container_add(GTK_CONTAINER(align), cb_data.address_entry);
-        gtk_entry_set_text (GTK_ENTRY(cb_data.address_entry), addr);
+        cb_data->address_entry = gtk_entry_new();
+        gtk_container_add(GTK_CONTAINER(align), cb_data->address_entry);
+        gtk_entry_set_text (GTK_ENTRY(cb_data->address_entry), addr);
         
-        gtk_widget_show_all (GTK_DIALOG(dialog)->vbox);
-        gtk_dialog_run(GTK_DIALOG(dialog));
+        /*gtk_widget_show_all (GTK_DIALOG(dialog)->vbox);
+        gtk_dialog_run(GTK_DIALOG(dialog));*/
+        gtk_widget_show_all (dialog);
 
         g_free(addr); g_free(opcod); g_free(pbyt);
         g_free(oprand); g_free(mnem);
         
-        gtk_widget_destroy(dialog);
+        /*gtk_widget_destroy(dialog);*/
     }
+}
+
+static void
+on_bnds_define_response (GtkDialog *dialog, gint resp,
+                         struct adr_widgets *data)
+{
+    switch (resp) {
+        gint indx;
+        GString *line;
+        
+        case GTK_RESPONSE_OK:
+            line = g_string_new(NULL);
+
+            if ((indx=gtk_combo_box_get_active(GTK_COMBO_BOX(
+                                data->label_combo))) >=0)
+            {
+                g_string_append_printf(line, "%c ", *bounds_list[indx]);
+            }
+
+            if( (*(line->str) == 'S') || (*(line->str) == 'W'))
+            {
+                g_string_append_printf(line, "%c ",
+                                       *(gtk_entry_get_text(GTK_ENTRY (
+                                                GTK_BIN(
+                                                data->label_entry)->child))));
+            }
+            
+            g_string_append_printf(line, "%s\n", gtk_entry_get_text(
+                                                     GTK_ENTRY(
+                                                     data->address_entry)));
+            
+            gtk_text_buffer_insert_at_cursor (
+                    O9Dis.cmdfile.tbuf, line->str, -1);
+
+            doc_set_modified(&O9Dis.cmdfile, TRUE);
+            
+            g_string_free(line, TRUE);
+            break;
+        default:
+            break;
+    }
+    g_free (data);
+    gtk_widget_destroy (GTK_WIDGET(dialog));
 }
 
 /* ************************************************ *
@@ -750,18 +825,25 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
     {
         GtkWidget *dialog;
         GtkWidget *align;
-        GtkWidget *bounds_combo,
+        /*GtkWidget *bounds_combo,
                   *amode_combo,
-                  *address_entry;
-        GString *line;
+                  *address_entry;*/
+        struct adr_widgets *cb_data;
         
         gchar *addr;
+       
+        if (!(cb_data = g_malloc (sizeof (struct adr_widgets))))
+        {
+            /* Error report */
+            g_print ("Error! cannot malloc memory!\n");
+            return;
+        }
         
         gtk_tree_model_get (model, &iter, LST_ADR, &addr,
                                           -1);
         dialog = gtk_dialog_new_with_buttons("Addressing Mode specification",
                                              GTK_WINDOW(window),
-                                             GTK_DIALOG_MODAL |
+                                             /*GTK_DIALOG_MODAL |*/
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
                                              GTK_STOCK_CANCEL,
                                              GTK_RESPONSE_REJECT,
@@ -769,64 +851,35 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
                                              GTK_RESPONSE_OK,
                                              NULL);
       
+        /* *************************** *
+         * Boundary Type dropdown menu *
+         * *************************** */
+        
+        g_signal_connect (dialog, "response",
+                          G_CALLBACK(on_bnds_define_response), cb_data);
+
         gtk_container_set_border_width(GTK_CONTAINER(dialog), 15);
         align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Boundary type");
-        bounds_combo = build_label_selector (bounds_list, FALSE);
-        gtk_container_add (GTK_CONTAINER(align),bounds_combo);
-        gtk_combo_box_set_active (GTK_COMBO_BOX(bounds_combo), 0);
+        cb_data->label_combo = build_label_selector (bounds_list, FALSE);
+        gtk_container_add (GTK_CONTAINER(align),cb_data->label_combo);
+        gtk_combo_box_set_active (GTK_COMBO_BOX(cb_data->label_combo), 0);
 
         align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Addressing Mode");
-        amode_combo = build_label_selector (NULL, TRUE);
-        gtk_container_add (GTK_CONTAINER(align),amode_combo);
-        gtk_combo_box_set_active (GTK_COMBO_BOX(amode_combo), 0);
+        cb_data->label_entry = build_label_selector (NULL, TRUE);
+        gtk_container_add (GTK_CONTAINER(align),cb_data->label_entry);
+        gtk_combo_box_set_active (GTK_COMBO_BOX(cb_data->label_entry), 0);
 
         align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Address or Address Range");
-        address_entry = gtk_entry_new();
-        gtk_container_add (GTK_CONTAINER(align),address_entry);
-        gtk_entry_set_text (GTK_ENTRY(address_entry), addr);
-       
-        gtk_widget_show_all(GTK_DIALOG(dialog)->vbox);
+        cb_data->address_entry = gtk_entry_new();
+        gtk_container_add (GTK_CONTAINER(align), cb_data->address_entry);
+        gtk_entry_set_text (GTK_ENTRY(cb_data->address_entry), addr);
+      
+        g_free (addr);
+        gtk_widget_show_all(dialog);
 
-        switch( gtk_dialog_run(GTK_DIALOG(dialog))) {
-            gint indx;
-            
-            case GTK_RESPONSE_OK:
-                line = g_string_new(NULL);
-
-                if ((indx=gtk_combo_box_get_active(GTK_COMBO_BOX(
-                                    bounds_combo))) >=0)
-                {
-                    g_string_append_printf(line, "%c ", *bounds_list[indx]);
-                }
-
-                if( (*(line->str) == 'S') || (*(line->str) == 'W'))
-                {
-                    g_string_append_printf(line, "%c ",
-                                           *(gtk_entry_get_text(GTK_ENTRY (
-                                                    GTK_BIN(
-                                                    amode_combo)->child))));
-                }
-                
-                g_string_append_printf(line, "%s\n", gtk_entry_get_text(
-                                                         GTK_ENTRY(
-                                                         address_entry)));
-                
-                gtk_text_buffer_insert_at_cursor (
-                        O9Dis.cmdfile.tbuf, line->str, -1);
-
-                doc_set_modified(&O9Dis.cmdfile, TRUE);
-                
-                g_string_free(line, TRUE);
-                g_free(addr);
-                break;
-            default:
-                break;
-        }
-
-        gtk_widget_destroy(dialog);
     }
 }
 
@@ -863,10 +916,17 @@ name_label_response (GtkDialog *dialog, gint resp,
         default:
             break;
     }
+
+    g_free (data);
+    gtk_widget_destroy(GTK_WIDGET(dialog));
 }
-/* callback function to handle label mode */
+
+/* ************************************** *
+ * callback function to handle label mode *
+ * ************************************** */
+
 void
-rename_label(GtkAction * action, glbls *fdat)
+rename_label (GtkAction * action, glbls *fdat)
 {
     GtkWidget *dialog,
               *align;
@@ -874,7 +934,6 @@ rename_label(GtkAction * action, glbls *fdat)
     GtkTreeIter iter;
     GtkTreeSelection *selection;
 
-    struct adr_widgets cb_data;
 
     selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(
                                                  (fdat->list_file).tview));
@@ -884,12 +943,22 @@ rename_label(GtkAction * action, glbls *fdat)
         gchar *addr, *lblname, *opcod, *pbyt, *mnem, *oprand;
 
         char adr_mode[4];
-
-        cb_data.cmd_mode = adr_mode;
+        struct adr_widgets *cb_data;
+       
+        if (!(cb_data = g_malloc (sizeof (struct adr_widgets))))
+        {
+            /*report error */
+            g_print("Error! cannot allocate memory for struct\n");
+            return;
+        }
+        /* The following assignment is needless, but it keeps gcc quiet about
+         * it "might be used uninitialized"
+         *
+        cb_data->cmd_mode = NULL;*/
         
         dialog = gtk_dialog_new_with_buttons("Define Label Name",
                                              GTK_WINDOW(window),
-                                             GTK_DIALOG_MODAL |
+                                             /*GTK_DIALOG_MODAL |*/
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
                                              GTK_STOCK_CANCEL,
                                              GTK_RESPONSE_REJECT,
@@ -898,7 +967,7 @@ rename_label(GtkAction * action, glbls *fdat)
                                              NULL);
 
         g_signal_connect(dialog, "response",
-                G_CALLBACK(name_label_response), &cb_data);
+                G_CALLBACK(name_label_response), cb_data);
         gtk_container_set_border_width (GTK_CONTAINER(dialog),15);
         
         gtk_tree_model_get (model, &iter, LST_ADR, &addr,
@@ -913,10 +982,10 @@ rename_label(GtkAction * action, glbls *fdat)
          * Get addressing mode for current command
          * ************************* */
         
-        if ( !(cb_data.cmd_mode =
+        if ( !(cb_data->cmd_mode =
                     get_addressing_mode(adr_mode, opcod, mnem, oprand)) )
         {
-            cb_data.cmd_mode = "L";
+            cb_data->cmd_mode = "L";
         }
     
         /* ******************** *
@@ -925,12 +994,12 @@ rename_label(GtkAction * action, glbls *fdat)
 
         align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Label Name");
-        cb_data.label_entry = gtk_entry_new();
-        gtk_container_add (GTK_CONTAINER(align), cb_data.label_entry);
+        cb_data->label_entry = gtk_entry_new();
+        gtk_container_add (GTK_CONTAINER(align), cb_data->label_entry);
                 
         if( strlen(lblname) )
         {
-            gtk_entry_set_text (GTK_ENTRY(cb_data.label_entry), lblname);
+            gtk_entry_set_text (GTK_ENTRY(cb_data->label_entry), lblname);
         }
 
         /* ***************** *
@@ -939,10 +1008,10 @@ rename_label(GtkAction * action, glbls *fdat)
     
         align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Label Address");
-        cb_data.address_entry = gtk_entry_new();
-        gtk_container_add (GTK_CONTAINER(align), cb_data.address_entry);
+        cb_data->address_entry = gtk_entry_new();
+        gtk_container_add (GTK_CONTAINER(align), cb_data->address_entry);
         
-        gtk_entry_set_text (GTK_ENTRY(cb_data.address_entry), addr);
+        gtk_entry_set_text (GTK_ENTRY(cb_data->address_entry), addr);
 
         /* ******************************************* *
          * Build selection for desired Addressing Mode *
@@ -951,18 +1020,17 @@ rename_label(GtkAction * action, glbls *fdat)
         align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Addressing Mode");
         
-        cb_data.label_combo = build_label_selector (NULL, TRUE);
-        gtk_container_add (GTK_CONTAINER(align), cb_data.label_combo);
-        gtk_entry_set_text(GTK_ENTRY(GTK_BIN(cb_data.label_combo)->child),
+        cb_data->label_combo = build_label_selector (NULL, TRUE);
+        gtk_container_add (GTK_CONTAINER(align), cb_data->label_combo);
+        gtk_entry_set_text(GTK_ENTRY(GTK_BIN(cb_data->label_combo)->child),
                            guess_addr_mode(mnem));
 
-        gtk_widget_show_all (GTK_DIALOG(dialog)->vbox);
-        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_show_all (dialog);
+        /*gtk_dialog_run(GTK_DIALOG(dialog));*/
 
         g_free(addr); g_free(opcod); g_free(pbyt);
         g_free(oprand); g_free(mnem); g_free(lblname);
         
-        gtk_widget_destroy(dialog);
     }
 
 }
@@ -983,7 +1051,7 @@ lbl_edit_line(gchar **label, gchar **addr, gchar **class)
     
     dialog = gtk_dialog_new_with_buttons ("Edit Label Line",
                                           GTK_WINDOW(window),
-                                          GTK_DIALOG_MODAL |
+                                          /*GTK_DIALOG_MODAL |*/
                                            GTK_DIALOG_DESTROY_WITH_PARENT,
                                           GTK_STOCK_CANCEL,
                                           GTK_RESPONSE_CANCEL,
@@ -1153,8 +1221,12 @@ lbl_properties (GtkAction * action, glbls *fdat)
                   *align,
                   *name_ent, *addr_ent, *class_ent;*/
 
-        G_CONST_RETURN gchar *t_label, *t_addr, *t_class;
-        gchar *label, *addr, *class;
+        G_CONST_RETURN gchar *t_label,
+                             *t_addr,
+                             *t_class;
+        gchar *label,
+              *addr,
+              *class;
 
         gtk_tree_model_get (model, &iter, LBL_LBL, &t_label,
                                           LBL_ADDR, &t_addr,
@@ -1165,7 +1237,7 @@ lbl_properties (GtkAction * action, glbls *fdat)
         addr = g_strdup(t_addr);
         class = g_strdup(t_class);
 
-        if( lbl_edit_line(&label, &addr, &class) == GTK_RESPONSE_OK )
+        if( lbl_edit_line (&label, &addr, &class) == GTK_RESPONSE_OK )
         {
             /*label = gtk_entry_get_text(GTK_ENTRY(name_ent));
             addr = gtk_entry_get_text(GTK_ENTRY(addr_ent));

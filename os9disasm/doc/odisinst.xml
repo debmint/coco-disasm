@@ -1,5 +1,5 @@
 <!-- vi set expandtab -->
-<chapter><title>Installation</title>
+<chapter id="ssetup"><title>Installation</title>
  <section><title>Tarfile extraction</title>
   <para>If the package was downloaded as a tarfile, it should have
    the extension of <filename>tar.bz2</filename> or
@@ -11,9 +11,16 @@
   <screen># tar -xjf &lt;path&gt; /os9disasm.tar.bz2</screen>
   <para>OR,  for the <filename>tar.gz</filename> extension.</para>
   <screen># tar -xzf &lt;path&gt; os9disasm.tar.gz</screen>
+  <note>
+    <para>The filename may vary depending upon whether you have the complete
+      package including both &odis; and <command>g09dis</command> or just
+      the separate packages.
+    </para>
+  </note>
   <para>In either case, a directory named
-   <filename>os9disasm</filename> will be created in the current location,
-   and all files will be created under that directory.
+   <filename>os9disasm</filename> or <filename>cocodis<emphasis>x.x</emphasis>
+   </filename> will be created in the current location, and all files will
+   be created under that directory.
   </para>
  </section>
  <section><title>CVS os9tools download</title>
@@ -24,37 +31,220 @@
   </para>
  </section>
  <section><title>Building &amp; Installing the Package</title>
-  <para>After you <command>cd</command> into the
-   <filename>os9disasm</filename> directory, issuing the command
-   <command>make</command> will build the program &odis;.  
-   This will build the program, but won't install it.
-  </para>
-  <para>To install the program, you can issue the command <command>make
-   install</command>.  This can be done either after the program has been
-   built, or before.  If it hasn't been built, issuing this command will
-   cause it to be built before attempting to do the install.  By default, 
-   this will install the &odis; in the directory
-   <filename>/usr/local/bin/</filename>.  If you wish to install it 
-   elsewhere, then you can either simply copy the program &odis; to
-   whatever destination you want after running the command
-   <command>make</command>, or you can edit the <filename>Makefile</filename> 
-   and change the line<command> INSTALLDIR = /usr/local/bin</command>
-   to whatever you wish and then you can issue the command
-   <command>make install</command>.
-  </para>
-  <section><title>Installing the Standard Label Files</title>
-   <para>In the top level directory, there is a directory named <filename>
-    defs</filename>.  In this directory, you will find several files ending
-    in "lbl".  These are the <literal>standard label files</literal>.  Copy
-    all these files into <filename>$HOME/coco/defs/</filename>.  This should
-    work well for a single user system, or on any system where only one person
-    is using this program.
+   <para>The packages now come configured with <command>autotools</command>.
+     This means that the configure process should be able to detect under what
+     system the process is running and set some compile parameters to suit
+     your situation.  This should make it easier for the programs to be
+     compiled under differing systems.
    </para>
-   <formalpara><title>TODO</title>
-    <para>Include a facility to let this <filename>defs</filename> directory
-     be variable!
+   <section><title>Running the <command>configure</command> script</title>
+     <para>The first thing you need to do after cd'ing into the top level
+       of the distributions directory is to issue the command
+       <command>./configure</command>.  This will inspect the system under
+       which it is running and create various files, and especially the
+       <command>Makefiles</command> that will handle the actual building
+       of the system.
+     </para>
+     <note><title>Don't mess with the configuration files!</title>
+       <para>Unless you know what you're doing and see that something in
+         the configure setup needs to be fixed, please heed the following.
+       </para>
+       <para>There are a few files that you should never touch unless you
+         have the autotools package.  If the timestamp of any of these
+         are not as they should be, a complete reconfigure may be required.
+         If you do not have the autotools utilities, you cannot do this, and
+         even if you do, if it's version is not at least that of the one which
+         originally built the configure scripts, then a complete reconfigure
+         might be required.
+       </para>
+       <para><command>
+         <itemizedlist>
+           <title>The files that should not be touched are as follows:</title>
+           <listitem>Makefile.am</listitem>
+           <listitem>Makefile.in</listitem>
+           <listitem>configure.ac</listitem>
+           <listitem>configure.in</listitem>
+           <listitem>aclocal.m4</listitem>
+         </itemizedlist></command>
+       </para>
+       <para>If you do find that the system is trying to do a reconfigure and
+         you are stuck, you can always remove your install of the package and
+         reexpand it from the original tarfile.
+       </para>
+     </note>
+     <section>
+       <title>Options passed to <computeroutput>configure</computeroutput>
+       </title>
+       <para>You can review the options accepted by <command>configure</command>
+         by issuing the command <command>./configure --help</command>.  Most
+         are the standard options that all <command>configure</command> scripts
+         accept, but there are a few specific to this build.
+       </para>
+       <variablelist>
+         <varlistentry>
+           <term><command>--with-g09dis</command></term>
+           <listitem>
+             <para><command>G09dis</command> by default is not compiled with
+               &odis;.  In order to compile <command>g09dis</command>,
+               <command>pkg-config</command> must be installed on the system.
+               Since some systems might not have this, the configure process
+               does not include <command>g09dis</command> in the compilation.
+               If this option is not included, the Makefile for <command>
+               g09dis</command> will be made, but will not be correct, and the
+               <command>g09dis</command> directory will not be processed when
+               the <command>make</command> command is issued.
+             </para>
+           </listitem>
+         </varlistentry>
+       </variablelist>
+     </section>
+   </section>
+   <section><title>Building the program(s)</title>
+     <para>After you <command>cd</command> into the top level of the
+       directory, issuing the command <command>make</command> will build the
+       program &odis;.  This will build the program, but won't install it.
+     </para>
+     <note>
+       <para>You are not required to build from the top-level directory.
+         The system is designed such that you can <command>cd</command>
+         into any subdirectory and run <command>make</command> on just
+         that directory.  It will, of course, recurse into any
+         subdirectories below that level, but won't bother anything in a
+         sibling or higher directory outside that particular level.
+       </para>
+       <para>This holds true for any of the <computeroutput>make
+         </computeroutput> commands.  The command will apply over only
+         that directory and any directories below it.  No higher directory
+         or any outside this directory will be involved.
+       </para>
+     </note>
+   </section>
+   <section><title>Installing the program(s)</title>
+     <para>To install the program, you can issue the command <command>make
+       install</command> (at any directory level you choose).  This can be done
+       either after the program has been built, or before.  If it hasn't been
+       built, issuing this command will cause it to be built before attempting
+       to do the install.  By default, this will install the &odis; binary in
+       the directory <filename>/usr/local/bin/</filename>.
+     </para>
+     <section><title>Installing in an alternate location</title>
+       <para>
+         If you wish to install it elsewhere, then you can either simply copy
+         the binary files to whatever destination you want after running the
+         command <command>make</command>, or, if you wish to install the
+         program(s) at a different location using <command>make
+         install</command>, the you can include the option
+         <command>--prefix=&lt;alternate-location&gt; </command> when you run
+         <command>configure</command>.
+       </para>
+     </section>
+     <section id="installwhere">
+       <title>Install the binaries where the system can find them</title>
+       <para>It may be very advisable to carefully contemplate the location
+         where you will install the binaries.  This is especially true for
+         &odis; if you are planning on calling it from within <computeroutput>
+         g09dis</computeroutput>.  If you disassemble a binary from the menu in
+         <computeroutput>g09dis</computeroutput>, a shell computeroutput will
+         be issued which will call up &odis; to do the work.  The call will be
+         of the form
+         <programlisting>"os9disasm program &lt;etc&gt;"</programlisting>
+       </para>
+       <para>It would be a bit difficult, and harsh, to hardcode a specific
+         location into the program whereby everyone would be required to
+         install &odis; at some specific location.  There are just too many
+         differences between the various systems and people have preferences
+         as to their install locations.  Therefore the call is called up in
+         somthing of an open manner, and it's left up to the operating system
+         to find &odis;.  The following gives some insight in how this can
+         be assured.
+       </para>
+       <formalpara><title>Linux and Unix-type systems</title>
+         <para>
+           To find the directories searched in locating an executable program,
+           from the shell prompt, issue the command
+           <programlisting>echo $PATH</programlisting>  This will give a list
+           of directories, separated by a colon, searched when looking for a
+           command.  They are searched in the order in which they appear.
+           <note>For security reasons, be aware that most Linux/Unix systems
+             don't include the current working directory in the search path.
+           </note>
+         </para>
+       </formalpara>
+       <formalpara><title>Windows Command prompts</title>
+         <para>If you're running from a POSIX shell, (msys, cygwin, or
+           sh/bash/etc from an MS window, you can view the search PATH
+           with the command as above,
+           <programlisting>echo $PATH</programlisting>
+           or, if from the MS command,
+           <programlisting>echo %PATH%</programlisting>
+           In msys/cygwin, you can add more search directories by editing
+           one of the configure files.  Please see the documentation for the
+           system for details.
+         </para>
+         <para>To alter the windows PATH, you will need to edit the
+           <command>autoexec.bat</command> file.  To do this, you can
+           either add your new directory to an existing PATH statement or add
+           a line such as
+           <programlisting>set PATH=%PATH%;your-new-directory</programlisting>
+           Note that on most systems in Windows, the current working directory
+           is normally included in the search path.  Therefore, you should
+           be able to call &odis; successfully if &odis; is in the directory
+           you are in <emphasis>when you call &odis;</emphasis>.  In other
+           words, if the command
+           <programlisting>ls os9disasm</programlisting>
+           or
+           <programlisting>dir os9disasm</programlisting>
+           if you are at a DOS prompt
+         </para>
+         <para>succeeds, then you should be OK if you call <command>g09dis
+           </command> as long as you don't <command>cd</command> somewhere
+           else before doing so.
+           <note><para>You can alter the PATH variable at any time by by
+             issuing the above command in an MS window, but this change
+             will be lost when the window is shut down and won't be in effect
+             when starting a new window, or won't be available to the global
+             Windows system.</para>
+           </note>
+         </para>
+       </formalpara>
+       <formalpara><title>Running g09dis from the Explorer Window</title>
+         <para>I'm not entirely familiar with how this will work.  If you
+           do this, probably the safest route would be to make certain
+           that &odis; is in a directory listed in PATH.
+         </para>
+       </formalpara>  
+     </section>
+   </section>
+   <section><title>The Documentation files</title>
+     <para>Due to all the differences in systems, it has been decided at
+       this time to not do an install of the documentation with a
+       <command>make install</command> command from a higher directory.
+       In fact, at this time, nothing is done with the documentation by
+       makes from a higher level.  The html files are located in the
+       <command>doc/html</command> directory.  These can be manually copied
+       to any location you desire.  In addition, the xml source is available
+       in the <command>doc</command> directory, and fresh html documentation
+       can be created by issuing the command <command>make</command> in
+       the <command>doc</command> directory itself.
+     </para>
+     <formalpara><title>Building your own documentation</title>
+       <para>Since the source is available in the <command>doc</command>
+         directory, you have the option of building the documentation in any
+         format you desire.  Just run any docbook compiler on
+         <command>os9disasm.xml </command> and create any output you wish.  The
+         file <command>os9disasm.xml</command> will include all the rest of
+         the files.
+       </para>
+     </formalpara>
+   </section>
+   <section><title>Installing the Standard Label Files</title>
+    <para>In the top level directory, there is a directory named <filename>
+     defs</filename>.  In this directory, you will find several files ending
+     in "lbl".  These are the <command>standard label files</command>.  Copy
+     all these files into <filename>$HOME/coco/defs/</filename>.  This should
+     work well for a single user system, or on any system where only one person
+     is using this program.
     </para>
-   </formalpara>
   </section>
  </section>
 </chapter>

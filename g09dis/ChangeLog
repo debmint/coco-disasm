@@ -1,3 +1,14 @@
+g09dis (version 0.3)
+  * dasmedit.c - changed the procedure for the Addressing Mode and Boundary
+    Definition windows so that they don't lock out access to the main
+    window.  Now the user can scroll the Listing Window to find the end of
+    ranges, etc.  - Idea provided by Robert Gault
+  * g09dis.c - program now looks for file "disrc" in $HOME or falls back to
+    current directory if not found there.
+  * g09dis.c - changed size definition for main window such that now the user
+    can resize it to any size he wants.  Was: couldn't resize below a minimum.
+
+ --davebree    Wed, 22 Dec 2004 11:37:01 -0600
 
 filestuff.c
     * Added functin to "Build to GUI".  with this option set, GUI will
