@@ -1,0 +1,64 @@
+
+* MVuelbl - Labels pertaining to MultiVue definitions
+
+* Define Window defs Type W
+
+WN.TTL equ 0 W
+WN.NMNS equ 20 W
+WN.XMIN equ 21 W
+WN.YMIN equ 22 W
+WN.SYNC equ 23 W
+WN.RES equ 25 W
+WN.BAR equ 32 W
+
+* Define Menu Descriptor Type N
+
+MN.TTL equ 0 N
+MN.ID equ 15 N
+MN.XSIZ equ 16 N
+MN.NITS equ 17 N
+MN.ENBL equ 18 N
+MN.RES equ 19 N
+MN.ITEMS equ 21 N
+
+* Define Item Descriptor Type M
+
+MI.TTL equ 0 M
+MI.ENBL equ $0F M
+MI.RES equ $10 M
+
+* Define Window Type Defs Type Y
+
+WT.NBox equ 0 Y
+WT.FWin equ 1 Y
+WT.FSWin equ 2 Y
+WT.SBox equ 3 Y
+WT.DBox equ 4 Y
+WT.PBox equ 5 Y
+
+* Define Mouse Packet def Type K
+
+Pt.Valid equ 0 K
+Pt.Actv equ $01 K
+Pt.ToTm equ $02 K
+Pt.res1 equ $03 K
+Pt.TTTo equ $05 K
+Pt.TSSt equ $06 K
+Pt.CBSA equ $08 K
+Pt.CBSB equ $09 K
+Pt.CCtA equ $0A K
+Pt.CCtB equ $0B K
+Pt.TTSA equ $0C K
+Pt.TTSB equ $0D K
+Pt.TLSA equ $0E K
+Pt.TLSB equ $0F K
+Pt.res2 equ $10 K
+Pt.BDX equ $12 K
+Pt.BDY equ $14 K
+Pt.Stat equ $16 K
+Pt.Res equ $17 K
+Pt.AcX equ $18 K
+Pt.AcY equ $1A K
+Pt.WRX equ $1C K
+Pt.WRY equ $1E K
+

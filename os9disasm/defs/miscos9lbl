@@ -1,0 +1,226 @@
+* DYNAMITE+ label file for miscellaneous OS-9 utility labels
+* These equates are for OS-9 Level 2 **NOT** for Level 1
+
+* Define file access codes as class A
+
+READ. EQU $01 A
+WRITE. EQU $02 A
+UPDAT. EQU $03 A
+EXEC. EQU $04 A
+PREAD. EQU $08 A
+PWRIT. EQU $10 A
+PUPDT. EQU $18 A
+PEXEC. EQU $20 A
+SHARE. EQU $40 A
+DIR. EQU $80 A
+
+* Define condition code masks as class C
+
+Entire EQU $80 C
+IntMasks EQU $50 C
+FIRQMask EQU $40 C
+HalfCrry EQU $20 C
+IRQMask EQU $10 C
+Negative EQU $08 C
+Zero EQU $04 C
+TwosOvfl EQU $02 C
+Carry EQU $01 C
+NIntMsks EQU $AF C
+NFIRQMsk EQU $BF C
+NIRQMsk EQU $EF C
+NZero EQU $FB C
+NCarry EQU $FE C
+
+* Define OS-9 error codes as class E
+E$StkOvf equ $BA E
+E$IllArg equ $BB E
+E$ICoord equ $BD E
+E$Bug equ $BE E
+E$BufSiz equ $BF E
+E$IllCmd equ $C0 E
+E$TblFul equ $C1 E
+E$BadBuf equ $C2 E
+E$IWDef equ $C3 E
+E$WUndef equ $C4 E
+
+E$PthFul EQU $C8 E
+E$BPNum EQU $C9 E
+E$Poll EQU $CA E
+E$BMode EQU $CB E
+E$DevOvf EQU $CC E
+E$BMID EQU $CD E
+E$DirFul EQU $CE E
+E$MemFul EQU $CF E
+E$UnkSvc EQU $D0 E
+E$ModBsy EQU $D1 E
+E$BPAddr EQU $D2 E
+E$EOF EQU $D3 E
+E$RNAM EQU $D4 E
+E$NES EQU $D5 E
+E$FNA EQU $D6 E
+E$BPNam EQU $D7 E
+E$PNNF EQU $D8 E
+E$SLF EQU $D9 E
+E$CEF EQU $DA E
+E$IBA EQU $DB E
+E$HangUp EQU $DC E
+E$MNF EQU $DD E
+E$SNOR EQU $DE E
+E$DelSP EQU $DF E
+E$IPrcID EQU $E0 E
+E$ISC EQU $E1 E
+E$NoChld EQU $E2 E
+E$ISWI EQU $E3 E
+E$PrcAbt EQU $E4 E
+E$PrcFul EQU $E5 E
+E$IForkP EQU $E6 E
+E$KwnMod EQU $E7 E
+E$BMCRC EQU $E8 E
+E$USigP EQU $E9 E
+E$NEMod EQU $EA E
+E$BNam EQU $EB E
+E$BMHP EQU $EC E
+E$NoRam EQU $ED E
+E$BPrcID EQU $EE E
+E$NoTask EQU $EF E
+E$Unit EQU $F0 E
+E$Sect EQU $F1 E
+E$WP EQU $F2 E
+E$CRC EQU $F3 E
+E$Read EQU $F4 E
+E$Write EQU $F5 E
+E$NotRdy EQU $F6 E
+E$Seek EQU $F7 E
+E$Full EQU $F8 E
+E$BTyp EQU $F9 E
+E$DevBsy EQU $FA E
+E$DIDC EQU $FB E
+E$Lock EQU $FC E
+E$Share EQU $FD E
+E$DeadLk EQU $FE E
+
+* Define process descriptor offsets as class P
+
+P$ID EQU $00 P
+P$PID EQU $01 P
+P$SID EQU $02 P
+P$CID EQU $03 P
+P$SP EQU $04 P
+P$Task EQU $06 P
+P$PagCnt EQU $07 P
+P$User EQU $08 P
+P$Prior EQU $09 P
+P$Age EQU $0B P
+P$State EQU $0C P
+P$Queue EQU $0D P
+P$IOQP EQU $0F P
+P$IOQN EQU $10 P
+P$PModul EQU $11 P
+P$SWI EQU $13 P
+P$SWI2 EQU $15 P
+P$SWI3 EQU $17 P
+P$Signal EQU $19 P
+P$SigVec EQU $1A P
+P$SigDat EQU $1C P
+P$DeadLk equ $1E P
+P$DIO equ $20 P
+P$Path equ $30 P
+P$DATImg equ $40 P
+P$Links equ $80 P
+P$NIO equ $A0 P
+P$SelP equ $AC P
+P$Size EQU $200 P
+
+* Define standard I/O channels as class I
+
+stdin equ 0 I
+stdout equ 1 I
+stderr equ 2 I
+
+* Define module type/language codes as class T
+
+Devic EQU $F0 T
+Drivr EQU $E0 T
+FlMgr EQU $D0 T
+Systm EQU $C0 T
+Data EQU $40 T
+Multi EQU $20 T
+Prgrm EQU $10 T
+DataC EQU 0 T
+Objct EQU 1 T
+ICode EQU 2 T
+PCode EQU 3 T
+CCode EQU 4 T
+CblCode EQU 5 T
+FrtnCode EQU 6 T
+
+* SetStat / GetStat codes Define type S
+
+SS.Opt equ 0 S
+SS.Ready equ 1 S
+SS.Size equ 2 S
+SS.Reset equ 3 S
+SS.WTrk equ 4 S
+SS.Pos equ 5 S
+SS.EOF equ 6 S
+SS.Link equ 7 S
+SS.ULink equ 8 S
+SS.Feed equ 9 S
+SS.Frz equ $0A S
+SS.SPT equ $0B S
+SS.SQD equ $0C S
+SS.DCmd equ $0D S
+SS.DevNm equ $0E S
+SS.FD equ $0F S
+SS.Ticks equ $10 S
+SS.Lock equ $11 S
+SS.DStat equ $12 S
+SS.Joy equ $13 S
+SS.BlkRd equ $14 S
+SS.BlkWr equ $15 S
+SS.Reten equ $16 S
+SS.WFM equ $17 S
+SS.RFM equ $18 S
+SS.ELog equ $19 S
+SS.SSig equ $1A S
+SS.Relea equ $1B S
+SS.AlfaS equ $1C S
+SS.Break equ $1D S
+SS.RsBit equ $1E S
+* rmb 1
+SS.FDInf equ $20 S
+* rmb 4
+SS.SetMF equ $24 S
+SS.Cursr equ $25 S
+SS.ScSiz equ $26 S
+SS.KySns equ $27 S
+SS.ComSt equ $28 S
+SS.Open equ $29 S
+SS.Close equ $2A S
+SS.HngUp equ $2B S
+* org $80
+SS.AAGBf equ $80 S
+SS.SLGBf equ $81 S
+SS.Mount equ $82 S
+SS.RdNet equ $83 S
+SS.MpGPB equ $84 S
+SS.Slots equ $85 S
+SS.WnSet equ $86 S
+SS.MnSel equ $87 S
+SS.SBar equ $88 S
+SS.Mouse equ $89 S
+SS.MsSig equ $8A S
+SS.AScrn equ $8B S
+SS.DScrn equ $8C S
+SS.FScrn equ $8D S
+SS.PScrn equ $8E S
+* rmb 2
+SS.Palet equ $91 S
+SS.Montr equ $92 S
+SS.ScTyp equ $93 S
+SS.GIP equ $94 S
+SS.UMBar equ $95 S
+SS.FBRgs equ $96 S
+SS.DfPal equ $97 S
+SS.Tone equ $98 S
+

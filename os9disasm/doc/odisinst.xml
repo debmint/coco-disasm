@@ -1,0 +1,60 @@
+<!-- vi set expandtab -->
+<chapter><title>Installation</title>
+ <section><title>Tarfile extraction</title>
+  <para>If the package was downloaded as a tarfile, it should have
+   the extension of <filename>tar.bz2</filename> or
+   <filename>tar.gz</filename>.  For either case, <command>cd</command>
+   into the directory in which you will install the directory tree and
+   issue the command
+  </para>
+  <para> for the <filename>tar.bz2</filename> extension </para>
+  <screen># tar -xjf &lt;path&gt; /os9disasm.tar.bz2</screen>
+  <para>OR,  for the <filename>tar.gz</filename> extension.</para>
+  <screen># tar -xzf &lt;path&gt; os9disasm.tar.gz</screen>
+  <para>In either case, a directory named
+   <filename>os9disasm</filename> will be created in the current location,
+   and all files will be created under that directory.
+  </para>
+ </section>
+ <section><title>CVS os9tools download</title>
+  <para>If you have the CVS
+   download of the <filename>os9tools</filename> hierarchy, you already
+   have the necessary files in the <filename>os9disasm</filename> directory
+   under <filename>os9tools/</filename>.
+  </para>
+ </section>
+ <section><title>Building &amp; Installing the Package</title>
+  <para>After you <command>cd</command> into the
+   <filename>os9disasm</filename> directory, issuing the command
+   <command>make</command> will build the program &odis;.  
+   This will build the program, but won't install it.
+  </para>
+  <para>To install the program, you can issue the command <command>make
+   install</command>.  This can be done either after the program has been
+   built, or before.  If it hasn't been built, issuing this command will
+   cause it to be built before attempting to do the install.  By default, 
+   this will install the &odis; in the directory
+   <filename>/usr/local/bin/</filename>.  If you wish to install it 
+   elsewhere, then you can either simply copy the program &odis; to
+   whatever destination you want after running the command
+   <command>make</command>, or you can edit the <filename>Makefile</filename> 
+   and change the line<command> INSTALLDIR = /usr/local/bin</command>
+   to whatever you wish and then you can issue the command
+   <command>make install</command>.
+  </para>
+  <section><title>Installing the Standard Label Files</title>
+   <para>In the top level directory, there is a directory named <filename>
+    defs</filename>.  In this directory, you will find several files ending
+    in "lbl".  These are the <literal>standard label files</literal>.  Copy
+    all these files into <filename>$HOME/coco/defs/</filename>.  This should
+    work well for a single user system, or on any system where only one person
+    is using this program.
+   </para>
+   <formalpara><title>TODO</title>
+    <para>Include a facility to let this <filename>defs</filename> directory
+     be variable!
+    </para>
+   </formalpara>
+  </section>
+ </section>
+</chapter>

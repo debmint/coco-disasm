@@ -1,0 +1,11 @@
+This is the documentation for os9disasm.  Included is the docbook source
+for the documentation, along with a chunked html version of the docs,
+using the LDP xsl stylesheets.
+
+You may copy all the files in the html/ directory to some local repository,
+or simply use these files in place.  The root, of course, is index.htm.
+
+If you prefer some other format, or prefer html produced with a different
+stylesheet, you may use any docbook tools you have and compile them to your
+preferrred format.  Any tools that will process xml or xsl language should
+work.

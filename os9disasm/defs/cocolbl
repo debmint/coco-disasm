@@ -1,0 +1,75 @@
+* Dynamite+ standard label file for the
+*    TRS-80 Color Computer
+
+* ROM external entry points
+
+POLCAT EQU $A000 L Poll keyboard for character
+CHROUT EQU $A002 L Output characterr to device
+CSRDON EQU $A004 L Start cassette
+BLKIN EQU $A006 L Read a block from cassette
+BLKOUT EQU $A008 L Write a block to cassette
+JOYIN EQU $A00A L Sample joystick pots
+WRTLDR EQU $A00C L Write leader on cassette
+
+INTCNV EQU $B3ED L Convert real to integer
+GIVABF EQU $B4F4 L Convert integer to real
+
+DSKCON EQU $C004 L Disk control entry
+
+* Common RAM variables
+
+DEVNUM EQU $6F D Device number
+RSTFLG EQU $71 D Restart flag
+RSTVEC EQU $72 D Restart vector
+BLKTYP EQU $7C D Cassette block type
+BLKLEN EQU $7D D Cassette block length
+CBUFAD EQU $7E D Cassette buffer address
+CSRERR EQU $81 D Cassette error code
+LPTBTD EQU $95 D Line printer baud rate
+LPTLND EQU $97 D Line printer line delay
+LPTCFW EQU $99 D Line printer comma field width
+LPTLCF EQU $9A D Line printer last comma field
+LPTWID EQU $9B D Line printer width
+LPTPOS EQU $9C D Line printer position
+EXECADDR EQU $9D D Default address for EXEC
+POTVALLY EQU $15A L Left joystick Y axis value
+POTVALLX EQU $15B L Left joystick X axis value
+POTVALRY EQU $15C L Right joystick Y axis value
+POTVALRX EQU $15D L Right joystick X axis value
+SCREEN EQU $0400 L Start of text screen
+
+* Peripheral Interface Adapter (PIA) equates
+
+PIA1ADR EQU $FF00 L PIA #1-A data register
+PIA1ACR EQU $FF01 L PIA #1-A control register
+PIA1BDR EQU $FF02 L PIA #1-B data register
+PIA1BCR EQU $FF03 L PIA #1-B control register
+
+PIA2ADR EQU $FF20 L PIA #2-A data register
+PIA2ACR EQU $FF21 L PIA #2-A control register
+PIA2BDR EQU $FF22 L PIA #2-B data register
+PIA2BCR EQU $FF23 L PIA #2-B control register
+
+* Drive controller equates
+
+DRVSEL EQU $FF40 L Drive select/motor control
+COMREG EQU $FF48 L Controller command register
+TRKREG EQU $FF49 L Controller track register
+SECREG EQU $FF4A L Controller sector register
+DATREG EQU $FF4B L Controller data register
+
+* SAM chip equates
+
+SAM EQU $FFC0 L SAM chip base address
+SAMROMON EQU $FFDE L Select ROMs upper 32K
+SAMRAMON EQU $FFDF L Select RAMs upper 32K
+
+* Interrupt vectors in low RAM
+
+SWI3V EQU $0100 L
+SWI2V EQU $0103 L
+SWIV EQU $0106 L
+NMIV EQU $0109 L
+IRQV EQU $010C L
+FIRQV EQU $010F L
+RESET EQU $A027 L reset address in Basic ROM

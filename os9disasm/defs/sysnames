@@ -1,0 +1,107 @@
+* System function names for OS-9 dynamite+
+* Supplies names to be used for disassembled 'OS9' opcodes
+
+* User mode function requests
+
+F$Link EQU $00 !
+F$Load EQU $01 !
+F$UnLink EQU $02 !
+F$Fork EQU $03 !
+F$Wait EQU $04 !
+F$Chain EQU $05 !
+F$Exit EQU $06 !
+F$Mem EQU $07 !
+F$Send EQU $08 !
+F$Icpt EQU $09 !
+F$Sleep EQU $0A !
+F$SSpd EQU $0B !
+F$ID EQU $0C !
+F$SPrior EQU $0D !
+F$SSWI EQU $0E !
+F$PErr EQU $0F !
+F$PrsNam EQU $10 !
+F$CmpNam EQU $11 !
+F$SchBit EQU $12 !
+F$AllBit EQU $13 !
+F$DelBit EQU $14 !
+F$Time EQU $15 !
+F$STime EQU $16 !
+F$CRC EQU $17 !
+F$GPrDsc EQU $18 !
+F$GBlkMp EQU $19 !
+F$GModDr EQU $1A !
+F$CpyMem EQU $1B !
+F$SUser EQU $1C !
+F$UnLoad EQU $1D !
+F$Alarm EQU $1E !
+* rmb 2
+F$NMLink EQU $21 !
+F$NMLoad EQU $22 !
+
+* System mode privileged function requests
+
+F$VIRQ EQU $27 !
+F$SRqMem EQU $28 !
+F$SRtMem EQU $29 !
+F$IRQ EQU $2A !
+F$IOQu EQU $2B !
+F$AProc EQU $2C !
+F$NProc EQU $2D !
+F$VModul EQU $2E !
+F$Find64 EQU $2F !
+F$All64 EQU $30 !
+F$Ret64 EQU $31 !
+F$SSvc EQU $32 !
+F$IODel EQU $33 !
+F$SLink EQU $34 !
+F$Boot EQU $35 !
+F$BtMem EQU $36 !
+F$GProcP EQU $37 !
+F$Move EQU $38 !
+F$AllRAM EQU $39 !
+F$AllImg EQU $3A !
+F$DelImg EQU $3B !
+F$SetImg EQU $3C !
+F$FreeLB EQU $3D !
+F$FreeHB EQU $3E !
+F$AllTsk EQU $3F !
+F$DelTsk EQU $40 !
+F$SetTsk EQU $41 !
+F$ResTsk EQU $42 !
+F$RelTsk EQU $43 !
+F$DATLog EQU $44 !
+F$DATTmp EQU $45 !
+F$LDAXY EQU $46 !
+F$LDAXYP EQU $47 !
+F$LDDDXY EQU $48 !
+F$LDABX EQU $49 !
+F$STABX EQU $4A !
+F$AllPrc EQU $4B !
+F$DelPrc EQU $4C !
+F$ELink EQU $4D !
+F$FModul EQU $4E !
+F$MapBlk EQU $4F !
+F$ClrBlk EQU $50 !
+F$DelRAM EQU $51 !
+F$GCMDir EQU $52 !
+F$AlHRam EQU $53 !
+
+* Input/Output service requests
+
+I$Attach EQU $80 !
+I$Detach EQU $81 !
+I$Dup EQU $82 !
+I$Create EQU $83 !
+I$Open EQU $84 !
+I$MakDir EQU $85 !
+I$ChgDir EQU $86 !
+I$Delete EQU $87 !
+I$Seek EQU $88 !
+I$Read EQU $89 !
+I$Write EQU $8A !
+I$ReadLn EQU $8B !
+I$WritLn EQU $8C !
+I$GetStt EQU $8D !
+I$SetStt EQU $8E !
+I$Close EQU $8F !
+I$DeletX EQU $90 !

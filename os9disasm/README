@@ -1,0 +1,6 @@
+
+defs/ dir:
+
+Copy the contents of the defs/ directory to $HOME/coco/defs.  These are support
+files that os9disasm uses.  As of now, the path is hardcoded.  If there's any
+interest in os9disasm, I (or someone else) can make the location flexible.

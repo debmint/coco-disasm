@@ -1,0 +1,101 @@
+* SCF.lbl -- Labels unique to SCF files
+
+* Static storage names type D
+* since they are in Data area
+
+V.PAGE equ $00 D
+V.PORT equ $01 D
+V.LPROC equ $03 D
+V.BUSY equ $04 D
+V.WAKE equ $05 D
+V.TYPE equ $06 D
+V.LINE equ $07 D
+V.PAUS equ $08 D
+V.DEV2 equ $09 D
+V.INTR equ $0b D
+V.QUIT equ $0c D
+V.PCHR equ $0d D
+V.ERR equ $0e D
+V.XON equ $0f D
+V.XOFF equ $10 D
+V.KANJI equ $11 D
+V.KBUF equ $12 D
+V.MODADR equ $14 D
+V.PDLHd equ $16 D
+V.RSV equ $18 D
+
+* Char defs type K
+C$NULL equ 0
+C$RPET equ $01
+C$INTR equ $03
+C$RPRT equ $04
+C$QUIT equ $05
+C$BELL equ $07
+C$BSP equ $08
+C$EL equ $05
+C$LF equ $0A
+C$HOME equ $0B
+C$Clsgr equ $15
+C$Clsall equ $16
+C$CR equ $0D
+C$FORM equ $0C
+C$SI equ $0F
+C$SO equ $0E
+C$XON  equ $11
+C$XOFF equ $13
+C$PAUS equ $17
+C$DEL equ $18
+C$EOF equ $1B
+C$RGT equ $1C
+C$LFT equ $1D
+C$UP equ $1E
+C$DWN equ $1F
+C$SPAC equ $20
+C$PERD equ $2e
+C$COMA equ $2c
+
+* Path Descriptor offsets type Z
+PD.PD equ $00 Z
+PD.MOD equ 1 Z
+PD.CNT equ 2 Z
+PD.DEV equ 3 Z
+PD.CPR equ 5 Z
+PD.RGS equ 6 Z
+PD.BUF equ 7 Z
+
+PD.DV2 equ $0a Z
+PD.RAW equ $0c Z
+PD.MAX equ $0d Z
+PD.MIN equ $0f Z
+PD.STS equ $10 Z
+PD.STM equ $12 Z
+
+* PD.DTP equ $20 Z
+PD.UPC equ $21 Z
+PD.BSO equ $22 Z
+PD.DLO equ $23 Z
+PD.EKO equ $24 Z
+PD.ALF equ $25 Z
+PD.NUL equ $26 Z
+PD.PAU equ $27 Z
+PD.PAG equ $28 Z
+PD.BSP equ $29 Z
+PD.DEL equ $2a Z
+PD.EOR equ $2b Z
+PD.EOF equ $2c Z
+PD.RPR equ $2d Z
+PD.DUP equ $2e Z
+PD.PSC equ $2f Z
+PD.INT equ $30 Z
+PD.QUT equ $31 Z
+PD.BSE equ $32 Z
+PD.OVF equ $33 Z
+PD.PAR equ $34 Z
+PD.BAU equ $35 Z
+PD.D2P equ $36 Z
+PD.XON equ $38 Z
+PD.XOFF equ $39 Z
+OPTCNT equ $1a Z
+PD.ERR equ $3a Z
+PD.TBL equ $3b Z
+

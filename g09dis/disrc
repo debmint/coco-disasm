@@ -1,0 +1,10 @@
+style "fixedfont"
+{
+	font_name = "monospace 9"
+#	font_name = " Courier Italic 10 "
+}
+
+#class "GtkText" style "fixedfont"
+
+widget "*txtwin" style "fixedfont"
+

@@ -1,0 +1,109 @@
+* rbf.LBL -- for use with Dynamite in disassembling
+* RBF-type drivers, etc
+
+* Universal Path Descriptor offsets type Z
+PD.PD equ $00 Z
+PD.MOD equ 1 Z
+PD.CNT equ 2 Z
+PD.DEV equ 3 Z
+PD.CPR equ 5 Z
+PD.RGS equ 6 Z
+PD.BUF equ 8 Z
+
+* RBF-specific Path descriptor offsets type Z
+PD.SMF equ $0a Z
+PD.CP equ $0b Z
+PD.SIZ equ $0f Z
+PD.SBL equ $13 Z Z
+PD.SBP equ $16 Z
+PD.SSZ equ $19 Z
+PD.DSK equ $1c Z
+PD.DTB equ $1e Z
+PD.DRV equ $21 Z
+PD.STP equ $22 Z
+PD.TYP equ $23 Z
+PD.DNS equ $24 Z
+PD.CYL equ $25 Z
+PD.SID equ $27 Z
+PD.VFY equ $28 Z
+PD.SCT equ $29 Z
+PD.T0S equ $2b Z
+PD.ILV equ $2d Z
+PD.SAS equ $2e Z
+PD.TFM equ $2f Z
+PD.Exten equ $30 Z
+PD.SToff equ $32 Z
+PD.ATT equ $33 Z
+PD.FD equ $34 Z
+PD.DFD equ $37 Z
+PD.DCP equ $3a Z
+PD.DVT equ $3e Z
+*BUFMOD equ $01
+*SINBUF equ $02
+*FDBUF equ $04
+*EOFSEC equ $08
+*EOF equ $10
+*InDriver equ $20
+*BufBusy equ $40
+
+* LSN0 offsets type Y
+
+DD.TOT equ $0 Y
+DD.TKS equ $3 Y
+DD.MAP equ $4 Y
+DD.BIT equ $6 Y
+DD.DIR equ $8 Y
+DD.OWN equ $0b Y
+DD.ATT equ $0d Y
+DD.DSK equ $0e Y
+DD.FMT equ $10 Y
+DD.SPT equ $11 Y
+DD.RES equ $13 Y
+*DD.SIZ equ $. Y
+DD.BT equ $15 Y
+DD.BSZ equ $18 Y
+DD.DAT equ $1a Y
+DD.NAM equ $1f Y
+DD.OPT equ $22 Y
+
+* These are not on LSN0, but are in the table for
+* each individual Drive Table, so Make Type T
+
+V.TRAK equ $15 T
+V.BMB equ $17 T
+V.FileHd equ $18 T
+V.DiskID equ $1a T
+V.BMapSz equ $1c T
+V.MapSct equ $1d T
+V.ResBit equ $1e T
+
+* FD offsets type F
+FD.ATT equ $0 F
+FD.OWN equ $1 F
+FD.DAT equ $3 F
+FD.LNK equ $8 F
+FD.SIZ equ $9 F
+FD.Creat equ $0d F
+*FD.SEG equ $0d F
+
+* Static storage names type D
+* since they are in Data area
+* --Universal types
+
+V.PAGE equ $00 D
+V.PORT equ $01 D
+V.LPROC equ $03 D
+V.BUSY equ $04 D
+V.WAKE equ $05 D
+V.NDRV equ $6 D
+V.LINE equ $07 D
+V.PAUS equ $08 D
+V.DEV2 equ $09 D
+V.INTR equ $0b D
+V.QUIT equ $0c D
+V.PCHR equ $0d D
+V.ERR equ $0e D
+
+* Device static storage -- RBF specific
+
+DRVBEG equ $0f D
