@@ -1,0 +1,49 @@
+To compile these sources, especially g09dis, specific packages must be
+present.
+
+If you have the binary for g09dis, you will need several runtime packages
+for GTK.  For Linux distributions, these should be available in their
+packages.  For Windows several alternatives are available.  There are at
+least two install executables available for a MinGW install.  In addition
+to these, zip files are available from Tor Lillqvist's page.  These pages
+can be accessed by following the links for GTK or Gimp for Windows from
+either http://www.gimp.org, or http://www.gimp.org.
+
+These packages, to my understanding, work under MinGW, but not Cygwin.  But
+I also understand that there are GTK packages available for Cygwin, also.
+
+To compile g09dis, the corresponding -dev packages must also be installed.
+I believe this would apply to Linux as well as Windows.  For Windows, the
+install binaries come either as run-time only or a combination of run-time
+and development packages.
+
+To compile, either package, untar the package file and cd into the top
+directory.  Run ./configure to build your Makefiles.
+
+Both programs can be compiled simultaneously from the top Makefile, or you
+can cd into the individual directories and compile either program
+individually.  
+
+One package that is required is pkg-config.  This is a program that will
+output (to stdout) the CFLAGS and LIBS options needed by certain package.
+Again, this package is provided by most Linux distros, and is available for
+Windows also.  One source for the Windows version is from Tor Lillqvist's
+download page. It is approximately a 35-K download.  It is used for compiling
+g09dis, and not for os9disasm, but due to a limitation with the Windows port
+of gcc, I could not find a way to implement it in the g09dis Makefile.am
+without writing specific commands to link the objects, so I wound up having
+to reference it in the top-level, thus adding a requirement for os9disasm
+that would not be necesary, in that pkg-config _must_ be present in order
+for ./configure to run.  Sorry about that for those who only wish to compile
+os9disasm, but, again, it's not a really big download.
+
+BUILDING and INSTALLING DOCUMENTATION
+--------
+
+It was decided that documentation building and installing would not be
+done automatically, because it might not be desirable for some people.
+
+Therefore, at least for now, the documentation will be controlled by
+a manually-created Makefile in the doc directory (os9disasm/doc).
+Please read the README in that directory for information on how to
+install.

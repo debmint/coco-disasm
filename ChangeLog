@@ -1,0 +1,9 @@
+Note: See the "changelog" files in the respective source directories
+      for details on the individual programs.
+
+------------------------------------------------
+
+cocodis (0.1)
+  * Converted to using autotools for building Makefiles
+
+-- dlb    Tue, 23 Nov 2004 21:53:54 -0600
