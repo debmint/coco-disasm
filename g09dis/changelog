@@ -1,4 +1,11 @@
 
+filestuff.c
+    * When loading Listing or Label file, call g_strstrip() rather
+      than changing \n to NULL.  This will eliminate \r's, if present,
+      also.
+
+  davebree    Thu, 28 Oct 2004 20:50:29 -0500
+
 dasmedit.c
     * The combo box entry for the Label Class is now stored in a
       global GList *.  A group of default Classes are read into this

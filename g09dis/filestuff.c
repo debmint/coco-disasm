@@ -525,11 +525,10 @@ load_tree1 (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     {
         GtkTreeIter iter;
 
-        /* get rid of newline, if present */
-        if (strstr (buffer, "\n"))
-        {
-            *(strstr (buffer, "\n")) = '\0';
-        }
+        /* get rid of newlines and leading/trailing whitespaces,
+         * if present
+         */
+        g_strstrip(buffer);
         
         splits = g_strsplit (buffer, "\t", LST_NCOLS);
 
@@ -580,11 +579,10 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     {
         register char *newbuf;
 
-        /* get rid of newline, if present */
-        if (strstr (buffer, "\n"))
-        {
-            *(strstr (buffer, "\n")) = '\0';
-        }
+        /* get rid of newline, leading/trailing whitespaces
+         * if present
+         */
+        g_strstrip(buffer);
 
         /* get rid of leading whitespaces */
         newbuf = g_strchug (buffer);
