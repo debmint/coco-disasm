@@ -1,0 +1,64 @@
+
+filestuff.c
+    * Added functin to "Build to GUI".  with this option set, GUI will
+      read output of -g optioned os9disasm directly into the List view
+      window
+    * Renamed load_tree1() to load_list_tree()
+
+ -- davebree    Fri, 29 Oct 2004 14:36:32 -0500
+
+filestuff.c
+    * When loading Listing or Label file, call g_strstrip() rather
+      than changing \n to NULL.  This will eliminate \r's, if present,
+      also.
+
+  davebree    Thu, 28 Oct 2004 20:50:29 -0500
+
+dasmedit.c
+    * The combo box entry for the Label Class is now stored in a
+      global GList *.  A group of default Classes are read into this
+      list on first usage, and kept.  Later, we'll add the feature by
+      which additional classes can be added.  Perhaps by both manual
+      one-by-one entry, and possibly also by being read in from a file.
+
+ -- davebree    Fri, 01 Oct 2004 10:53:14 -0500
+
+filestuff.c
+    * In function save_warn_OW() added variable fn, to copy filename
+      to, and pointed it to string "Untitled" if fnam was NULL.  Used
+      it in the dialog.  It didn't bother in Linux, but if fnam was NULL,
+      it caused a segfault in Windows (MinGW).
+
+g09dis.c
+    * removed def "GtkWidget *window".  It was defined here and also in
+      g09dis.h (both globally).  It seems that this should have caused
+      some problem, but didn't seem to..
+
+ -- davebree    Thu, 30 Sep 2004 12:32:02 -0500
+
+menu.c, dasmedit.c
+    * Added function(s) to delete a line in the label list
+    * Added function(s) to insert a line in the label list
+
+ -- davebree    Wed, 29 Sep 2004 12:23:27 -0500
+
+g09dis.c, filestuff.c
+    * added feature to notify user upon exit that the files have been
+      altered and give opportunity to save (also, this notification if
+      about to overwrite them when loading a new file.
+
+ -- davebree    Tue, 28 Sep 2004 17:15:20 -0500
+
+g09dis.c
+    * changed main window title from "G-Os9Disasm" to "G-O9Disasm"
+
+ -- davebree    Tue, 28 Sep 2004 17:12:42 -0500
+
+dasmedit.c
+    * introduced dasmedit.c to the sources
+      - This file should handle all the editing functions for the command
+        and label files.
+
+ -- davebree    Thu, 09 Sep 2004 18:19:02 -0500
+
+sorry, no history previous to this...
