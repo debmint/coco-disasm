@@ -55,7 +55,7 @@ ListRoot (char symbol)
  * ************************************************* */
 
 void
-dataget (struct databndaries *bp, char c, int k)
+no_dataget (struct databndaries *bp, char c, int k)
 {
     int x;
     char bf[6];
@@ -487,6 +487,7 @@ addlbl (int loc, char C)
     strncpy (me->sname, &lblorder[C - 1], 1);
     sprintf (tmplbl, "%04x", loc & 0xffff);
     strncat (me->sname, tmplbl, 4);
+    
     if (UpCase)
         UpString (me->sname);
     (int) (me->myaddr) = loc;

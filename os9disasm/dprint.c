@@ -124,7 +124,7 @@ StartPage ()
     tm = localtime (&now);
 
     printf
-        ("OS9 Cross Disassembler - Ver. 01.00.00    %02d/%02d/%02d %02d:%02d:%02d      Page %03d\n\n",
+        ("OS9 Cross Disassembler - Ver. %s    %02d/%02d/%02d %02d:%02d:%02d      Page %03d\n\n", VERSION,
          tm->tm_mon + 1, tm->tm_mday, tm->tm_year + 1900, tm->tm_hour,
          tm->tm_min, tm->tm_sec, PgNum);
     PgLin = 2;
@@ -179,26 +179,43 @@ NonBoundsLbl ()
     }
 }
 
+/* ****************************** *
+ * RsOrg() - print RSDos org line *
+ * ****************************** */
 
-/* OS9Modline()  - print out OS9 mod line */
+void
+RsOrg ()
+{
+    struct printbuf PBf,  *prtbf = &PBf;
+
+    memset (prtbf, 0, sizeof (struct printbuf));
+    strcpy (prtbf->mnem, "org");
+    sprintf (prtbf->operand, "%04x", ModLoad);
+    PrintLine (realcmd, prtbf);
+}
+
+/* ************************************** *
+ * OS9Modline()  - print out OS9 mod line *
+ * Note: We're going to assume that the   *
+ *    file is positioned at the right     *
+ *    place - we may try merged modules   *
+ * ************************************** */
 
 void
 OS9Modline ()
 {
     struct nlist *LL = SymLst[strpos (lblorder, 'L')];
-    register struct modhead *mhd = (struct modhead *) ModBegin;
     struct printbuf PBf, *prtbf = &PBf;
     char hbf[10];
+    long progstart = ftell (progpath);
 
     hbf[0] = '\0';
     InProg = 0;
     memset (prtbf, 0, sizeof (struct printbuf));
-    PBFcp (hbf, "%04x", ModBegin, 2);
-    sscanf (hbf, "%04x", &CmdEnt);
+    CmdEnt = o9_fgetword (progpath);
 
-    PBFcp (prtbf->instr, "%04x", &ModBegin[2], 2);
+    sprintf (prtbf->instr, "%04x", o9_fgetword (progpath));
 
-    /*sscanf(hbf,"%08x",&CmdEnt); */
     PrevEnt = CmdEnt + 1;       /* To prevent NonBoundsLbl() printouts */
 
     strcpy (prtbf->mnem, "mod");
@@ -206,7 +223,7 @@ OS9Modline ()
     /* Now copy the operand line */
     sprintf (prtbf->operand, "%s,%s,$%02x,$%02x,%s",
              FindLbl (LL, ModSiz)->sname, FindLbl (LL, ModNam)->sname,
-             (mhd->M_Type), (mhd->M_Revs), FindLbl (LL, ModExe)->sname);
+             ModTyp, ModRev, FindLbl (LL, ModExe)->sname);
     if (HdrLen == 13)
     {
         strcat (prtbf->operand, ",");
@@ -216,6 +233,18 @@ OS9Modline ()
     /*PrintLine("%5d  %08x %-10s%s %-10s %-6s %s\n",prtbf); */
     PrintLine (pseudcmd, prtbf);
     InProg = 1;
+    fseek (progpath, progstart+HdrLen, SEEK_SET);
+}
+
+/* **************************************** *
+ * coco_wrt_end() - write the end statement *
+ * to the listing                           *
+ * **************************************** */
+
+void
+coco_wrt_end (void)
+{
+    /* Fill in later */
 }
 
 /* WrtEmod() - writes EMOD statement to OS9 file */
@@ -224,11 +253,14 @@ WrtEmod ()
 {
     struct printbuf PBf, *prtbf = &PBf;
     register struct nlist *nl;
+    int first;
+    unsigned char last;
 
     CmdEnt = Pc;
     memset (prtbf, 0, sizeof (struct printbuf));
-    PBFcp (prtbf->instr, "%04x", &ModBegin[Pc], 2);
-    PBFcat (prtbf->instr, "%02x", &ModBegin[Pc + 2], 1);
+    first = o9_fgetword (progpath);
+    last = fgetc (progpath);
+    sprintf(prtbf->instr, "%04x%02x", first, last); 
     strcpy (prtbf->mnem, "emod");
     BlankLine ();
 /*	PrintLine("%5d  %06x %-12s%s %-10s %-6s %s\n",prtbf);*/

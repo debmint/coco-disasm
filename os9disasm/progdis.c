@@ -16,6 +16,7 @@
 # Purpose:  do disassembly of program file                                   #
 #############################################################################*/
 
+#define _GNU_SOURCE
 #include "odis.h"
 #include "dtble.h"
 
@@ -39,6 +40,7 @@ extern char *pseudcmd, *realcmd;
 
 char CmdBuf[10];                /* buffer to hold bytes of cmd code */
 int UnkCount;                   /* Count of unknowns now being held */
+int cofset;
 
 struct databndaries *curbnd;
 struct databndaries *amodes[sizeof (lblorder)];
@@ -47,143 +49,53 @@ struct printbuf *pbuf = &PBuf;
 
 int CodEnd;                     /* End of executable code (ModSize-3 for OS9 */
 
-/* progdis(): mainline disassembly routine	*/
-void
-progdis ()
-{
-    /* Work done by pass 1:
-     *      read code char by char.. determine addresses
-     *      and set up all labels by type.  The user-defined
-     *      mnemonic label names are not read at this time
-     */
-
-    LinNum = PgLin = 0;
-
-    /* Be sure we start with a clear pbuf */
-    memset (pbuf, 0, sizeof (struct printbuf));
-
-    if (Pass2)
-    {
-        if (OSType == OS_9)
-            OS9Modline ();
-        WrtEquates (1);         /* now do standard named labels */
-        WrtEquates (0);         /* write non-standard labels */
-        if (OSType == OS_9)
-            OS9DataPrint ();
-    }
-
-    /* Now begin parsing through program */
-
-
-    Pc = HdrLen;                /* Entry point for executable code */
-    while (Pc < (CodEnd))
-    {
-        register struct databndaries *bp;
-
-        CmdLen = 0;
-        strcpy (CmdBuf, "");
-        /* Try this to see if it avoids buffer overflow */
-        memset (pbuf, 0, sizeof (struct printbuf));
-        CmdEnt = Pc;
-        /* check if in data boundary */
-        if ((bp = ClasHere (dbounds, Pc)))
-        {
-            NsrtBnds (bp);
-        }
-        else
-        {
-            /* CodEnd added so code won't be generated past
-             * CRC bytes for OS9 Module     */
-            if (GetCmd () && (Pc <= CodEnd))
-            {
-                if (Pass2)
-                {
-                    PrintLine (realcmd, pbuf);
-                }
-
-                /* allocate byte */
-            }                   /* if ! GetCmd  */
-            else
-            {
-                if (Pass2)
-                {
-                    memset (pbuf, 0, sizeof (struct printbuf));
-                    sprintf (pbuf->instr, "%02x", ModBegin[CmdEnt] & 0xff);
-                    strcpy (pbuf->mnem, "fcb");
-                    strcpy (pbuf->operand, "$");
-                    PBFcat (pbuf->operand, "%02x", &ModBegin[CmdEnt], 1);
-                    PrintLine (pseudcmd, pbuf);
-                }
-                Pc = ++CmdEnt;
-            }
-        }
-    }
-    if (Pass2)
-    {
-        if (OSType == OS_9)
-            WrtEmod ();
-    }
-}
-
-/*  NsertBnds():	Insert boundary area */
-
-void
-NsrtBnds (struct databndaries *bp)
-{
-    memset (pbuf, 0, sizeof (struct printbuf));
-    AMode = 0;                  /* To prevent LblCalc from defining class */
-    NowClass = bp->b_class;
-    PBytSiz = 1;                /* Default to one byte length */
-
-    switch (bp->b_typ)
-    {
-    case 1:                    /* Ascii */
-        MovASC ((bp->b_hi) - (bp->b_lo) + 1);
-        break;                  /* bump PC  */
-    case 6:                    /* Word */
-    case 4:                    /* Long */
-        PBytSiz = 2;            /* Takes care of both Word & Long */
-    case 2:                    /* Byte */
-    case 5:                    /* Short */
-        /*if( (bp->b_typ==1) || (bp->b_typ==5) )
-           PBytSiz=1;
-           else
-           PBytSiz=2; */
-        MovBytes (bp);
-        break;
-    case 3:                    /* "C"ode .. not implememted yet */
-        break;
-    default:
-        break;
-    }
-    NowClass = 0;
-    /*Pc=(bp->b_hi)+PBytSiz; *//* Not needed for Pass2, but no harm */
-}
-
-void
+static void
 MovBytes (struct databndaries *db)
 {
     char tmps[20];
-    int x;
+    /*int leftbit, rightbit;*/
+    int valu;
 
     CmdEnt = Pc;
+    
     while (Pc <= db->b_hi)
     {
         tmps[0] = '\0';
-        x = (PBytSiz == 1 ? (unsigned char) ModBegin[Pc] :
-             o9_int (&ModBegin[Pc]) & 0xffff);
-        LblCalc (tmps, x, AMode);
+        /*leftbit*/valu = fgetc (progpath);
+        
+        if (PBytSiz == 2)
+        {
+            /*rightbit = fgetc (progpath);
+            LblCalc (tmps, ((leftbit << 8) + rightbit), AMode);*/
+            valu = (valu << 8) + fgetc (progpath);
+        }
+        LblCalc (tmps, valu, AMode);
+        
         if (Pass2)
         {
-            if (strlen (pbuf->instr) < 12)
+            if (strlen (pbuf->instr) < 10)
             {
-                PBFcat (pbuf->instr, "%02x ", &ModBegin[Pc], 1);
-                if ((PBytSiz == 2) && (strlen (pbuf->instr) < 12))
-                    PBFcat (pbuf->instr, "%02x ", &ModBegin[Pc + 1], 1);
+                char tmp[20];
+                
+                if (PBytSiz == 1)
+                {
+                    sprintf (tmp, "%02x ", valu);
+                }
+                else
+                {
+                    sprintf (tmp, "%04x ", valu);
+                }
+                
+                strcat (pbuf->instr, tmp);
             }
+            
             if (strlen (pbuf->operand))
+            {
                 strcat (pbuf->operand, ",");
+            }
+            
             strcat (pbuf->operand, tmps);
+            
             if (strlen (pbuf->operand) > 22)
             {
                 strcpy (pbuf->mnem, PBytSiz == 1 ? "fcb" : "fdb");
@@ -200,104 +112,12 @@ MovBytes (struct databndaries *db)
     }
 }
 
-/* MovAsc() - Move nb byes int fcc (or fcs) statement */
-void
-MovASC (int nb)
-{
-    register unsigned char *h = &ModBegin[Pc];
-    char oper_tmp[30];
-
-    memset (pbuf, 0, sizeof (pbuf));
-    strcpy (pbuf->mnem, "fcc"); /* Default mnemonic to "fcc" */
-    CmdEnt = Pc;
-
-    *oper_tmp = '\0';
-    while (nb--)
-    {
-        register int x;
-        char c[6];
-
-        if ((isprint (x = *h)) || (x & 0x80 && UseFCC && isprint (x & 0x7f)))
-        {
-            if (Pass2)
-            {
-                if (strlen (pbuf->instr) < 12)
-                    PBFcat (pbuf->instr, "%02x ", h, 1);
-                x &= 0x7f;
-                sprintf (c, "%c", x);
-                strcat (oper_tmp, c);
-                if (Pass2 && (*(h) & 0x80))
-                {
-                    strcpy (pbuf->mnem, "fcs");
-                    AddDelims (pbuf->operand, oper_tmp);
-                    PrintLine (pseudcmd, pbuf);
-                    *oper_tmp = '\0';
-                    CmdEnt = Pc + 1;
-                    strcpy (pbuf->mnem, "fcc");
-                }
-                if ((strlen (oper_tmp) > 24) ||
-                    (strlen (oper_tmp) && FindLbl (ListRoot ('L'), Pc + 1)))
-                {
-                    AddDelims (pbuf->operand, oper_tmp);
-                    PrintLine (pseudcmd, pbuf);
-                    *oper_tmp = '\0';
-                    CmdEnt = Pc + 1;
-                    strcpy (pbuf->mnem, "fcc");
-                }
-            }
-        }
-        else
-        {                       /* it's a control character */
-            if (Pass2 && (strlen (oper_tmp)))
-            {
-                AddDelims (pbuf->operand, oper_tmp);
-                PrintLine (pseudcmd, pbuf);
-                *oper_tmp = '\0';
-                CmdEnt = Pc;
-            }
-            
-            if (!Pass2)
-            {
-                if ((x & 0x7f) < 33)
-                {
-                    addlbl (x & 0x7f, strpos (lblorder, '^'));
-                }
-            }
-            else
-            {
-                /* a dummy ptr to pass to Printlbl() to satify prototypes */
-                struct nlist *nlp;
-                
-                /* do the following to keep gcc quiet about uninitialized
-                 * variable.. If we're wrong, we'll get a segfault letting
-                 * us know of our mistake.. */
-
-                nlp = NULL;
-                
-                strcpy (pbuf->mnem, "fcb");
-                PrintLbl (pbuf->operand, strpos (lblorder, '^'), x, nlp);
-                sprintf (pbuf->instr, "%02x", x & 0xff);
-                PrintLine (pseudcmd, pbuf);
-                strcpy (pbuf->mnem, "fcc");
-            }
-            CmdEnt = Pc + 1;
-        }
-        ++Pc;
-        ++h;
-    }
-    if (strlen (oper_tmp))
-    {                           /* Clear out any pending string */
-        AddDelims (pbuf->operand, oper_tmp);
-        PrintLine (pseudcmd, pbuf);
-        *oper_tmp = '\0';
-    }
-}
-
-        /* AddDelims() - Add delimiters for fcc/fcs operand -
-         *              checks string for nonexistand delimiter
-         *              and copies string with delims to destination
-         */
-void
+/* ********************************************************* *
+ * AddDelims() - Add delimiters for fcc/fcs operand -        *
+ *              checks string for nonexistand delimiter      *
+ *              and copies string with delims to destination *
+ * ********************************************************* */
+static void
 AddDelims (char *dest, char *src)
 {
     char delim = '"';
@@ -342,68 +162,187 @@ AddDelims (char *dest, char *src)
         }
     }
     
-    /* if (strchr (src, '"'))
-    {
-        if (!strchr (src, '\x27'))*/  /* single quote */
-        /*{
-            delim = '\x27';
-        }
-        else
-        {
-            if (!strchr (src, '/'))
-            {
-                delim = '/';
-            }
-            else
-            {
-                if (!strchr (src, '#'))
-                {
-                    delim = '#';
-                }
-                else
-                {
-                    if (!strchr (src, '\\'))
-                    {
-                        delim = '\\';
-                    }
-                }
-            }
-        }
-    }*/
-
     sprintf (dest, "%c%s%c", delim, src, delim);
 }
 
+/* ************************************************** *
+ * MovAsc() - Move nb byes int fcc (or fcs) statement *
+ * ************************************************** */
 
-        /* IsCode() - Checks to see if code pointed to by p is valid code.
-         * Returns: pointer to valid lkuptable entry or 0 on fail
-         */
+static void
+MovASC (int nb)
+{
+    char oper_tmp[30];
 
-struct lkuptbl *
-IsCmd (char *p)
+    memset (pbuf, 0, sizeof (pbuf));
+    strcpy (pbuf->mnem, "fcc"); /* Default mnemonic to "fcc" */
+    CmdEnt = Pc;
+
+    *oper_tmp = '\0';
+    while (nb--)
+    {
+        register int x;
+        char c[6];
+
+        x = fgetc (progpath);
+        
+        if ((isprint (x)) || ((x & 0x80) && UseFCC && isprint (x & 0x7f)))
+        {
+            if (Pass2)
+            {
+                if (strlen (pbuf->instr) < 12)
+                {
+                    /*PBFcat (pbuf->instr, "%02x ", h, 1);*/
+                    sprintf (c, "%02x ", x);
+                    strcat (pbuf->instr, c);
+                }
+                
+                sprintf (c, "%c", x & 0x7f);
+                strcat (oper_tmp, c);
+                
+                if (Pass2 && (x & 0x80))
+                {
+                    strcpy (pbuf->mnem, "fcs");
+                    AddDelims (pbuf->operand, oper_tmp);
+                    PrintLine (pseudcmd, pbuf);
+                    *oper_tmp = '\0';
+                    CmdEnt = Pc + 1;
+                    strcpy (pbuf->mnem, "fcc");
+                }
+                
+                if ((strlen (oper_tmp) > 24) ||
+                    (strlen (oper_tmp) && FindLbl (ListRoot ('L'), Pc + 1)))
+                {
+                    AddDelims (pbuf->operand, oper_tmp);
+                    PrintLine (pseudcmd, pbuf);
+                    *oper_tmp = '\0';
+                    CmdEnt = Pc + 1;
+                    strcpy (pbuf->mnem, "fcc");
+                }
+            }   /* end if (Pass2) */
+        }
+        else
+        {                       /* it's a control character */
+            if (Pass2 && (strlen (oper_tmp)))
+            {
+                AddDelims (pbuf->operand, oper_tmp);
+                PrintLine (pseudcmd, pbuf);
+                *oper_tmp = '\0';
+                CmdEnt = Pc;
+            }
+            
+            if (!Pass2)
+            {
+                if ((x & 0x7f) < 33)
+                {
+                    addlbl (x & 0x7f, strpos (lblorder, '^'));
+                }
+            }
+            else
+            {
+                /* a dummy ptr to pass to Printlbl() to satify prototypes */
+                struct nlist *nlp;
+                
+                /* do the following to keep gcc quiet about uninitialized
+                 * variable.. If we're wrong, we'll get a segfault letting
+                 * us know of our mistake.. */
+
+                nlp = NULL;
+                
+                strcpy (pbuf->mnem, "fcb");
+                PrintLbl (pbuf->operand, strpos (lblorder, '^'), x, nlp);
+                sprintf (pbuf->instr, "%02x", x & 0xff);
+                PrintLine (pseudcmd, pbuf);
+                strcpy (pbuf->mnem, "fcc");
+            }
+            CmdEnt = Pc + 1;
+        }
+        ++Pc;
+    }  /* end while (nb--) - all chars moved */
+    
+    if (strlen (oper_tmp))
+    {                           /* Clear out any pending string */
+        AddDelims (pbuf->operand, oper_tmp);
+        PrintLine (pseudcmd, pbuf);
+        *oper_tmp = '\0';
+    }
+}
+
+/* ********************************* *
+ * NsertBnds():	Insert boundary area *
+ * ********************************* */
+
+static void
+NsrtBnds (struct databndaries *bp)
+{
+    memset (pbuf, 0, sizeof (struct printbuf));
+    AMode = 0;                  /* To prevent LblCalc from defining class */
+    NowClass = bp->b_class;
+    PBytSiz = 1;                /* Default to one byte length */
+
+    switch (bp->b_typ)
+    {
+        case 1:                    /* Ascii */
+            MovASC ((bp->b_hi) - (bp->b_lo) + 1);
+            break;                  /* bump PC  */
+        case 6:                    /* Word */
+        case 4:                    /* Long */
+            PBytSiz = 2;            /* Takes care of both Word & Long */
+        case 2:                    /* Byte */
+        case 5:                    /* Short */
+            /*if( (bp->b_typ==1) || (bp->b_typ==5) )
+               PBytSiz=1;
+               else
+               PBytSiz=2; */
+            MovBytes (bp);
+            break;
+        case 3:                    /* "C"ode .. not implememted yet */
+            break;
+        default:
+            break;
+    }
+    
+    NowClass = 0;
+    /*Pc=(bp->b_hi)+PBytSiz; *//* Not needed for Pass2, but no harm */
+}
+
+/* ************************************************************** *
+ * IsCmd() - Checks to see if code pointed to by p is valid code. *
+ * Returns: pointer to valid lkuptable entry or 0 on fail         *
+ * ************************************************************** */
+
+static struct lkuptbl *
+IsCmd (int *fbyte, int *csiz)
 {
     struct lkuptbl *T;          /* pointer to appropriate tbl   */
     register int sz;            /* # entries in this table      */
-    char c;
+    int c = fgetc (progpath);
 
-    switch (c = *p)
+    *csiz = 2;
+    
+    switch (*fbyte = c)
     {
-    case '\x10':
-        T = Pre10;
-        c = *(++p);
-        sz = sizeof (Pre10) / sizeof (Pre10[0]);
-        break;
-    case '\x11':
-        T = Pre11;
-        c = *(++p);
-        sz = sizeof (Pre11) / sizeof (Pre11[0]);
-        break;
-    default:
-        T = Byte1;
-        sz = sizeof (Byte1) / sizeof (struct lkuptbl);
-        break;
+        case '\x10':
+            T = Pre10;
+            /*c = *(++p);*/
+            c = fgetc (progpath);
+            *fbyte =(*fbyte <<8) + c;
+            sz = sizeof (Pre10) / sizeof (Pre10[0]);
+            break;
+        case '\x11':
+            T = Pre11;
+            /*c = *(++p);*/
+            c = fgetc (progpath);
+            *fbyte =(*fbyte <<8) + c;
+            sz = sizeof (Pre11) / sizeof (Pre11[0]);
+            break;
+        default:
+            *csiz = 1;
+            T = Byte1;
+            sz = sizeof (Byte1) / sizeof (struct lkuptbl);
+            break;
     }
-
+    
     while ((T->cod != c))
     {
         if (--sz == 0)
@@ -411,38 +350,282 @@ IsCmd (char *p)
         ++T;
     }
     AMode = T->amode;
+    
     return ((T->cod == c) && (T->t_cpu <= CpuTyp)) ? T : 0;
 }
 
-/*	GetCmd():	parse through data and collect bytes of cmd */
-int
+/* *************************************************** *
+ * GetIdxOffset () - Reads offset bytes for an indexed *
+ *   instruction  (1 or 2 depending on the postbyte)   *
+ * Passed:  The postbyte                               *
+ * Returns: The signed integer offset read from the    *
+ *   current file position                             *
+ *   Also updates Pc by size of "offset"               *
+ * *************************************************** */
+
+static int
+GetIdxOffset (int postbyte)
+{
+    int offset,
+        msk;
+
+    char byt_offset;
+
+    /* Set up for n,R or n,PC later if other
+     * cases don't apply */
+    
+    switch (postbyte & 1)
+    {                   /* postbyte size */
+    case 0:            /* single byte */
+        byt_offset = (char)fgetc (progpath);
+        offset = (int)byt_offset;;
+        break;
+    default:           /* 16-bit (only other option */
+        msk = o9_fgetword (progpath);
+
+        if (msk > 0x7fff)
+        {
+            offset = (-1) ^ 0xffff;
+        }
+        else
+        {
+            offset = 0;
+        }
+        
+        offset |= msk;
+        
+        break;
+    }
+
+    Pc += (postbyte & 1) + 1;
+
+    return offset;
+}
+
+static int
+TxIdx ()
+{
+    int postbyte;
+    struct databndaries *kls;   /* Class for this address */
+    int offset;
+    char myclass;
+    char oper1[25],
+         oper2[5],
+         tmp[20];
+    char regNam;
+
+    *oper1 = *oper2 = '\0';
+    sprintf (tmp, "%02x ", (postbyte = fgetc (progpath)));
+    strcat (pbuf->opcod, tmp);
+    ++Pc;
+
+    /* Extended indirect    [mmnn] */
+    
+    if (postbyte == 0x9f)
+    {
+        register unsigned short da;
+
+        AMode = AM_EXT;
+
+        da = o9_fgetword (progpath);
+        sprintf (tmp, "%04x", da);
+        strcat (pbuf->opcod, tmp);
+        Pc += 2;
+
+        LblCalc (oper1, da, AMode);
+        strcat (pbuf->operand, "[");
+        strcat (pbuf->operand, oper1);
+        strcat (pbuf->operand, "]");
+        return 1;
+    }
+    else
+    {
+        regNam = RegOrdr[((postbyte >> 5) & 3)];       /* Current register offset */
+        if (UpCase)
+            regNam = toupper (regNam);
+        AMode += (postbyte >> 5) & 3;
+
+        if (!(postbyte & 0x80))
+        {                       /* 0RRx xxxx = 5-bit    */
+            int sbit;           /*the offset portion of the postbyte */
+
+            if (!(postbyte & 0x1f))    /* 0,r not valid asm mode? */
+                return 0;
+            sbit = postbyte & 0x0f;
+
+            if (postbyte & 0x10)
+            {                   /* sign bit */
+                /* Test the following */
+                /*      sbit = 0x10-sbit;
+                   strcpy(pbuf->operand,"-"); */
+                sbit -= 0x10;
+            }
+            
+            LblCalc (oper1, sbit, AMode);
+            sprintf (oper2, "%s,%c", oper1, regNam);
+            strcat (pbuf->operand, oper2);
+            return 1;
+        }
+        else
+        {
+            if ((kls = ClasHere (LAdds[AMode], Pc)))
+            {
+                myclass = kls->b_typ;
+                /* set up offset if present */
+            }
+            else
+            {
+                myclass = DEFAULTCLASS;
+            }
+
+            PBytSiz = (postbyte & 1) + 1;
+
+            switch (postbyte & 0x0f)
+            {
+            case 0:
+                sprintf (oper1, ",%c+", regNam);
+                break;
+            case 1:
+                sprintf (oper1, ",%c++", regNam);
+                break;
+            case 2:
+                sprintf (oper1, ",-%c", regNam);
+                break;
+            case 3:
+                sprintf (oper1, ",--%c", regNam);
+                break;
+            case 4:
+                sprintf (oper1, ",%c", regNam);
+                break;
+            case 5:
+                sprintf (oper1, "b,%c", regNam);
+                if (UpCase)
+                    UpString (oper1);
+                break;
+            case 6:
+                sprintf (oper1, "a,%c", regNam);
+                if (UpCase)
+                    UpString (oper1);
+                break;
+            case 0x0b:
+                sprintf (oper1, "d,%c", regNam);
+                if (UpCase)
+                    UpString (oper1);
+                break;
+            case 0x08:         /* <n,R */
+            case 0x09:         /* >nn,R */
+                offset = GetIdxOffset (postbyte);
+               
+                if (offset < 0x127 && offset > -128 &&  (postbyte & 1))
+                {
+                    strcpy (oper1, ">");
+                }
+
+                LblCalc (oper1, offset, AMode);
+                sprintf (oper2, ",%c", regNam);
+
+                if (postbyte & 1)
+                {
+                    sprintf (tmp, "%04x", offset & 0xffff);
+                }
+                else
+                {
+                    sprintf (tmp, "%02x", offset & 0xff);
+                }
+
+                strcat (pbuf->opcod, tmp);
+                break;
+            case 0x0c:         /* n,PC (8-bit) */
+            case 0x0d:         /*nn,PC (16 bit) */
+                offset = GetIdxOffset (postbyte);
+                AMode = AM_REL;
+                /* below is a temporary fix */
+                myclass = DEFAULTCLASS;
+
+                /* Define the following because offset is unsigned */
+                if (((offset < 0x127) && (offset > -128)) && (postbyte & 1))
+                {
+                    strcpy (oper1, ">");
+                }
+                else
+                {
+                    if (!(postbyte & 1))
+                    {
+                        strcpy (oper1, "<");
+                    }
+                }
+
+                if (postbyte & 1)
+                {
+                    sprintf (tmp, "%04x", offset & 0xffff);
+                }
+                else
+                {
+                    sprintf (tmp, "%02x", offset & 0xff);
+                }
+
+                strcat (pbuf->opcod, tmp);
+                /*Pc += (postbyte & 1) + 1;*/
+
+                LblCalc (oper1, offset, AMode);
+                sprintf (oper2, ",%s", "pcr");
+                break;
+            default:           /* Illegal Code */
+                return 0;
+            }
+        }
+    }
+    if (UpCase)
+        UpString (oper2);
+
+    if (postbyte & 0x10)
+    {
+        strcat (pbuf->operand, "[");
+        strcat (pbuf->operand, strcat (oper1, oper2));
+        strcat (pbuf->operand, "]");
+    }
+    else
+    {
+        strcat (pbuf->operand, strcat (oper1, oper2));
+    }
+
+    return 1;
+}
+
+/* **************************************************** *
+ * GetCmd(): parse through data and assemble (if valid) *
+ *         an assembler command.                        *
+ * Return Status:                                       *
+ *    Success: file positioned at next command          *
+ *    Failure: file positioned same as entry            *
+ * **************************************************** */
+
+static int
 GetCmd ()
 {
-    char *p, tmp[25];
+    char tmp[25];
+    int firstbyte;  /* First byte of code */
     struct lkuptbl *tbl;
-    register int offset = 0, noncode = 0;
-    unsigned char pbyte;
+    int pcbump = 0, noncode = 0;
+    unsigned int pbyte;
     char **cptr;
+    int offset;
+    char byte_offset;
+    long file_pos = ftell (progpath);   /* Save entry position in file */
 
     *tmp = '\0';
     CmdLen = 0;
     CmdEnt = Pc;                /* Save this entry point for case of bad code */
 
-    p = &(ModBegin[Pc]);        /* Start at first byte */
-
-    /*while( !(tbl=IsCmd( &(ModBegin[Pc]) )) ) { */
-    if (!(tbl = IsCmd (&(ModBegin[Pc]))))
+    if (!(tbl = IsCmd (&firstbyte, &pcbump)))
     {
         /*      ++Pc;
            ++noncode; */
         /* Need to provide for cleanup of noncode */
+        /* Reset file pos to begin */
+        fseek ( progpath, file_pos, SEEK_SET);
         return 0;
     }
-
-    /* At this point
-     *   |  |  |  |  |  |  | ...
-     *   ^           ^
-     *   p    Pc=first executable code      */
 
     /* If illegal code is present, then print it out if pass 2 */
     if (noncode && Pass2)
@@ -451,24 +634,18 @@ GetCmd ()
          * p - 1 is noncode     */
         return 0;
     }
-    p = &ModBegin[Pc];          /* Now set ptr to current code begin */
+    
     /* Now move stuff to printer buffer */
-    switch (ModBegin[CmdEnt])
+    
+    if (pcbump == 2)
     {
-    case '\x10':
-    case '\x11':
-        offset = 2;
-        break;
-    default:
-        offset = 1;
+        sprintf (pbuf->instr, "%04x", firstbyte);
     }
-    if (offset == 2)
-        PBFcp (pbuf->instr, "%04x", &ModBegin[CmdEnt], 2);
     else
-        PBFcp (pbuf->instr, "%02x", &ModBegin[CmdEnt], 1);
+        sprintf (pbuf->instr, "%02x", firstbyte);
 
-    Pc += offset;
-    offset = 0;                 /* reset offset - not sure if needed */
+    Pc += pcbump;
+    pcbump = 0;                 /* reset offset - not sure if needed */
     strcpy (pbuf->mnem, tbl->mnem);
     AMode = tbl->amode;
     PBytSiz = tbl->adbyt;
@@ -476,13 +653,14 @@ GetCmd ()
     /* Special case for OS9 */
     if ((OSType == OS_9) && !(strncasecmp (tbl->mnem, "swi2", 4)))
     {
-        register unsigned char ch;
+        register unsigned int ch;
         register struct nlist *nl;
 
         strcpy (pbuf->mnem, "os9");
 
-        ch = ModBegin[Pc++];
-        sprintf (pbuf->opcod, "%02x", ch);
+        sprintf (pbuf->opcod, "%02x", (ch = fgetc (progpath)));
+        ++Pc;
+        
         if (!Pass2)
         {
             addlbl (ch, strpos (lblorder, '!'));
@@ -503,16 +681,19 @@ GetCmd ()
     /* TODO  add addressing mode for this!!! */
     if (strstr (tbl->mnem, "im"))
     {
-        unsigned char im = ModBegin[Pc++];
+        unsigned int im = fgetc (progpath);
+
+        ++Pc;
         sprintf (pbuf->opcod, "%02x", im);
         sprintf (pbuf->operand, "#$%02x,", im);
     }
 
     switch (AMode)
     {
-        register int ct;
+        register int ct,
+                 tmpbyt;
         register char **regpt;
-        char tmpbyt, tmpbuf[15];
+        char tmpbuf[15];
 
 
     case AM_INH:
@@ -525,11 +706,16 @@ GetCmd ()
         return 1;
         break;
     case AM_PSH:
-        pbyte = ModBegin[Pc++];
+        pbyte = fgetc (progpath);
+        ++Pc;
         sprintf (pbuf->opcod, "%02x", pbyte & 0xff);
         cptr = PshPuls;
+        
         if ((pbyte == 0x36) || (pbyte == 0x37))
+        {
             cptr = PshPulu;
+        }
+        
         for (ct = 0; ct < 8; ct++)
         {
             if (pbyte & 1)
@@ -546,7 +732,8 @@ GetCmd ()
         }
         break;
     case AM_TFM:
-        pbyte = ModBegin[Pc++];
+        pbyte = fgetc (progpath);
+        ++Pc;
         sprintf (pbuf->opcod, "%02x", pbyte & 0xff);
         ct = (pbyte >> 4) & 0x0f;
         pbyte &= 0x0f;
@@ -555,6 +742,7 @@ GetCmd ()
         {
             return 0;           /* Illegal */
         }
+        
         /* do r0 */
         strcpy (pbuf->operand, RegReg[ct]);
 
@@ -569,9 +757,11 @@ GetCmd ()
                 strcat (pbuf->operand, "-");
             }
         }
+        
         /* now "r1" */
         strcat (pbuf->operand, ",");
         strcat (pbuf->operand, RegReg[(pbyte) & 0x0f]);
+        
         switch (tbl->cod)
         {
         case 0x38:
@@ -595,7 +785,8 @@ GetCmd ()
             regpt = RegR03;
         }
 
-        pbyte = ModBegin[Pc++];
+        pbyte = fgetc (progpath);
+        ++Pc;
         sprintf (pbuf->opcod, "%02x", pbyte & 0xff);
         ct = (pbyte >> 4) & 0x0f;
         pbyte &= 0x0f;
@@ -638,27 +829,35 @@ GetCmd ()
         switch (tbl->adbyt)
         {
         case 4:                /* only one instance, "ldq (immediate mode)" */
-            offset = o9_int (&ModBegin[Pc]);
+            offset = o9_fgetword (progpath);
             sprintf (pbuf->opcod, "%04x", offset & 0xffff);
             strcat (pbuf->operand, "$");
             strcat (pbuf->operand, pbuf->opcod);
             Pc += 2;
-            offset = o9_int (&ModBegin[Pc]);
+
+            offset = o9_fgetword (progpath);
             sprintf (tmpbuf, "%04x", offset & 0xffff);
             strcat (pbuf->opcod, tmpbuf);
             strcat (pbuf->operand, tmpbuf);
             Pc += 2;
             return 1;           /* done */
         case 2:
-            offset = o9_int (&ModBegin[Pc]);
+            offset = o9_fgetword (progpath);
             sprintf (tmpbuf, "%04x", offset & 0xffff);
             strcat (pbuf->opcod, tmpbuf);
             Pc += 2;
             break;
         default:
-            offset = ModBegin[Pc++];
+            /* Go through byte_offset to get signed stuff working */
+            byte_offset = (char)fgetc (progpath);
+            offset = (int)byte_offset;
+            ++Pc;
+            
             if ((AMode == AM_DRCT) || (AMode == AM_BYTI))
+            {
                 offset &= 0xff;
+            }
+            
             sprintf (tmpbuf, "%02x", offset & 0xff);
             strcat (pbuf->opcod, tmpbuf);
             break;
@@ -669,7 +868,9 @@ GetCmd ()
         break;
 
     case AM_BIT:
-        pbyte = ModBegin[Pc++];
+        pbyte = fgetc (progpath);
+        ++Pc;
+        
         sprintf (pbuf->opcod, "%02x", pbyte);
         pbyte &= 0xff;
         tmpbyt = pbyte >> 6;
@@ -681,7 +882,8 @@ GetCmd ()
         tmpbyt = (pbyte >> 3) & 0x7;
         sprintf (tmpbuf, "%d,", tmpbyt);
         strcat (pbuf->operand, tmpbuf);
-        sprintf (tmpbuf, "$%02x", ModBegin[Pc++]);
+        sprintf (tmpbuf, "$%02x", fgetc (progpath));
+        ++Pc;
         strcat (pbuf->operand, tmpbuf);
         strcat (pbuf->operand, ".");
         strcat (pbuf->opcod, &tmpbuf[1]);
@@ -697,196 +899,6 @@ GetCmd ()
     return 1;
 }
 
-int
-TxIdx ()
-{
-    unsigned char c = ModBegin[Pc];
-    struct databndaries *kls;   /* Class for this address */
-    short offset;
-    char myclass;
-    char oper1[25];
-    char oper2[5];
-    char regNam;
-
-    *oper1 = *oper2 = '\0';
-    PBFcat (pbuf->opcod, "%02x ", &ModBegin[Pc++], 1);
-
-    /* Extended indirect    [mmnn] */
-    if (c == 0x9f)
-    {
-        register unsigned short da;
-
-        AMode = AM_EXT;
-        da = o9_int (&ModBegin[Pc]);
-        PBFcat (pbuf->opcod, "%04x", &ModBegin[Pc], 2);
-        Pc += 2;
-
-        LblCalc (oper1, da, AMode);
-        /*sprintf(pbuf->operand,"[%s]",oper1); */
-        strcat (pbuf->operand, "[");
-        strcat (pbuf->operand, oper1);
-        strcat (pbuf->operand, "]");
-        return 1;
-    }
-    else
-    {
-        regNam = RegOrdr[((c >> 5) & 3)];       /* Current register offset */
-        if (UpCase)
-            regNam = toupper (regNam);
-        AMode += (c >> 5) & 3;
-
-        if (!(c & 0x80))
-        {                       /* 0RRx xxxx = 5-bit    */
-            int sbit;           /*the offset portion of the postbyte */
-
-            if (!(c & 0x1f))    /* 0,r not valid asm mode? */
-                return 0;
-            sbit = c & 0x0f;
-
-            if (c & 0x10)
-            {                   /* sign bit */
-                /* Test the following */
-                /*      sbit = 0x10-sbit;
-                   strcpy(pbuf->operand,"-"); */
-                sbit -= 0x10;
-            }
-            LblCalc (oper1, sbit, AMode);
-            sprintf (oper2, "%s,%c", oper1, regNam);
-            strcat (pbuf->operand, oper2);
-            return 1;
-        }
-        else
-        {
-            if ((kls = ClasHere (LAdds[AMode], Pc)))
-            {
-                myclass = kls->b_typ;
-                /* set up offset if present */
-            }
-            else
-            {
-                myclass = DEFAULTCLASS;
-            }
-            /* Set up for n,R or n,PC later if other
-             * cases don't apply */
-            switch (c & 1)
-            {                   /* postbyte size */
-            case 0:            /* single byte */
-                offset = ModBegin[Pc];
-                break;
-            default:           /* 16-bit (only other option */
-                offset = o9_int (&ModBegin[Pc]);
-                break;
-            }
-            PBytSiz = (c & 1) + 1;
-
-            switch (c & 0x0f)
-            {
-            case 0:
-                sprintf (oper1, ",%c+", regNam);
-                break;
-            case 1:
-                sprintf (oper1, ",%c++", regNam);
-                break;
-            case 2:
-                sprintf (oper1, ",-%c", regNam);
-                break;
-            case 3:
-                sprintf (oper1, ",--%c", regNam);
-                break;
-            case 4:
-                sprintf (oper1, ",%c", regNam);
-                break;
-            case 5:
-                sprintf (oper1, "b,%c", regNam);
-                if (UpCase)
-                    UpString (oper1);
-                break;
-            case 6:
-                sprintf (oper1, "a,%c", regNam);
-                if (UpCase)
-                    UpString (oper1);
-                break;
-            case 0x0b:
-                sprintf (oper1, "d,%c", regNam);
-                if (UpCase)
-                    UpString (oper1);
-                break;
-            case 0x08:         /* <n,R */
-            case 0x09:         /* >nn,R */
-                if (offset < 0x127 && offset > -128 && c & 1)
-                    strcpy (oper1, ">");
-                LblCalc (oper1, offset, AMode);
-                sprintf (oper2, ",%c", regNam);
-                PBFcat (pbuf->opcod, c & 1 ? "%04x" : "%02x",
-                        &ModBegin[Pc], (c & 1) + 1);
-                Pc += (c & 1) + 1;
-                break;
-            case 0x0c:         /* n,PC (8-bit) */
-            case 0x0d:         /*nn,PC (16 bit) */
-                AMode = AM_REL;
-                /* below is a temporary fix */
-                myclass = DEFAULTCLASS;
-                PBFcat (pbuf->opcod, c & 1 ? "%04x" : "%02x",
-                        &ModBegin[Pc], (c & 1) + 1);
-                Pc += (c & 1) + 1;
-
-                if (offset < 0x127 && offset > -128 && c & 1)
-                    strcpy (oper1, ">");
-                else if (!(c & 1))
-                    strcpy (oper1, "<");
-
-                LblCalc (oper1, offset, AMode);
-                sprintf (oper2, ",%s", "pcr");
-                break;
-            default:           /* Illegal Code */
-                return 0;
-            }
-        }
-    }
-    if (UpCase)
-        UpString (oper2);
-
-    if (c & 0x10)
-    {
-        /*sprintf( pbuf->operand, "[%s%s]",oper1,oper2); */
-        strcat (pbuf->operand, "[");
-        strcat (pbuf->operand, strcat (oper1, oper2));
-        strcat (pbuf->operand, "]");
-    }
-    else
-    {
-        /*sprintf( pbuf->operand, "%s%s",oper1,oper2); */
-        strcat (pbuf->operand, strcat (oper1, oper2));
-    }
-
-    return 1;
-}
-
-/* WrtOfst - write operand data to tmp buffer */
-
-int
-WrtOfst (int adr, char clas, char *dst1, char *dst2, char *RgN, int bytlen)
-{
-    struct nlist *nl;
-
-    if (!Pass2)
-    {
-        addlbl (adr, clas);
-    }
-    else
-    {
-        if (!(nl = FindLbl (SymLst[(int) clas], adr)))
-            return 0;
-        PBFcat (pbuf->opcod, (bytlen == 2 ? "%04x" : "%02x"),
-                &ModBegin[Pc], bytlen);
-        strcpy (dst1, nl->sname);
-        strcat (dst1, ",");
-        strcat (dst2, RgN);
-    }
-    Pc += bytlen;
-    return 1;
-}
-
 /*	This that follows may not be exactly what we will use
  *	but save it.. it's the pattern for pasing the tree
  */
@@ -894,7 +906,7 @@ WrtOfst (int adr, char clas, char *dst1, char *dst2, char *RgN, int bytlen)
 
 char prfmt[] = "%10s %04x\n";
 
-void
+static void
 DoPrt (struct nlist *nl)
 {
     if (!nl)
@@ -930,11 +942,43 @@ listlbls ()
     }
 }
 
+/* ******************************** *
+ * rsdoshdr () - read and interpret *
+ *    preamble info                 *
+ * ******************************** */
+
+void
+rsdoshdr (void)
+{
+    char *here = ModBegin;
+    
+    if ( *(here++) )
+    {
+        fprintf (stderr, "First character in file %s not 0\n", modfile);
+        exit (1);
+    }
+
+    CodEnd = o9_int (here);
+    here += 2;
+    ModLoad = o9_int (here);
+    /*EndAdr = (int)ModBegin + CodEnd;*/
+    CmdEnt = ModLoad;
+    Pc = ModLoad;
+    CodEnd += ModLoad;
+    cofset = ModLoad - 5;
+    fprintf(stderr, "ModLoad = %x   CodEnd = %x\n", ModLoad, CodEnd);
+}
+
+/* ****************************** *
+ * os9hdr () - read and interpret *
+ *    module header               *
+ * ****************************** */
+
 void
 os9hdr (void)
 {
     /* Check to be sure it _is_ a 6809 Memory Module */
-    if ((*ModBegin != '\x87') || (ModBegin[1] != '\xCD'))
+    if (o9_fgetword (progpath) != 0x87cd)
     {
         fprintf (stderr, "The file %s is NOT a 6809 Memory Module!!!\n",
                  modfile);
@@ -942,35 +986,177 @@ os9hdr (void)
     }
 
     /* Translate Header information in Header to big-endian format */
-    {
-        register struct modhead *mhd = (struct modhead *) ModBegin;
+    ModSiz = o9_fgetword (progpath);
+    addlbl (ModSiz, strpos (lblorder, 'L'));
+    ModNam = o9_fgetword (progpath);
+    addlbl (ModNam, strpos (lblorder, 'L'));
+    ModTyp = fgetc (progpath);
+    ModRev = fgetc (progpath);
+    fgetc (progpath);  /* Discard the parity byte */
+    ModExe = o9_fgetword (progpath);
+    addlbl (ModExe, strpos (lblorder, 'L'));
 
-        ModSiz = o9_int (mhd->M_Size);
-        addlbl (ModSiz, strpos (lblorder, 'L'));
-        ModNam = o9_int (mhd->M_Name);
-        addlbl (ModNam, strpos (lblorder, 'L'));
-        ModExe = o9_int (mhd->M_Exec);
-        addlbl (ModExe, strpos (lblorder, 'L'));
-        ModTyp = (unsigned int) mhd->M_Type;
-        if ((ModTyp < 3) || (ModTyp == 0x0c) || (ModTyp > 0x0b))
+    if ((ModTyp < 3) || (ModTyp == 0x0c) || (ModTyp > 0x0b))
+    {
+        ModData = o9_fgetword (progpath);
+        PBytSiz = 2;        /* Kludge??? */
+        addlbl (ModData, strpos (lblorder, 'D'));
+        HdrLen = 13;
+    }
+    else
+    {
+        ModData = -1;       /* Flag as not used */
+        HdrLen = 9;
+    }
+    CodEnd = ModSiz - 3;
+
+    /* EndAdr: Ptr to end of code (less OS9 CRC bytes
+     * .. actually, next byte past last executable code
+     * .. (first byte of CRC
+     */
+    /*EndAdr = (int) ModBegin + ModSiz - 3;*/
+}
+
+/* *************************************** *
+ * progdis(): mainline disassembly routine *
+ * *************************************** */
+
+void
+progdis ()
+{
+    /* Work done by pass 1:
+     *      read code char by char.. determine addresses
+     *      and set up all labels by type.  The user-defined
+     *      mnemonic label names are not read at this time
+     */
+
+    long old_pos;
+    
+    LinNum = PgLin = 0;
+
+    /* Be sure we start with a clear pbuf */
+    memset (pbuf, 0, sizeof (struct printbuf));
+
+    if (Pass2)
+    {
+        switch (OSType)
         {
-            ModData = o9_int (mhd->M_Mem);
-            PBytSiz = 2;        /* Kludge??? */
-            addlbl (ModData, strpos (lblorder, 'D'));
-            HdrLen = 13;
+            case OS_Coco:
+                RsOrg ();
+                break;
+            default: /* OS_9 */
+                OS9Modline ();
+        }
+        
+        WrtEquates (1);         /* now do standard named labels */
+        WrtEquates (0);         /* write non-standard labels */
+        
+        if (OSType == OS_9)
+        {
+            OS9DataPrint ();
+        }
+    }
+
+    /* Now begin parsing through program */
+
+
+    switch (OSType)
+    {
+        case OS_Coco:
+            Pc = ModLoad;
+            break;
+        default:               /* Os9 */
+            Pc = HdrLen;       /* Entry point for executable code */
+    }
+    
+    while (Pc < (CodEnd))
+    {
+        register struct databndaries *bp;
+
+        CmdLen = 0;
+        strcpy (CmdBuf, "");
+        /* Try this to see if it avoids buffer overflow */
+        memset (pbuf, 0, sizeof (struct printbuf));
+        CmdEnt = Pc;
+        
+        /* check if in data boundary */
+        if ((bp = ClasHere (dbounds, Pc)))
+        {
+            NsrtBnds (bp);
         }
         else
         {
-            ModData = -1;       /* Flag as not used */
-            HdrLen = 9;
-        }
-        CodEnd = ModSiz - 3;
+            old_pos = ftell (progpath);
+            
+            /* CodEnd added so code won't be generated past
+             * CRC bytes for OS9 Module     */
+            if (GetCmd () && (Pc <= CodEnd))
+            {
+                if (Pass2)
+                {
+                    PrintLine (realcmd, pbuf);
+                }
 
-        /* EndAdr: Ptr to end of code (less OS9 CRC bytes
-         * .. actually, next byte past last executable code
-         * .. (first byte of CRC
+                /* allocate byte */
+            }                   /* if ! GetCmd  */
+            else
+            {
+                /* Restore file position to orig */
+
+                fseek (progpath, old_pos, SEEK_SET);
+                int bcode = fgetc (progpath);
+                
+                if (Pass2)
+                {
+                    char *pp;
+                    
+                    memset (pbuf, 0, sizeof (struct printbuf));
+                    sprintf (pbuf->instr, "%02x", bcode);
+                    strcpy (pbuf->mnem, "fcb");
+                    pp = stpcpy (pbuf->operand, "$");
+                    sprintf (pp, "%02x", bcode);
+                    PrintLine (pseudcmd, pbuf);
+                }
+                
+                Pc = ++CmdEnt;
+            }
+        }
+
+        /* Coco Dos supports multiple block loads.
+         * If we're at the end of the current block,
+         * check to see if another follows, and, if so,
+         * Update pointers to new state
          */
-        EndAdr = (int) ModBegin + ModSiz - 3;
+
+        if ((OSType == OS_Coco) && (Pc == CodEnd))
+        {
+            int hstart;
+            
+            if ((hstart = fgetc (progpath)) == 0)  /* Another Block of code follows */
+            {
+                int newlgth;
+
+                newlgth = o9_fgetword (progpath);
+                ModLoad = o9_fgetword (progpath);
+                CodEnd = ModLoad+newlgth;
+                Pc = ModLoad;
+            }
+            else
+            {
+                ungetc (hstart, progpath);
+            }
+        }
     }
 
+    if (Pass2)
+    {
+        switch (OSType)
+        {
+            case OS_Coco:
+                coco_wrt_end ();
+                break;
+            default:
+                WrtEmod ();
+        }
+    }
 }

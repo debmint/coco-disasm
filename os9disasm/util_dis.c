@@ -18,6 +18,25 @@
 
 #include "odis.h"
 
+/* *********************************** *
+ * o9_fgetword() - get a 6809-formatted *
+ *   word (double byte) from stream    *
+ * Passed: FILE stream                 *
+ * Returns big-endian WORD             *
+ * *********************************** */
+
+int
+o9_fgetword(FILE *fp)
+{
+    int msb,
+        lsb;
+    
+    msb = fgetc(fp);
+    lsb = fgetc(fp);
+
+    return ((msb<<8) + lsb);
+}
+
 /* o9_int() - read a string integer representation and conv to int    */
 
 int

@@ -1,3 +1,11 @@
+os9disasm (0.2.0)
+  * dprint.c, lbltree.c, os9disasm.c, progdis.c, util_dis.c, dtble.h, odis.h
+    + Input method for binary module/file changed from loading module into
+      memory and reading from memory, to reading data from file directly.
+      This was done mainly because it was going to be difficult to handle
+      multiple blocks for RSDos files.
+
+-- davebree    Mon, 13 Dec 2004 16:43:05 -0600
 
   * cmdfile.c
     + previous patch broke a few amode/boundary things..  fixed them

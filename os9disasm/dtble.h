@@ -23,7 +23,7 @@
 /* Lookup table to find mnemonic names	*/
 
 struct lkuptbl {
-	char cod;	/* Opcode for command	*/
+	int cod;	/* Opcode for command	*/
 	char amode;	/* Addressing mode	*/
 	char mnem[6];	/* Mnemonic for asm	*/
 	int t_cpu;

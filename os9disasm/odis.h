@@ -11,6 +11,7 @@
 # Purpose: general header file for os9disasm                               #
 ##########################################################################*/
 
+#include <config.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -48,8 +49,9 @@
 #include "structures.h"  /* All structure definitions */
 
 /* File and filename pointers */
-GLOBAL FILE *inpath,	/* program file we're disassembling	*/
-	    *outpath;	/* .asm file if -o specified		*/
+GLOBAL FILE *progpath, /* The program module (or file) we're disassembling */
+            *inpath,  /* generic input stream */
+	        *outpath;	/* .asm file if -o specified		*/
 GLOBAL char *modfile;  /* Filename of module    */
 GLOBAL char *asmfile;	/* output asm source file	*/
 GLOBAL char *cmdfilename;
@@ -105,19 +107,22 @@ GLOBAL char OS9Dflt[]	/* Default addressing modes for diff. OS's */
 ;
 
 
+GLOBAL unsigned int ModLoad; /* Load address for RS-Dos module */
+
 	/* Module info from OS9 module header */
 GLOBAL unsigned int ModSiz,
 		    ModNam,
 		    ModExe,
 		    ModTyp,  /* only one byte, but probably saves processing */
 		    ModData,
+            ModRev,
 		    HdrLen;	/* (probably useful for other OS's, too) */
 
 /* The following are variables used by the disassembly process */
 
 	/* EndAdr is a ptr to the end of the executable code in our buffer
 	 * ... less 3-byte CRC value of OS9 */
-GLOBAL int EndAdr;
+/*GLOBAL int EndAdr;*/
 GLOBAL char *ModBegin;	/* Ptr to in-memory prog we're reading	*/
 GLOBAL int Pass2;	/* Flag as to which pass we're in	*/
 GLOBAL int Pc;		/* The "Program counter"..		*/

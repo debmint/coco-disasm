@@ -41,6 +41,8 @@ usage ()
     fprintf (stderr,
              "	-d  -  define path to defs files  (default=$HOME/coco/defs)\n");
     fprintf (stderr, "	-3  -  target CPU is 6309 (accept 6309 opcodes)\n");
+    fprintf (stderr, "  -x[=]<type> - Target OS\n");
+    fprintf (stderr, "                C=Coco (default = OS9)\n");
     return;
 }
 
@@ -137,6 +139,21 @@ do_opt (char *c)
         if (!(outpath = fopen (asmfile, "wb")))
             nerrexit ("Cannot open output file\n");
         WrtSrc = 1;
+        break;
+    case 'x':
+        pt = pass_eq (pt);
+
+        switch (toupper(*pt))
+        {
+            case 'C':
+                OSType = OS_Coco;
+                fprintf(stderr, "You are disassembling for coco\n");
+                break;
+            default:
+                fprintf (stderr, "Error, undefined OS type: %s\n", pt);
+                exit (1);
+        }
+
         break;
     case 's':                  /* Label filename       */
         if (LblFilz < MAX_LBFIL)
@@ -245,11 +262,17 @@ pass1 ()
 
     /* do os9hdr here so that header values will be known */
 
-    OSType = OS_9;
-    /*DEBUG*/ UseFCC = 1;
-    /*DEBUG*/                   /*Temporary fix */
-        if (OSType == OS_9)
-        os9hdr ();
+    /* OSType = OS_9;*/
+
+    switch (OSType)
+    {
+        case OS_Coco:
+            rsdoshdr ();
+            break;
+        default:   /* default is OS_9 */
+            UseFCC = 1;
+            os9hdr ();
+    }
 
     if (cmdfilename)
     {
@@ -487,7 +510,7 @@ main (int argc, char **argv)
         FileSize = (int) statbf.st_size;
     }
 
-    if (!(inpath = fopen (modfile, "rb")))
+    if (!(progpath = fopen (modfile, "rb")))
     {
         fprintf (stderr, "Cannot open infile (%s) to read\n", modfile);
         exit (errno);
@@ -497,7 +520,11 @@ main (int argc, char **argv)
      * trying to read from the file
      */
 
-    if (!(ModBegin = malloc (FileSize + 100)))
+    /* discontinue this - we're going to read file directly now
+     * (hopefully)
+     */
+    
+    /*if (!(ModBegin = malloc (FileSize + 100)))
     {
         fprintf (stderr, "Error!!  Cannot malloc memory for infile!\n");
         exit (errno);
@@ -507,12 +534,13 @@ main (int argc, char **argv)
         fprintf (stderr, "Error!! Didn't read all of file %s\n", modfile);
         exit (errno);
     }
-    fclose (inpath);            /* Don't need to read file anymore      */
+    fclose (inpath);*/
 
     pass1 ();
     progdis ();
     GetLabels ();               /* Read in Label files */
     Pass2 = 1;
+    rewind (progpath);
     progdis ();
     exit (0);
 }
