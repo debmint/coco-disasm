@@ -3,6 +3,8 @@
  * This version is based upon GtkActionEntry and GUIManager *
  * ******************************************************** */
 
+/* Id:$ */
+
 #include <stdlib.h>
 #include <string.h>
 #include "g09dis.h"

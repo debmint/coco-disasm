@@ -2,6 +2,7 @@
  *                                                 *
  * odisopts.c - setup options to pass to assembler *
  *                                                 *
+ * $Id$ *
  * NOTE:  This newer version will create the       *
  *   widgets within a single table rather than     *
  *   stacking hboxes within the dialog->vbox       *

@@ -2,6 +2,8 @@
  * common header file for all modules *
  * ********************************** */
 
+/* $Id$ */
+
 #ifdef MAIN
 #	define GLOBAL
 #else

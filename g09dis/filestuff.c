@@ -1,3 +1,8 @@
+/* *********************************** *
+ * filestuff.c - handles file I/O, etc *
+ * $Id: *
+ * *********************************** */
+
 #include <gtk/gtk.h>
 #include "g09dis.h"
 #include <stdio.h>
