@@ -25,6 +25,7 @@ V.PDLHd equ $16 D
 V.RSV equ $18 D
 
 * Char defs type K
+*\ K - Char defs (C$XX)
 C$NULL equ 0
 C$RPET equ $01
 C$INTR equ $03
@@ -55,6 +56,8 @@ C$PERD equ $2e
 C$COMA equ $2c
 
 * Path Descriptor offsets type Z
+
+*\ Z - Path Descriptor (PD.XX)
 PD.PD equ $00 Z
 PD.MOD equ 1 Z
 PD.CNT equ 2 Z

@@ -1,6 +1,6 @@
 * rbf.LBL -- for use with Dynamite in disassembling
 * RBF-type drivers, etc
-
+*\ Z - Path Descriptor (PD.XX)
 * Universal Path Descriptor offsets type Z
 PD.PD equ $00 Z
 PD.MOD equ 1 Z
@@ -48,6 +48,7 @@ PD.DVT equ $3e Z
 
 * LSN0 offsets type Y
 
+*\ Y - LSN0 offsets (DD.XX)
 DD.TOT equ $0 Y
 DD.TKS equ $3 Y
 DD.MAP equ $4 Y
@@ -77,6 +78,7 @@ V.BMapSz equ $1c T
 V.MapSct equ $1d T
 V.ResBit equ $1e T
 
+*\ F - FD offsets (FD.XX)
 * FD offsets type F
 FD.ATT equ $0 F
 FD.OWN equ $1 F

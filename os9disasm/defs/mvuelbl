@@ -2,7 +2,7 @@
 * MVuelbl - Labels pertaining to MultiVue definitions
 
 * Define Window defs Type W
-
+*\ W - Window types (WN.XX)
 WN.TTL equ 0 W
 WN.NMNS equ 20 W
 WN.XMIN equ 21 W
@@ -12,7 +12,7 @@ WN.RES equ 25 W
 WN.BAR equ 32 W
 
 * Define Menu Descriptor Type N
-
+*\ Menu Descriptors (MN.XX)
 MN.TTL equ 0 N
 MN.ID equ 15 N
 MN.XSIZ equ 16 N
@@ -23,12 +23,14 @@ MN.ITEMS equ 21 N
 
 * Define Item Descriptor Type M
 
+*\ M -Menu Item  (MI.XX)
 MI.TTL equ 0 M
 MI.ENBL equ $0F M
 MI.RES equ $10 M
 
 * Define Window Type Defs Type Y
 
+*\ Y - Window Types (WT.Xx)
 WT.NBox equ 0 Y
 WT.FWin equ 1 Y
 WT.FSWin equ 2 Y
@@ -38,6 +40,7 @@ WT.PBox equ 5 Y
 
 * Define Mouse Packet def Type K
 
+*\ K - Mouse Packet (PT.Xx)
 Pt.Valid equ 0 K
 Pt.Actv equ $01 K
 Pt.ToTm equ $02 K
