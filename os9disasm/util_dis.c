@@ -16,25 +16,29 @@
 # Purpose: Contain common utilities needed by all prog                       #
 ############################################################################*/
 
-#include "odis.h" 
+#include "odis.h"
 
 /* o9_int() - read a string integer representation and conv to int    */
 
-int o9_int(char *o9num)
+int
+o9_int (char *o9num)
 {
-	unsigned int msb=(unsigned char)o9num[0],
-		     lsb=(unsigned char)o9num[1];
-	
-	if( !o9num ) return -1;
-	return( (msb<<8) + lsb );
+    unsigned int msb = (unsigned char) o9num[0],
+        lsb = (unsigned char) o9num[1];
+
+    if (!o9num)
+        return -1;
+    return ((msb << 8) + lsb);
 }
 
-char *skipblank(char *p) {
-	while((*p==' ') || (*p=='\t'))
-		++p;
-	if( *p == '\n' )
-		p=0;
-	return p;
+char *
+skipblank (char *p)
+{
+    while ((*p == ' ') || (*p == '\t'))
+        ++p;
+    if (*p == '\n')
+        *p = 0;
+    return p;
 }
 
 /* Strpos():  similar to strchr except that it returns the
@@ -42,11 +46,12 @@ char *skipblank(char *p) {
  * actual memory address
  */
 
-int strpos(char *s,char c)
+int
+strpos (char *s, char c)
 {
-	register char *p;
+    register char *p;
 
-	return( (p=strchr(s,c)) ? (p-s)+1 : 0 );
+    return ((p = strchr (s, c)) ? (p - s) + 1 : 0);
 /*	if( p=strchr(s,c) )
 		return p-s+(char *)1;
 	else
@@ -58,27 +63,29 @@ int strpos(char *s,char c)
  * *pbuf->instr and pbuf->operand positions  
  */
 
-void PBFcp(char *dst, char *fmt,unsigned char *src, int sz)
+void
+PBFcp (char *dst, char *fmt, unsigned char *src, int sz)
 {
-	register unsigned int x;
+    register unsigned int x;
 
-	x =  (sz==2) ? o9_int(src) : *src;
-	sprintf(dst,fmt,x);
+    x = (sz == 2) ? o9_int (src) : *src;
+    sprintf (dst, fmt, x);
 }
 
 /* PBFcat():	same as PBFcp() except that it cats onto an existing
  * string
  */
 
-void PBFcat(char *dst, char *fmt,unsigned char *src, int sz)
+void
+PBFcat (char *dst, char *fmt, unsigned char *src, int sz)
 {
-	register unsigned int x;
-	char buf[6];
+    register unsigned int x;
+    char buf[6];
 
-	x =  (sz==2) ? o9_int(src) : *src;
-	x &= (sz==1 ? 0xff : 0xffff);
-	sprintf(buf,fmt,x);
-	strcat(dst,buf);
+    x = (sz == 2) ? o9_int (src) : *src;
+    x &= (sz == 1 ? 0xff : 0xffff);
+    sprintf (buf, fmt, x);
+    strcat (dst, buf);
 }
 
 /* zalloc()  - mallocs memory and if successful, nulls out everything */
@@ -91,4 +98,3 @@ void PBFcat(char *dst, char *fmt,unsigned char *src, int sz)
 		memset(myadr,0,size);
 	return myadr;
 }*/
-
