@@ -17,6 +17,7 @@ char *movdigit(char *dst, char *src);
 int endofcmd(char *pp);
 void nerrexit(char *l);
 /* dprint.c */
+void tabinit(void);
 void PrintLine(char *pfmt, struct printbuf *pb);
 void UpString(char *s);
 void PrintFormatted(char *pfmt, struct printbuf *pb);
@@ -40,15 +41,8 @@ void movchr(char *dst, unsigned char ch);
 struct nlist *addlbl(int loc, char C);
 struct nlist *FindLbl(struct nlist *nl, int loc);
 /* os9disasm.c */
-void usage(void);
-int main(int argc, char **argv);
 void do_opt(char *c);
-char *pass_eq(char *pr);
-void pass1(void);
-void mkpath(char *dest, char *defdir, char *basename);
-void GetLabels(void);
-void RdLblFile(void);
-void InitDefaults(void);
+int main(int argc, char **argv);
 /* progdis.c */
 void progdis(void);
 void NsrtBnds(struct databndaries *bp);

@@ -1,7 +1,21 @@
+
 os9disasm.c
-   *davebree
-      +fixed -pd, -pw opts - left out breaks in switch
-      +added a few comments
+  * davebree
+    + Added function build_path() -  which attemts to resolve
+      pathnames.  Resolves ~/ to absolute path ( also if present in DefDir),
+    + If a filename is simply a basename, search first in current dir, else
+      in Defdir.
+    + Rearranged functions [put main() last] such that called functions
+      precede calling functions - so that they prototype themselves - and
+      redefined many static functions (most in this module) as such.
+    + Removed mkpath() {replaced by build_path()}.
+
+-- davebree    Thu, 04 Nov 2004 20:12:31 -0600
+
+os9disasm.c
+   * davebree
+     + Fixed -pd, -pw opts - had left out breaks in switch statements
+     + Added a few comments
 
  -- davebree     Fri, 13 Aug 2004 16:44:40 -0500
  

@@ -26,7 +26,8 @@ char *DefDir;
 static char *myhome;	/* pointer to HOME environment name */
 char	rdbuf[500];
 
-void usage()
+static void
+usage()
 {
 	fprintf(stderr,"Syntax: os9dis [opts] <module filename> [opts]\n");
 	fprintf(stderr," Options:\n");
@@ -43,90 +44,14 @@ void usage()
 	return;
 }
 
-int main(int argc,char **argv)
+static char *
+pass_eq(char *pr)
 {
-	register int count;	/* generic integer	*/
-
-	if( argc<2 ) {
-		usage();
-		exit(1);
-	}
-
-	InitDefaults();		/* Set switch defaults	*/
-
-	DfltLbls = OS9Dflt;	/* Default is OS9 */
-
-	/* Parse command line */
-	
-	for(count=1;count<argc;  ) {
-		char *pt;
-
-		pt = argv[count];
-
-		if( *pt == '-') {
-			++pt;
-			do_opt(pt);
-		}
-		else {
-			if( !modfile )
-				modfile=pt;
-			else {
-				fprintf(stderr,"More than one input file specified\n");
-				fprintf(stderr,"Ignoring \'%s\n\'",pt);
-				fprintf(stderr,"\n");
-			}
-		}
-		++count;
-	}
-	
-		/* todo later: (maybe)let it recurse more than one file */ 
-	if( !modfile ) {
-		/* todo later: input filename from keyboard */
-		fprintf(stderr,"No input file specified!\n");
-		usage();
-		exit(1);
-	}
-
-	{
-		struct stat statbf;
-
-		if( stat(modfile,&statbf) == -1 ) {
-			fprintf(stderr,"Can't stat file %s\n",modfile);
-			exit(errno);
-		}
-
-		FileSize = (int)statbf.st_size;
-	}
-	
-	if( !(inpath = fopen(modfile,"rb")) ) {
-		fprintf(stderr,"Cannot open infile (%s) to read\n",modfile);
-		exit(errno);
-	}
-	
-	/* We'll load the whole module into memory rather than
-	 * trying to read from the file
-	 */
-	
-	if( !(ModBegin=malloc(FileSize+100)) ) {
-		fprintf(stderr,"Error!!  Cannot malloc memory for infile!\n");
-		exit(errno);
-	}
-	if(fread(ModBegin,FileSize,1,inpath) < 1) {
-		fprintf(stderr,"Error!! Didn't read all of file %s\n",
-				modfile);
-		exit(errno);
-	}
-	fclose(inpath);	/* Don't need to read file anymore	*/
-
-	pass1();
-	progdis();
-	GetLabels();	/* Read in Label files */
-	Pass2=1;
-	progdis();
-	exit(0);
+	return (*pr == '=' ? ++pr : pr);
 }
 
-void do_opt(char *c)
+void
+do_opt(char *c)
 {
 	char *pt = c;
 	
@@ -220,12 +145,8 @@ void do_opt(char *c)
 	}
 }
 
-char *pass_eq(char *pr)
-{
-	return (*pr == '=' ? ++pr : pr);
-}
-
-void pass1()
+static void
+pass1()
 {
 	
 	Pass2 = 0;
@@ -245,98 +166,77 @@ void pass1()
 	}
 }
 
-/* mkpath() : concatenate parts of a pathname */
+/* ************************************** *
+ * build_path()  - locate a filename and  *
+ *                 build a full pathlist  *
+ * Passed:    the filename                *
+ * Returned:  return ptr to full pathname *
+ * ************************************** */
 
-void mkpath(char *dest,char *defpth,char *basename)
+static char *
+build_path(char *fname, char *fullname, int nsize)
 {
-	dest[0] = '\0';
-	
-	if( defpth[0] == '~' )
-	{
-		strcpy(dest,myhome);
-		strcat(dest,&defpth[1]);
-	}
-	else {
-		strcpy(dest,defpth);
-	}
+    char *abslut[] = {"/", "./", "../", ""};
+    char **pt;
+    char *realname = NULL;
 
-	/* changed -- rindex() not in mingw??? */
-/*	if( (rindex(dest,'/'))+1 != rindex(dest,'\0') )*/
-	if( dest[strlen(dest)-1] != '/')
-	{
-		strcat(dest,"/");
-	}
+    pt = &abslut[0];
 
-	strcat(dest,basename);
-}
-	
+    /* is it an absolute pathame ? */
+    
+    while ( **pt )
+    {
+        if (!strncmp(*pt, fname, strlen(*pt)))
+        {
+            realname = fname;
+            break;
+        }
+        ++pt;
+    }
 
-void GetLabels() /* Read the labelfiles */
-{
-	register int x;
-	register struct nlist *nl;
-	
-	/* First, get built-in ascii definitions.  Later, if desired,
-	 * they can be redefined */
-	for(x=0;x<33;x++) {
-		if( (nl=FindLbl(ListRoot('^'),x)) ) {
-			strcpy(nl->sname,CtrlCod[x]);
-			if(UpCase)
-				UpString(nl->sname);
-		}
-	}
-	if( (nl=FindLbl(ListRoot('^'),0x7f)) ) {
-		strcpy(nl->sname,"del");
-		if(UpCase)
-			UpString(nl->sname);
-	}
-	
-	/* Next read in the Standard systems names file */
-	if( (OSType == OS_9) || (OSType == OS_Moto) ) {
-		mkpath(rdbuf,DefDir,"sysnames");
-		if( !(inpath=fopen(rdbuf,"rb")) )
-			fprintf(stderr,"Error in opening Sysnames file..%s\n",
-					rdbuf);
-		else {
-			RdLblFile();
-			fclose(inpath);
-		}
-	}
-	/* and now the standard label file */
-	switch (OSType) {
-		case OS_Flex:
-			strcat(strcpy(rdbuf,myhome),"/coco/defs/flex9lbl");
-			break;
-		case OS_Moto:  /* none.. create a dummy */
-			strcat(strcpy(rdbuf,myhome),"/defs/donthavenone");
-			break;
-		case OS_Coco:
-			mkpath(rdbuf,DefDir,"cocolbl");
-			break;
-		default:	/* our favorite -- OS9  */
-			mkpath(rdbuf,DefDir,"dynalbl");
-			break;
-	}
-	if( !(inpath=fopen(rdbuf,"rb")) )
-		fprintf(stderr,"Error in opening Sysnames file..%s\n",rdbuf);
-	else {
-		RdLblFile();
-		fclose(inpath);
-	}
+    /* is it "~/xxx" ? */
+    
+    if ( !strncmp(fname, "~/", 2) )
+    {
+        strncpy (fullname, myhome, nsize);
+        nsize -= strlen(fullname);
+        strncat (fullname, &fname[1], nsize);
+        realname = fullname;
+    }
+    
+    if ( ! realname )
+    {
+        /* If we get here, fname is simply a basename.. */
+        if (!(access (fname, R_OK)))   /* Try in current directory */
+        {
+            realname = fname;
+        }
+        else {    /* OK.. one last shot..  assume it's in Defdir */
+            if( !strncmp(DefDir, "~/",2) )
+            {
+                int tmpsize = nsize;;
+                
+                strncpy (fullname, myhome, nsize);
+                tmpsize -= strlen (fullname);
+                
+                strncat (fullname, &DefDir[1],nsize);
+                nsize -= strlen (fullname);
+            }
+            else {
+                strncpy (fullname, DefDir, nsize);
+                nsize -= strlen (fullname);
+            }
 
-		/* Now read in label files specified on the command line */
-	for( x=0; x < LblFilz; x++ ) {
-		if( !(inpath=fopen(LblFNam[x],"rb")) )
-			fprintf(stderr,"Cannot open Label File: %s\n",
-					LblFNam[x]);
-		else {
-			RdLblFile();
-			fclose(inpath);
-		}
-	}
+            strncat (fullname, fname, nsize);
+            realname = fullname;
+        }
+    }
+
+    return realname;
 }
 
-void RdLblFile()
+static void
+RdLblFile()
 {
 	char labelname[30],
 	     clas,
@@ -378,7 +278,83 @@ void RdLblFile()
 	}
 }
 
-void InitDefaults()
+static void
+GetLabels() /* Read the labelfiles */
+{
+	register int x;
+	register struct nlist *nl;
+    char *stdlbl;
+    char filename[500];
+	
+	/* First, get built-in ascii definitions.  Later, if desired,
+	 * they can be redefined */
+	
+    for(x=0;x<33;x++) {
+		if( (nl=FindLbl(ListRoot('^'),x)) ) {
+			strcpy(nl->sname,CtrlCod[x]);
+			if(UpCase)
+				UpString(nl->sname);
+		}
+	}
+	if( (nl=FindLbl(ListRoot('^'),0x7f)) ) {
+		strcpy(nl->sname,"del");
+		if(UpCase)
+			UpString(nl->sname);
+	}
+	
+	/* Next read in the Standard systems names file */
+	if( (OSType == OS_9) || (OSType == OS_Moto) ) {
+		if( !(inpath=fopen(build_path("sysnames", filename, sizeof(filename)),
+                           "rb")) )
+			fprintf(stderr,"Error in opening Sysnames file..%s\n",
+					filename);
+		else {
+			RdLblFile();
+			fclose(inpath);
+		}
+	}
+	/* and now the standard label file */
+	switch (OSType) {
+		case OS_Flex:
+			strcat(strcpy(rdbuf,myhome),"/coco/defs/flex9lbl");
+			break;
+		case OS_Moto:  /* none.. create a dummy */
+			strcat(strcpy(rdbuf,myhome),"/defs/donthavenone");
+			break;
+		case OS_Coco:
+            stdlbl = "cocolbl";
+			break;
+		default:	/* our favorite -- OS9  */
+            stdlbl = "dynalbl";
+			break;
+	}
+	if( !(inpath=fopen(build_path(stdlbl, filename, sizeof(filename)),
+                       "rb")) )
+		fprintf(stderr,"Error in opening Sysnames file..%s\n",filename);
+	else {
+		RdLblFile();
+		fclose(inpath);
+	}
+
+		/* Now read in label files specified on the command line */
+	
+    for( x=0; x < LblFilz; x++ ) {
+        
+		if( (inpath=fopen (build_path(LblFNam[x], filename,sizeof(filename)),
+                           "rb")) )
+        {
+			RdLblFile();
+			fclose(inpath);
+		}
+        else {
+            fprintf(stderr, "ERROR! cannot open Label File %s for read\n",
+                            filename);
+        }
+	}
+}
+
+static void
+InitDefaults()
 {
 	register int x;
 	
@@ -395,5 +371,95 @@ void InitDefaults()
 		SymLst[x] = 0;
 	}
 
+}
+
+/* ************************* *
+ *                           *
+ * program main entry point  *
+ *                           *
+ * ************************* */
+
+int
+main(int argc,char **argv)
+{
+	register int count;	/* generic integer	*/
+
+	if( argc<2 ) {
+		usage();
+		exit(1);
+	}
+
+	InitDefaults();		/* Set switch defaults	*/
+
+	DfltLbls = OS9Dflt;	/* Default is OS9 */
+
+	/* Parse command line */
+	
+	for(count=1;count<argc;  ) {
+		char *pt;
+
+		pt = argv[count];
+
+		if( *pt == '-') {
+			++pt;
+			do_opt(pt);
+		}
+		else {
+			if( !modfile )
+				modfile=pt;
+			else {
+				fprintf(stderr,"More than one input file specified\n");
+				fprintf(stderr,"Ignoring \'%s\n\'",pt);
+				fprintf(stderr,"\n");
+			}
+		}
+		++count;
+	}
+	
+		/* todo later: (maybe)let it recurse more than one file */ 
+	if( !modfile ) {
+		/* todo later: input filename from keyboard */
+		fprintf(stderr,"No input file specified!\n");
+		usage();
+		exit(1);
+	}
+
+	{
+		struct stat statbf;
+
+		if( stat(modfile,&statbf) == -1 ) {
+			fprintf(stderr,"Can't stat file %s\n",modfile);
+			exit(errno);
+		}
+
+		FileSize = (int)statbf.st_size;
+	}
+	
+	if( !(inpath = fopen(modfile,"rb")) ) {
+		fprintf(stderr,"Cannot open infile (%s) to read\n",modfile);
+		exit(errno);
+	}
+	
+	/* We'll load the whole module into memory rather than
+	 * trying to read from the file
+	 */
+	
+	if( !(ModBegin=malloc(FileSize+100)) ) {
+		fprintf(stderr,"Error!!  Cannot malloc memory for infile!\n");
+		exit(errno);
+	}
+	if(fread(ModBegin,FileSize,1,inpath) < 1) {
+		fprintf(stderr,"Error!! Didn't read all of file %s\n",
+				modfile);
+		exit(errno);
+	}
+	fclose(inpath);	/* Don't need to read file anymore	*/
+
+	pass1();
+	progdis();
+	GetLabels();	/* Read in Label files */
+	Pass2=1;
+	progdis();
+	exit(0);
 }
 
