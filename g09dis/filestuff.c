@@ -498,31 +498,15 @@ load_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     doc_set_modified(fdat, FALSE);
 }
 
-/* load_tree1() - generic single-column Treeview load */
+/* load_list_tree() - generic single-column Treeview load */
 static void
-load_tree1 (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
+load_list_tree (fileinf * fdat, FILE *infile)
 {
-    FILE *infile;
     gchar buffer[500];
-    gchar **splits = NULL;
-
-    /* Call list_store_empty - if it's a listing, fdat->altered shouldn't
-     * be set to TRUE (hopefully)
-     */
-    list_store_empty(fdat);
-
-    fdat->fname = g_strdup (*newfile);
-    g_free (*newfile);
-    *newfile = NULL;
-
-    /* Now open the file and read it */
-    if (!(infile = fopen (fdat->fname, "rb")))
-    {
-        fprintf (stderr, "Cannot open file %s for read!\n", fdat->fname);
-    }
 
     while (fgets (buffer, sizeof (buffer), infile))
     {
+        gchar **splits = NULL;
         GtkTreeIter iter;
 
         /* get rid of newlines and leading/trailing whitespaces,
@@ -536,14 +520,14 @@ load_tree1 (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
         {
             gtk_list_store_append (fdat->l_store, &iter);
             gtk_list_store_set (fdat->l_store, &iter,
-                    LST_LIN, splits[LST_LIN],
-                    LST_ADR, splits[LST_ADR],
-                    LST_OPCO, splits[LST_OPCO],
-                    LST_PBYT, splits[LST_PBYT],
-                    LST_LBL, splits[LST_LBL],
-                    LST_MNEM, splits[LST_MNEM],
-                    LST_OPER, splits[LST_OPER],
-                    -1);
+                                LST_LIN, splits[LST_LIN],
+                                LST_ADR, splits[LST_ADR],
+                                LST_OPCO, splits[LST_OPCO],
+                                LST_PBYT, splits[LST_PBYT],
+                                LST_LBL, splits[LST_LBL],
+                                LST_MNEM, splits[LST_MNEM],
+                                LST_OPER, splits[LST_OPER],
+                                -1);
         }
 
         g_strfreev (splits);
@@ -551,8 +535,6 @@ load_tree1 (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     }
 
     doc_set_modified(fdat,FALSE);
-
-    fclose (infile);
 }
 
 /* load_lbl() - load the label file into the GtkTreeView */
@@ -561,7 +543,6 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
 {
     FILE *infile;
     gchar buffer[500];
-    gchar **splits;
 
     list_store_empty(fdat);
 
@@ -589,6 +570,7 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
 
         if ((strlen (buffer)) && (*buffer != ' '))
         {
+            gchar **splits;
             splits = g_strsplit (buffer, " ", LBL_NCOLS);
 
             /* Now add to GtkTree */
@@ -616,6 +598,7 @@ run_disassembler (GtkAction * action, glbls * hbuf)
 {
     GString *CmdL;
     gchar *cmdline;
+    gboolean PipeIt = FALSE;
 
     CmdL = g_string_new("os9disasm ");
     
@@ -688,9 +671,11 @@ run_disassembler (GtkAction * action, glbls * hbuf)
             break;
         case LIST_NONE:
             /* handle bit-bucket output */
+            /* g_string_append (CmdL, "-q");*/
             break;
         case LIST_GTK:
-            /* make way to send output directly into g09dis */
+            g_string_append (CmdL, " -g");
+            PipeIt = TRUE;
             break;
     }
 
@@ -698,7 +683,25 @@ run_disassembler (GtkAction * action, glbls * hbuf)
     
     g_print ("The command line is...\n");
     g_print ("      %s\n",cmdline);
-    system(cmdline);
+
+    if ( !(PipeIt))
+    {
+        system(cmdline);
+    }
+    else {
+        FILE *infile;
+        
+        /* Now open the file and read it */
+        if (!(infile = popen (cmdline, "r")))
+        {
+            fprintf (stderr, "Cannot pipe \"%s\" for read!\n",
+                              cmdline);
+        }
+        else {
+            load_list_tree (&hbuf->list_file, infile);
+            pclose (infile);
+        }
+    }
 
     g_free (cmdline);
 }
@@ -715,20 +718,54 @@ free_filename_to_return (gchar ** fname)
     }
 }
 
-/* Callbacks for file selection */
-/* Passed: GtkAction *action, gpointer user_data */
+/* *************************************** *
+ * Callbacks for file selection            *
+ * Passed: GtkAction *action,              *
+ *       gpointer user_data                *
+ * *************************************** */
+
+void
+compile_listing (GtkAction * action, glbls * hbuf)
+{
+    FILE *infile;
+    int old_write_list = write_list;
+
+    /* temporarily flag that we're writing to GUI */
+    write_list = LIST_GTK;
+
+    run_disassembler (action, hbuf);
+
+    write_list = old_write_list;   /* restore write_list */
+}
+
 void
 load_listing (GtkAction * action, glbls * hbuf)
 {
+    FILE *infile;
+
     selectfile_open (hbuf, "Prog Listing");
 
     if (hbuf->filename_to_return != NULL)
     {                           /* Leak? */
-        /*load_text */ load_tree1 (&hbuf->list_file,
-                                   list_win, &(hbuf->filename_to_return));
-    }
+        /* Call list_store_empty - if it's a listing, fdat->altered shouldn't
+         * be set to TRUE (hopefully)
+         */
+        list_store_empty(&(hbuf->list_file));
 
-    free_filename_to_return (&(hbuf->filename_to_return));
+        (hbuf->list_file).fname = g_strdup (hbuf->filename_to_return);
+        free_filename_to_return (&(hbuf->filename_to_return));
+
+        /* Now open the file and read it */
+        if (!(infile = fopen ((hbuf->list_file).fname, "r")))
+        {
+            fprintf (stderr, "Cannot file \"%s\" for read!\n",
+                              (hbuf->list_file).fname);
+        }
+        else {
+            load_list_tree (&hbuf->list_file, infile);
+            fclose (infile);
+        }
+    }
 }
 
 void
@@ -737,8 +774,7 @@ load_cmdfile (GtkAction * action, glbls * hbuf)
     selectfile_open (hbuf, "Command file");
     if (hbuf->filename_to_return != NULL)       /* Leak? */
     {
-        /*load_tree1 */ load_text (&hbuf->cmdfile, list_win,
-                                   &(hbuf->filename_to_return));
+        load_text (&hbuf->cmdfile, list_win, &(hbuf->filename_to_return));
     }
 
     free_filename_to_return (&hbuf->filename_to_return);

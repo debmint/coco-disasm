@@ -1,5 +1,13 @@
 
 filestuff.c
+    * Added functin to "Build to GUI".  with this option set, GUI will
+      read output of -g optioned os9disasm directly into the List view
+      window
+    * Renamed load_tree1() to load_list_tree()
+
+ -- davebree    Fri, 29 Oct 2004 14:36:32 -0500
+
+filestuff.c
     * When loading Listing or Label file, call g_strstrip() rather
       than changing \n to NULL.  This will eliminate \r's, if present,
       also.
