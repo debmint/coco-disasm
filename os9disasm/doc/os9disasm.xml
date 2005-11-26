@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
 <!ENTITY odis "<command>OS9Disasm</command>">
 <!ENTITY odinst SYSTEM "odisinst.xml">
 <!ENTITY odrun SYSTEM "odrun.xml">
 <!ENTITY odcmd SYSTEM "odcmd.xml">
 <!ENTITY g09dis SYSTEM "g09dis.xml">
 ]>
-<book><title>Os9Disasm - A Cross Disassembler for the m6809</title>
+<article><title>Os9Disasm - A Cross Disassembler for the m6809</title>
   <para>This documentation is to be used to instruct users in the use of
     &odis;.  It is based heavily upon the documentation for
     <computeroutput>dynamite+</computeroutput>, which served as a model for
@@ -16,7 +16,7 @@
     and give some tips on how to optimally use the program.  It is hoped that
     all information in this document is correct.
   </para>
-  <chapter><title>Introduction</title>
+  <section><title>Introduction</title>
     <section><title>Disassemblers - What are they?</title>
       <para>Sometimes we have a binary program that, for whatever reason, 
         we need or would like to be able to view the source from which it
@@ -113,12 +113,12 @@
         code, and (hopefully) very few bugs remain.
       </para>
     </section>
-  </chapter>
+  </section>
   &odinst;
   &odrun;
   &odcmd;
   &g09dis;
-  <chapter><title>TODO LIST</title>
+  <section><title>TODO LIST</title>
     <formalpara><title>Improve 6309 workings</title><para>
       As of this release, the 6309 capability is sort of a hack.  More
       improvements are needed.
@@ -139,5 +139,5 @@
         </listitem>
       </itemizedlist>
     </para></formalpara>
-  </chapter>
-</book>
+  </section>
+</article>

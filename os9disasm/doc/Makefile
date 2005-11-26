@@ -3,7 +3,7 @@
 
 HTMLDIR	=html
 VPATH	=$(HTMLDIR)
-STYLSHEET	=/usr/share/sgml/docbook/stylesheet/xsl/ldp/ldp-html-chunk.xsl
+STYLSHEET	= /usr/share/xml/docbook/stylesheet/ldp/html/tldp-sections.xsl
 index_SOURCES	=odcmd.xml odisinst.xml odrun.xml os9disasm.xml g09dis.xml
 
 all: index.html

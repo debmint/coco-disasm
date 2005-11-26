@@ -1,4 +1,4 @@
-<chapter><title>Invoking and Running &odis;</title>
+<section><title>Invoking and Running &odis;</title>
   <section><title>Invoking &odis;</title>
     <para>
       &odis; is invoked by issuing the command in the following format: 
@@ -42,7 +42,7 @@
         be preceded by a minus sign (-).
       </para>
       <informaltable frame="none">
-        <tgroup cols="2">
+        <tgroup cols="2"><colspec colwidth='1.0in'/>
           <tbody>
             <row>
               <entry><command>c[=]&lt;command-file&gt;</command></entry>
@@ -172,74 +172,76 @@
      </para>
      <section id="databounds">
        <title>Data bounds</title>
-         <para>Data areas can be specified in different ways. These areas are,
-           as previously mentioned, areas of data storage which are not
-           assembler code, but rather are constant values that the program
-           might use. These can be string constants, lookup tables, or simply
-           numeric constants. These blocks of data code can be specified in one
-           of five ways
-         </para>
-       <variablelist>
-         <varlistentry><term><filename>A</filename></term>
-           <listitem>
-             <formalpara><title>ASCII data</title>
-               <para>
-                 will generate <command>FCB</command>, <command>FCC</command>,
-                 or <command>FCS</command> (if appliable) statements with
-                 strings automatically delimited, and ASCII control characters
-                 delimited by their standard names.
-               </para>
-               <para>In OS9 mode, <command>fcs</command> statements will be
-                 generated if a character with the MSB set is encountered.
-               </para>
-             </formalpara>
-           </listitem>
-         </varlistentry>
-         <varlistentry><term>W</term>
-           <listitem>
-             <formalpara><title>Word data</title>
-               <para>areas will produce<computeroutput>FDB</computeroutput>'s
-                 of hex data double bytes.  This is equivalent to
-                 <command>Long</command> labels of label class
-                 <computeroutput>&amp;</computeroutput>.
-               </para>
-             </formalpara>
-           </listitem>
-         </varlistentry>
-         <varlistentry><term>B</term>
-           <listitem>
-             <formalpara><title>Byte data</title>
-               <para>areas will produce <computeroutput>FCB</computeroutput>'s
-                 of hex data byte.  This is equivalent to <command>Short
-                 </command> labels of label class
-                 <computeroutput>&amp;</computeroutput>.
-               </para>
-            </formalpara>
-           </listitem>
-         </varlistentry>
-         <varlistentry><term>L</term>
-           <listitem>
-             <formalpara><title>Long Label Data</title>
-               <para>data areas will produce<computeroutput>FDB
-                 </computeroutput>'s of label references to the program. Many
-                 programs have data tables in them which are used for indirect
-                 addressing or for performing multi-direction jumps. Such
-                 tables are best disassembled as a series of labels.
-               </para>
-             </formalpara>
-           </listitem>
-         </varlistentry>
-         <varlistentry><term>S</term>
-           <listitem>
-             <formalpara><title>Short label</title>
-               <para>data areas are the 8-bit equivalent of <filename>Long
-                 labels</filename>.  These will produce <computeroutput>FCB
-                 </computeroutput>'s with labels as the operand.
-               </para>
-             </formalpara>
-           </listitem>
-         </varlistentry>
-       </variablelist>
+       <para>Data areas can be specified in different ways. These areas are,
+         as previously mentioned, areas of data storage which are not
+         assembler code, but rather are constant values that the program
+         might use. These can be string constants, lookup tables, or simply
+         numeric constants. These blocks of data code can be specified in one
+         of five ways
+       </para>
+       <informaltable frame="none">
+         <tgroup cols="2"><colspec colwidth='1.5in'/>
+           <tbody valign="top">
+             <row>
+               <entry><command>A</command></entry>
+               <entry><command>ASCII data</command>
+                 <para>
+                   will generate <computeroutput>FCB</computeroutput>,
+                   <computeroutput>FCC</computeroutput>, or
+                   <computeroutput>FCS</computeroutput> (if appliable)
+                   statements with strings automatically delimited, and ASCII
+                   control characters delimited by their standard names.
+                 </para>
+                 <para>In OS9 mode, <computeroutput>fcs</computeroutput>
+                   statements will be generated if a character with the MSB set
+                   is encountered.
+                 </para>
+               </entry>
+             </row>
+             <row>
+               <entry><command>W</command></entry>
+               <entry><command>Word data</command>
+                 <para>will produce <computeroutput>FDB</computeroutput>'s
+                   of hex data double bytes.  This is equivalent to
+                   <command>Long Labels</command> of label class
+                   <computeroutput>&amp;</computeroutput>.
+                 </para>
+               </entry>
+             </row>
+             <row>
+               <entry><command>B</command></entry>
+               <entry><command>Byte data</command>
+                 <para>will produce <computeroutput>FCB</computeroutput>'s
+                   of hex data byte.  This is equivalent to <command>Short
+                   </command> labels of label class
+                   <computeroutput>&amp;</computeroutput>.
+                 </para>
+               </entry>
+             </row>
+             <row>
+               <entry><command>L</command></entry>
+               <entry><command>Long Label Data</command>
+                 <para>will produce <computeroutput>FDB</computeroutput>'s
+                   of label references to the program.  Many programs have
+                   data tables in them which are used for indirect addressing
+                   or for performing multi-direction jumps. Such tables are
+                   best disassembled as a series of labels.
+                 </para>
+               </entry>
+             </row>
+             <row>
+               <entry><command>S</command></entry>
+               <entry><command>Short label</command>
+                 <para>data areas are the 8-bit equivalent of <command>Long
+                   labels</command>.  These will produce
+                   <computeroutput>FCB</computeroutput>'s with labels as the
+                   operand.
+                 </para>
+               </entry>
+             </row>
+           </tbody>
+         </tgroup>
+       </informaltable>
        <para>These Data bounds are further described in <xref
          linkend="datadescr"/>
        </para>
@@ -770,4 +772,4 @@
       </para>
     </section>
   </section>
-</chapter>
+</section>

@@ -1,5 +1,5 @@
 <!-- vi set expandtab -->
-<chapter id="ssetup"><title>Installation</title>
+<section id="ssetup"><title>Installation</title>
  <section><title>Tarfile extraction</title>
   <para>If the package was downloaded as a tarfile, it should have
    the extension of <filename>tar.bz2</filename> or
@@ -247,4 +247,4 @@
     </para>
   </section>
  </section>
-</chapter>
+</section>
