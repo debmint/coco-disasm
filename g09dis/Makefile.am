@@ -3,7 +3,10 @@
 
 bin_PROGRAMS = g09dis
 
-g09dis_SOURCES = g09dis.c filestuff.c menu.c odisopts.c dasmedit.c g09dis.h menu.h proto.h
+GCSRC = g09dis.c filestuff.c menu.c odisopts.c dasmedit.c amode.c
+GHDR = g09dis.h proto.h
+
+g09dis_SOURCES = ${GCSRC} ${GHDR} 
 
 AM_CFLAGS	=@winflags@ -Wall @pkgcfg_CFLAGS@
 g09dis_LDADD	=@pkgcfg_LIBS@
