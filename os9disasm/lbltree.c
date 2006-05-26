@@ -13,30 +13,37 @@
 #  01 2003/01/31 First began project                                   dlb   #
 ##############################################################################
 # File:  lbltree.c                                                           #
-# Purpose: handle operations on label trees				     #
-#									     #
-# Calls:								     #
-#	struct databndaries *ClasHere(struct databndaries *bp):		     #
-#		Passed: ptr to struct to match address			     #
-#		Returns: ptr to boundary if matched			     #
-#			 0 if no match, -1 if out-of-bounds "bp" passed	     #
-#	struct databndaries *bGoBegin(struct databndaries *)		     #
-#		Passed: ptr to head of appropriate tree or branch	     #
-#		Returns: ptr positioned to begin of tree or branch	     #
-#	struct nlist *addlbl(int loc, char C)				     #
-#		Descr: adds a label to list of existing labels		     #
-#		Passed:  loc=address of label				     #
-#			 C=class (espressed as offset into lblorder string   #
-#		Returns: ptr to new entry if added, 0 if match found	     #	
-#									     #
-#	struct nlist *ListRoot(char symbol)				     #
-#		Passed:  symbol for label class (char)			     #
-#		Returns: ptr to entry point for that class		     #
-#									     #
+# Purpose: handle operations on label trees				                     #
+#									                                         #
+# Calls:								                                     #
+#	struct databndaries *ClasHere(struct databndaries *bp):		             #
+#		Passed: ptr to struct to match address			                     #
+#		Returns: ptr to boundary if matched			                         #
+#			 0 if no match, -1 if out-of-bounds "bp" passed	                 #
+#                                                                            #
+#	struct databndaries *bGoBegin(struct databndaries *)		             #
+#		Passed: ptr to head of appropriate tree or branch	                 #
+#		Returns: ptr positioned to begin of tree or branch	                 #
+#                                                                            #
+#	struct nlist *addlbl(int loc, char C)				                     #
+#		Descr: adds a label to list of existing labels		                 #
+#		Passed:  loc=address of label				                         #
+#			 C=class (espressed as offset into lblorder string               #
+#		Returns: ptr to new entry if added, 0 if match found	             #	
+#									                                         #
+#	struct nlist *ListRoot(char symbol)				                         #
+#		Passed:  symbol for label class (char)			                     #
+#		Returns: ptr to entry point for that class		                     #
+#									                                         #
 ############################################################################*/
 
 #include "odis.h"
 #include "amodes.h"
+
+/* ************************************************** *
+ * ListRoot() - Returns the Base entry point for      *
+ *      the Address Class passed to it                *
+ * ************************************************** */
 
 struct nlist *
 ListRoot (char symbol)
@@ -54,11 +61,14 @@ ListRoot (char symbol)
  *      We may have to fix this one up!!!            *
  * ************************************************* */
 
+/* NOTE: renamed - not currently used */
+
 void
 no_dataget (struct databndaries *bp, char c, int k)
 {
     int x;
     char bf[6];
+    
     /* Let's add ModBegin to save conversion */
     register char *cp = ModBegin + bp->b_lo;
     register char *dtop = ModBegin + bp->b_hi;
@@ -90,11 +100,11 @@ no_dataget (struct databndaries *bp, char c, int k)
     }
 }
 
-/* ********************************************* *
- * bGoBegin():	Go to the beginning of the tree, *
- *              or branch of tree.               *
- *   for Data Boundary tree                      *
- * ********************************************* */
+/* ************************************************* *
+ * bWalkBegin():	Go to the beginning of the tree, *
+ *              or branch of tree.                   *
+ *   for Data Boundary tree                          *
+ * ************************************************* */
 
 struct databndaries *
 bGoBegin (struct databndaries *pt)
@@ -156,9 +166,9 @@ ClasHere (struct databndaries *bp, int adrs)
 int
 LblCalc (char *dst, int adr, int amod)
 {
-    int raw = adr /*& 0xffff */ ;       /* Raw offset (postbyte) - was unsigned */
+    int raw = adr /*& 0xffff */ ;    /* Raw offset (postbyte) - was unsigned */
     char mainclass,             /* Class for this location */
-      oclass = 0;               /* Class for offset (if present) */
+         oclass = 0;            /* Class for offset (if present) */
 
     struct databndaries *kls = 0;
     struct nlist *mylabel = 0;
