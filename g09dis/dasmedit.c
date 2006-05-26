@@ -7,7 +7,6 @@
 
 #include <gtk/gtk.h>
 #include "g09dis.h"
-/*#include "../os9disasm/dtble.h"*/
 #include <string.h>
 #include <stdio.h>
 
@@ -25,6 +24,9 @@ gchar *bounds_list[] = {"A - ASCII string",
                         "S - Short Label data",
                         "L - Long Label data",
                          NULL};
+
+/*  -------------------  generic functions first ------------------------ */
+
 
 /* **************************************** *
  * doc_set_modified():                      *
@@ -122,6 +124,8 @@ build_label_selector(gchar **modept, gboolean with_entry)
     
 }
 
+/* ----------------- end general functions begin locals ----------------- */
+
 static void
 on_bnds_define_response (GtkDialog *dialog, gint resp,
                          struct adr_widgets *data)
@@ -165,6 +169,54 @@ on_bnds_define_response (GtkDialog *dialog, gint resp,
     gtk_widget_destroy (GTK_WIDGET(dialog));
 }
 
+/* **************************************** *
+ * abort_warn() - pop up a dialog notifying *
+ * that a function cannot continue          *
+ * **************************************** */
+
+void abort_warn (char *msg)
+{
+    GtkWidget *dialog;
+    gchar *warnmsg;
+
+    warnmsg = g_strconcat(msg, "\n\n", "Cannot continue with task", NULL);
+    
+    dialog = gtk_message_dialog_new (GTK_WINDOW(window),
+                                     GTK_DIALOG_DESTROY_WITH_PARENT |
+                                     GTK_DIALOG_MODAL,
+                                     GTK_MESSAGE_WARNING,
+                                     GTK_BUTTONS_OK,
+                                     warnmsg);
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    g_free (warnmsg);
+    gtk_widget_destroy (dialog);
+}
+
+/* ************************************************* *
+ * build_dialog_cancel_save() - create a dialog with *
+ *    a Cancel and a custom "Save" button.           *
+ * Passed: char * to title for top                   *
+ * Returns: GtkWidget * for the new dialog           *
+ * ************************************************* */
+
+GtkWidget *
+build_dialog_cancel_save (gchar *title)
+{
+    GtkWidget *dlg;
+    dlg = gtk_dialog_new_with_buttons("Addressing Mode specification",
+                                      GTK_WINDOW(window),
+                                      /*GTK_DIALOG_MODAL |*/
+                                      GTK_DIALOG_DESTROY_WITH_PARENT,
+                                      GTK_STOCK_CANCEL,
+                                      GTK_RESPONSE_REJECT,
+                                      "Save",
+                                      GTK_RESPONSE_OK,
+                                      NULL);
+    
+    gtk_container_set_border_width(GTK_CONTAINER(dlg), 15);
+    return dlg;
+}
+
 /* ************************************************ *
  * callback function to handle boundary definitions *
  * ************************************************ */
@@ -193,21 +245,13 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
         if (!(cb_data = g_malloc (sizeof (struct adr_widgets))))
         {
             /* Error report */
-            g_print ("Error! cannot malloc memory!\n");
+            abort_warn ("Error! cannot malloc memory!\n");
             return;
         }
         
         gtk_tree_model_get (model, &iter, LST_ADR, &addr,
                                           -1);
-        dialog = gtk_dialog_new_with_buttons("Addressing Mode specification",
-                                             GTK_WINDOW(window),
-                                             /*GTK_DIALOG_MODAL |*/
-                                             GTK_DIALOG_DESTROY_WITH_PARENT,
-                                             GTK_STOCK_CANCEL,
-                                             GTK_RESPONSE_REJECT,
-                                             GTK_STOCK_OK,
-                                             GTK_RESPONSE_OK,
-                                             NULL);
+        dialog = build_dialog_cancel_save ("Addressing Mode specification");
       
         /* *************************** *
          * Boundary Type dropdown menu *
@@ -216,7 +260,6 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
         g_signal_connect (dialog, "response",
                           G_CALLBACK(on_bnds_define_response), cb_data);
 
-        gtk_container_set_border_width(GTK_CONTAINER(dialog), 15);
         align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Boundary type");
         cb_data->label_combo = build_label_selector (bounds_list, FALSE);
@@ -258,7 +301,7 @@ name_label_response (GtkDialog *dialog, gint resp,
                                                        NULL);
     
     switch (resp) {
-        case GTK_RESPONSE_ACCEPT:
+        case GTK_RESPONSE_OK:
             gtk_list_store_append(O9Dis.lblfile.l_store, &iter);
             gtk_list_store_set (O9Dis.lblfile.l_store, &iter,
                                 LBL_LBL, gtk_entry_get_text(GTK_ENTRY(
@@ -306,27 +349,18 @@ rename_label (GtkAction * action, glbls *fdat)
         if (!(cb_data = g_malloc (sizeof (struct adr_widgets))))
         {
             /*report error */
-            g_print("Error! cannot allocate memory for struct\n");
+            abort_warn ("Error! cannot allocate memory for struct\n");
             return;
         }
         /* The following assignment is needless, but it keeps gcc quiet about
          * it "might be used uninitialized"
          *
         cb_data->cmd_mode = NULL;*/
-        
-        dialog = gtk_dialog_new_with_buttons("Define Label Name",
-                                             GTK_WINDOW(window),
-                                             /*GTK_DIALOG_MODAL |*/
-                                             GTK_DIALOG_DESTROY_WITH_PARENT,
-                                             GTK_STOCK_CANCEL,
-                                             GTK_RESPONSE_REJECT,
-                                             GTK_STOCK_OK,
-                                             GTK_RESPONSE_ACCEPT,
-                                             NULL);
+       
+        dialog = build_dialog_cancel_save ("Define Label Name");
 
         g_signal_connect(dialog, "response",
                 G_CALLBACK(name_label_response), cb_data);
-        gtk_container_set_border_width (GTK_CONTAINER(dialog),15);
         
         gtk_tree_model_get (model, &iter, LST_ADR, &addr,
                                           LST_LBL, &lblname,
@@ -406,17 +440,8 @@ lbl_edit_line(gchar **label, gchar **addr, gchar **class)
               *align,
               *name_ent, *addr_ent, *class_ent;
     gint response;
-    
-    dialog = gtk_dialog_new_with_buttons ("Edit Label Line",
-                                          GTK_WINDOW(window),
-                                          /*GTK_DIALOG_MODAL |*/
-                                           GTK_DIALOG_DESTROY_WITH_PARENT,
-                                          GTK_STOCK_CANCEL,
-                                          GTK_RESPONSE_CANCEL,
-                                          "Save", GTK_RESPONSE_OK,
-                                          NULL);
-
-    gtk_container_set_border_width (GTK_CONTAINER(dialog),15);
+   
+    dialog = build_dialog_cancel_save ("Edit Label Line");
 
     align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                   "Label Name");
@@ -481,8 +506,7 @@ lbl_insert_line (GtkAction * action, glbls *fdat)
     
     while(1) {
         response = lbl_edit_line(&label, &addr, &class);
-        if ((response == GTK_RESPONSE_CANCEL) ||
-                (response == GTK_RESPONSE_DELETE_EVENT) )
+        if ((response != GTK_RESPONSE_OK))
         {
             return; /* cancelled */
         }
