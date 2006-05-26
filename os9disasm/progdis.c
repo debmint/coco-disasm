@@ -283,7 +283,11 @@ NsrtBnds (struct databndaries *bp)
     switch (bp->b_typ)
     {
         case 1:                    /* Ascii */
-            MovASC ((bp->b_hi) - (bp->b_lo) + 1);
+            /*MovASC ((bp->b_hi) - (bp->b_lo) + 1);*/
+            /* Bugfix?  Pc was bp->b_lo...  that setup allowed going past
+             * the end if the lower bound was not right. */
+
+            MovASC ((bp->b_hi) - Pc + 1);
             break;                  /* bump PC  */
         case 6:                    /* Word */
         case 4:                    /* Long */

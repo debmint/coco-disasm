@@ -130,6 +130,12 @@ build_path (char *fname, char *fullname, int nsize)
     return realname;
 }
 
+/* ************************************** *
+ * do_opt() - Searches for match of char  *
+ *      pointed to by c and does whatever *
+ *      setup processing is needed        *
+ * ************************************** */
+
 void
 do_opt (char *c)
 {
@@ -159,7 +165,7 @@ do_opt (char *c)
         }
 
         break;
-    case 's':                  /* Label filename       */
+    case 's':                  /* Label file name       */
         if (LblFilz < MAX_LBFIL)
         {
             if (!doingcmds)
@@ -329,6 +335,11 @@ RdLblFile ()
     }
 }
 
+/* ********************************************* *
+ * GetLabels() - Set up label definitions        *
+ *      Set up defaults and read all label files *   
+ * ********************************************* */
+
 static void
 GetLabels ()                    /* Read the labelfiles */
 {
@@ -494,9 +505,11 @@ main (int argc, char **argv)
     }
 
     /* todo later: (maybe)let it recurse more than one file */
+    
     if (!modfile)
     {
         /* todo later: input filename from keyboard */
+        
         fprintf (stderr, "No input file specified!\n");
         usage ();
         exit (1);

@@ -3,7 +3,7 @@
 #include ../Makefile.rules
 
 ##SUBDIRS	= doc
-EXTRA_DIST = doc/html/*.html doc/README doc/*.xml doc/Makefile
+EXTRA_DIST = doc/html/*.html doc/html/style.css doc/README doc/*.xml doc/Makefile doc/html/images/
 
 AM_LDFLAGS	=-L../lib
 

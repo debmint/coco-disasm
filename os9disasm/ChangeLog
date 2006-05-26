@@ -1,3 +1,9 @@
+os9disasm (0.3.1)
+  * progdis.c - changed calling parameter to MovASC.  The old way was
+    allowing a wrong stopping point if the begin address was wrong.
+
+ -- davebree	Sat, 26 Nov 2005 08:44:25 -0600
+
 os9disasm (0.3.0)
   * documentation - improved the readability (hopefully)
   * os9disasm.c - Added mention of -g option in help screen
