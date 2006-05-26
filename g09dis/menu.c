@@ -131,6 +131,11 @@ static GtkActionEntry entries[] = {
     {"LblDeleteLin", GTK_STOCK_DELETE, "Delete", NULL,
         "Delete Line", G_CALLBACK (lbl_delete_line)},
 
+    {"OptsSave", GTK_STOCK_SAVE, "Save Options to File", NULL,
+        "Save Options File", G_CALLBACK (opts_save)},
+    {"OptsLoad", GTK_STOCK_OPEN, "Load Options from File", NULL,
+        "Load Options File", G_CALLBACK (opts_load)},
+    
     {"NameLabel", NULL, "Rename Label", NULL,
         "Define a Label Name", G_CALLBACK (rename_label)},
     {"BndsDefine", NULL, "Define Bounds", NULL,
@@ -195,6 +200,9 @@ static const char *ui_description =
     "    </menu>"
     "    <menu action='OptionMenu'>"
     "      <menuitem action='DisOptions'/>"
+    "      <separator/>"
+    "      <menuitem action='OptsLoad'/>"
+    "      <menuitem action='OptsSave'/>"
     "      <separator/>"
     "      <menuitem action='ShowTips'/>"
     "    </menu>"
