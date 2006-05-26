@@ -17,6 +17,15 @@
 # Purpose: lookup tables for disassembly                                     #
 ############################################################################*/
 
+/* ********************************************************* *
+ * Calling procedure:  if need data for tables, don't define *
+ * GOT_DTBL.  If not needed (already gotten by another       *
+ * module, define GOT_DTBL and only load definitions and     *
+ * bypass reloading the data.  This allows loading only the  *
+ * header data without resorting to an external header file  *
+ * keeping everything here for in case the sructure changes  *
+ * ********************************************************* */
+
 /* get Addressing mode definitions */
 #include "amodes.h"
 
@@ -35,6 +44,12 @@ struct lkuptbl {
 #   define M_09 0
 #   define M_03 1
 #endif
+
+#ifdef GOT_DTBL
+    extern struct lkuptbl Pre10[];
+    extern struct lkuptbl Pre11[];
+    extern struct lkuptbl Byte1[];
+#else
 
 /*  opcode      TYPE        mnem   CPU-spec  postbytes
  *  ------      ----        ----   --------  ---------
@@ -564,3 +579,4 @@ struct lkuptbl Byte1[] = {
 	{0xff,     AM_EXT,      "stu  ",     M_09,    2}
 };
 
+#endif
