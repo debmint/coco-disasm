@@ -42,7 +42,7 @@ enum
 /* Listing output destination */
 enum
 {
-    LIST_FILE, LIST_GTK, LIST_NONE
+    LIST_GTK, LIST_FILE, LIST_NONE
 };
 
 /* Save_all() return values */
@@ -81,6 +81,17 @@ typedef struct
 
 GLOBAL glbls O9Dis;
 
+/* structure to pass to "response" callbacks for dialogs *
+ * in dasmedit.c and amode.c                             */
+
+struct adr_widgets {
+    gchar *cmd_mode;
+    GtkWidget *label_combo,
+              *address_entry,
+              *label_entry,
+              *offset_entry;
+};
+
 /* os9disasm options */
 GLOBAL gint pgwdth;
 GLOBAL gint pgdpth;
@@ -105,3 +116,4 @@ GLOBAL GtkUIManager *ui_manager;
 /* This needs to be down here so that some defs above can be used */
 
 #include "proto.h"
+

@@ -371,7 +371,7 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
                                   &m_frame);
     gtk_table_attach( GTK_TABLE(table), m_frame,
                       1, 2, 1, 3,
-                      0, 0,
+                      0, GTK_FILL,
                       5, 2);
     
     vbx = gtk_vbox_new (FALSE, 2);

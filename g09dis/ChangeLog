@@ -1,3 +1,13 @@
+g09dis (version 0.4)
+  * filestuff.c - Added Load/Save Disassembly Options from/to File. Now
+    can save options setup and reload at a later session.
+  * amode.c - Added offset addressing capability.  (May need to rethink)
+  * g09dis.h - Reordered the LIST_* (listing output choice) where LIST_GTK
+    (output to GUI) is first (0) making it the default.  This is probably
+    the most-used option.
+
+ -- davebree    Fri, 31 Dec 2004 07:58:35 -0600
+
 g09dis (version 0.3)
   * dasmedit.c - changed the procedure for the Addressing Mode and Boundary
     Definition windows so that they don't lock out access to the main
