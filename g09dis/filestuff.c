@@ -20,6 +20,17 @@
 #define DIRCHR '/'
 #endif
 
+#define OPT_BIN "BIN-FILE:"
+#define OPT_CMD "CMD-FILE:"
+#define OPT_DEF "ALT-DEFS:"
+#define OPT_OBJ "SRC-FILE:"
+#define OPT_RS  "RS-FILE:"
+#define OPT_CPU "CPU:"
+#define OPT_UPC "UPCASE:"
+#define OPT_PGW "PGWDTH:"
+#define OPT_PGD "PGDPTH:"
+#define OPT_LST "LISTING:"
+
 /* *******************************************
  * File selection stuff
  * *******************************************
@@ -584,7 +595,6 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
 
     while (fgets (buffer, 160, infile))
     {
-        register char *newbuf;
         gchar **splits;
 
         /* get rid of newline, leading/trailing whitespaces
@@ -611,7 +621,9 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
 
                 for (bcnt = 1; bcnt<4; ++bcnt)
                 {
-                    if (tmppt = strchr(tmppt, ' '))
+                    tmppt = strchr(tmppt, ' ');
+
+                    if (tmppt)
                     {
                         ++tmppt;
                         g_strchug (tmppt);
@@ -626,8 +638,6 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
                 
                 if (buffer[1] == '\\')
                 {
-                    gchar *modestr;
-                    
                     ++sspos;   /* Bump separator past '\' */
                     
                     /* AMode def - add to AMode list */
@@ -760,8 +770,14 @@ run_disassembler (GtkAction * action, glbls * hbuf)
     }
     if (write_obj)
     {
-        g_string_append (CmdL, " -o=");
-        g_string_append (CmdL, obj_file);
+        if (obj_file)
+        {
+            if (strlen(obj_file))
+            {
+                g_string_append (CmdL, " -o=");
+                g_string_append (CmdL, obj_file);
+            }
+        }
     }
     
     if( cputype )
@@ -787,9 +803,12 @@ run_disassembler (GtkAction * action, glbls * hbuf)
 
     switch (write_list) {
         case LIST_FILE:
-            if(strlen(listing_output))
+            if (listing_output)
             {
-                g_string_append_printf (CmdL, " > %s", listing_output);
+                if (strlen(listing_output))
+                {
+                    g_string_append_printf (CmdL, " > %s", listing_output);
+                }
             }
             break;
         case LIST_NONE:
@@ -1007,3 +1026,203 @@ lbl_save (GtkAction *action, glbls *hbuf)
         save_lbl (&hbuf->lblfile, list_win, &(hbuf->lblfile.fname));
     }
 }
+
+/* **************************************************** *
+ * Options load/save callbacks                          *
+ * **************************************************** */
+
+/* ******************************************* *
+ * opt_put() - check for state of variable ptr *
+ *    and if set, write to optsave file        *
+ * ******************************************* */
+
+static void
+opt_put (gboolean isset, char *nam, char *hdr, FILE *fp)
+{
+    gchar *line;
+    
+    if (isset)
+    {
+        line = g_strconcat (hdr, nam, "\n", NULL);
+        fputs (line, fp);
+        g_free (line);
+    }
+}
+
+static void
+opt_load_path (gchar **pthptr, gchar *pthnm, gboolean *flag, gchar* hdr)
+{
+    char *start = pthnm;
+
+    start += strlen (hdr);
+    
+    if (flag)
+    {
+        *flag = TRUE;
+    }
+
+    g_strstrip (start);
+    *pthptr = g_strdup (start);
+}
+
+/* ******************************************** *
+ * opt_get_val() - check for a match in the HDR *
+ *     and store the value of matched           *
+ * PASSED: hdr string to check against          *
+ *         buffer holding the loaded line       *
+ *         address to store value if matched    *
+ * Returns: value if matched, NULL if no match  *
+ * ******************************************** */
+
+static gint
+opt_get_val ( gchar *ctrl, gchar *buf, gint *addr)
+{
+    gchar *start = buf;
+
+    if (!strncmp (ctrl, buf, strlen (ctrl)))
+    {
+        start += strlen (ctrl);
+        g_strstrip (start);
+        sscanf (start, "%d", addr);
+        return *addr;
+    }
+
+    return 0;
+}
+
+void
+opts_save (GtkAction *action, glbls *hbuf)
+{
+    FILE *optfile;
+
+    selectfile_save (hbuf, NULL, "Options File");
+    optfile = fopen(hbuf->filename_to_return, "rb");
+    
+    if (!(optfile = fopen (hbuf->filename_to_return, "wb")))
+    {
+        /* Report Error */
+        free_filename_to_return ( &(hbuf->filename_to_return));
+        return;
+    }
+    
+    free_filename_to_return ( &(hbuf->filename_to_return));
+
+    opt_put ((gboolean)bin_file, bin_file, OPT_BIN, optfile);
+    opt_put ((gboolean)cmd_cmd, cmd_cmd, OPT_CMD, optfile);
+    opt_put (alt_defs, alt_defs_path, OPT_DEF, optfile);
+    opt_put (write_obj, obj_file, OPT_OBJ, optfile);
+    fprintf (optfile, "%s%d\n", OPT_RS, (int)isrsdos);
+    fprintf (optfile, "%s%d\n", OPT_CPU, (int)cputype);
+    fprintf (optfile, "%s%d\n", OPT_UPC, (int)upcase);
+    fprintf (optfile, "%s%d\n", OPT_PGW, (int)pgwdth);
+    fprintf (optfile, "%s%d\n", OPT_PGD, (int)pgdpth);
+    fprintf (optfile, "%s%d ", OPT_LST, (int)write_list);
+    
+    switch (write_list)
+    {
+        case LIST_FILE:
+            if (listing_output)
+            {
+                if (strlen (listing_output))
+                {
+                    fprintf (optfile, "%s\n", listing_output);
+                }
+            }
+            break;
+        default:
+            fputc('\n', optfile);
+    }
+
+    fclose (optfile);
+}
+
+void opts_load (GtkAction *action, glbls *hbuf)
+{
+    FILE *optfile;
+    gchar buf[200];
+    
+    selectfile_open (hbuf, "n Options File", TRUE);
+    optfile = fopen(hbuf->filename_to_return, "rb");
+    
+    if (!optfile)
+    {
+        /* Print Error message */
+        free_filename_to_return ( &(hbuf->filename_to_return));
+        return;
+    }
+    
+    free_filename_to_return ( &(hbuf->filename_to_return));
+
+    while (fgets (buf, 200, optfile))
+    {
+        if (!strncmp (OPT_BIN, buf, strlen(OPT_BIN)))
+        {
+            opt_load_path (&bin_file, buf, NULL, OPT_BIN);
+            continue;
+        }
+        if (!strncmp (OPT_CMD, buf, strlen (OPT_CMD)))
+        {
+            opt_load_path (&cmd_cmd, buf, NULL, OPT_CMD);
+            continue;
+        }
+        if (!strncmp (OPT_DEF, buf, strlen(OPT_DEF)))
+        {
+            opt_load_path (&alt_defs_path, buf, &alt_defs, OPT_DEF);
+            continue;
+        }
+        if (!strncmp (OPT_OBJ, buf, strlen (OPT_OBJ)))
+        {
+            opt_load_path (&obj_file, buf, &write_obj, OPT_OBJ);
+            continue;
+        }
+        if (!strncmp (OPT_LST, buf, strlen (OPT_LST)))
+        {
+            gchar *start = buf;
+            gchar **splits;
+
+            start += strlen (OPT_LST);
+            splits = g_strsplit (start," ", -1);
+
+            if (splits[0])
+            {
+                sscanf (splits[0], "%d", &write_list);
+            }
+
+            if (write_list == LIST_FILE)
+            {
+                free_filename_to_return (&listing_output);
+               
+                if (splits[1])
+                {
+                    g_strstrip (splits[1]);
+
+                    if (strlen(splits[1]))
+                    {
+                        listing_output = g_strdup (splits[1]);
+                    }
+                }
+            }
+
+            g_strfreev (splits);
+            continue;
+        }
+
+        if (!opt_get_val (OPT_RS, buf, &isrsdos))
+        {
+            if (!opt_get_val (OPT_CPU, buf, &cputype))
+            {
+                if (!opt_get_val (OPT_UPC, buf, &upcase))
+                {
+                    if (!opt_get_val (OPT_PGW, buf, &pgwdth))
+                    {
+                        /* Here, quietly test the last one and just
+                         * ignore the line if this does not match
+                         */
+                        opt_get_val (OPT_PGD, buf, &pgdpth);
+                    }
+                }
+            }
+        }
+    }
+}
+
