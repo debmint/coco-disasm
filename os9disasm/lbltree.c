@@ -228,11 +228,11 @@ LblCalc (char *dst, int adr, int amod)
     {                           /*Pass2 */
         char tmpname[20];
 
-        if ((OSType == OS_9) && (mainclass == strpos (lblorder, 'D')) &&
+/*        if ((OSType == OS_9) && (mainclass == strpos (lblorder, 'D')) &&
             ((unsigned int) raw <= ModData))
         {
             mainclass = 0;
-        }
+        }*/
 
         if ((mylabel = FindLbl (SymLst[(unsigned int) mainclass], raw)))
         {
@@ -271,13 +271,13 @@ LblCalc (char *dst, int adr, int amod)
             else
                 strcat (dst, "-");
 
-            if ((OSType == OS_9) &&
+/*            if ((OSType == OS_9) &&
                 (c == strpos (lblorder, 'D')) &&
                 ((unsigned int) (kls->dofst->of_maj) <=
                  (unsigned int) ModData))
             {
                 c = 0;
-            }
+            }*/
             if ((mylabel = FindLbl (SymLst[(unsigned int) c],
                                     kls->dofst->of_maj)))
             {
@@ -423,11 +423,11 @@ addlbl (int loc, char C)
     /* At this point, we will try to separate the non-data class D labels
      * from the data types
      */
-    if ((OSType == OS_9) && (C == strpos (lblorder, 'D')) &&
+/*    if ((OSType == OS_9) && (C == strpos (lblorder, 'D')) &&
         ((unsigned int) loc <= ModData))
     {
         realC = 0;
-    }
+    }*/
 
     /* (for now, at least), don't add labels for class '@', '$', or '&' */
     if ((C == strpos (lblorder, '@')) || (C == strpos (lblorder, '$')) ||

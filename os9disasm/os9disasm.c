@@ -318,7 +318,8 @@ RdLblFile ()
                 else
                     address = atoi (strval);
                 if ((OSType == OS_9) && (clas == 'D') && (address <= ModData))
-                    nl = FindLbl (SymLst[0], address);
+                    /*nl = FindLbl (SymLst[0], address);*/
+                    nl = FindLbl (ListRoot ('D'), address);
                 else
                     nl = FindLbl (ListRoot (clas), address);
 
@@ -449,7 +450,8 @@ InitDefaults ()
 
     DefDir = "~/coco/defs/";    /* Default defs location */
 
-    for (x = 0; x <= sizeof (SymLst) / sizeof (SymLst[0]); x++)
+    /*for (x = 0; x <= sizeof (SymLst) / sizeof (SymLst[0]); x++)*/
+    for (x = 1; x <= sizeof (SymLst) / sizeof (SymLst[1]); x++)
     {
         SymLst[x] = 0;
     }

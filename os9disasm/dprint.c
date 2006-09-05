@@ -287,8 +287,9 @@ OS9Modline ()
     if (HdrLen == 13)
     {
         strcat (prtbf->operand, ",");
-        /*strcat(prtbf->operand,FindLbl(SymLst[strpos(lblorder,'D')], */
-        strcat (prtbf->operand, FindLbl (SymLst[0], ModData)->sname);
+        strcat(prtbf->operand,FindLbl(SymLst[strpos(lblorder,'D')],
+                    ModData)->sname);
+        /*strcat (prtbf->operand, FindLbl (SymLst[0], ModData)->sname);*/
     }
     /*PrintLine("%5d  %08x %-10s%s %-10s %-6s %s\n",prtbf); */
     PrintLine (pseudcmd, prtbf);
@@ -363,8 +364,8 @@ OS9DataPrint ()
 
     InProg = 0;                 /* Stop looking for Inline program labels to substitute */
     memset (pbf, 0, sizeof (struct printbuf));
-    /*if( (dta=ListRoot('D')) ) { */
-    if ((dta = SymLst[0]))
+    if ((dta=ListRoot('D')))
+    /*if ((dta = SymLst[0]))*/
     {                           /* special tree for OS9 data defs */
         BlankLine ();
         printf ("%5d %22s%s\n", LinNum++, "", what);
@@ -429,7 +430,16 @@ ListData (struct nlist *me, int upadr)
         datasize = (srch->myaddr) - (me->myaddr);
     }
     else
+    {
         datasize = (upadr) - (me->myaddr);
+    }
+    
+    /* Don't print any class 'D' variables which are not in Data area */
+    if ((OSType == OS_9) && (me->myaddr > ModData))
+    {
+        return;
+    }
+    
     if (me->myaddr != ModData)
         sprintf (pbf->operand, "%d", datasize);
     else
@@ -445,7 +455,10 @@ ListData (struct nlist *me, int upadr)
     }
 }
 
-/* WrtEquates() - Print out label defs */
+/* ************************************************** *
+ * WrtEquates() - Print out label defs                *
+ * Passed: stdflg - 1 for std labels, 0 for externals *        
+ * ************************************************** */
 
 void
 WrtEquates (int stdflg)
@@ -455,8 +468,8 @@ WrtEquates (int stdflg)
         *syshd = "* OS-9 system function equates\n",
         *aschd = "* ASCII control character equates\n",
         *genhd[2] = { "* class %c external label equates\n",
-        "* class %c standard named label equates\n"
-    };
+                      "* class %c standard named label equates\n"
+                    };
     register int flg;           /* local working flg - clone of stdflg */
     struct nlist *me;
 
@@ -468,8 +481,26 @@ WrtEquates (int stdflg)
     {
         flg = stdflg;
         strcpy (ClsHd, "%5d %21s");
+        
         if ((me = ListRoot (NowClass)))
         {
+            /* For OS9, we only want external labels this pass */
+            if ( (OSType == OS_9) && (NowClass == 'D'))
+            {
+                if (stdflg)     /* Don't print data defs */
+                {
+                    return;
+                }
+
+                /* Probably an error if this happens
+                 * What we're doing is positioning me to
+                 * last real data element*/
+                if (!(me = FindLbl (me, ModData)))
+                {
+                    return;
+                }
+            }
+            
             switch (NowClass)
             {
             case '!':
@@ -488,7 +519,7 @@ WrtEquates (int stdflg)
             }
 
             HadWrote = 0;       /* flag header not written */
-            TellLabels (me, flg);
+            TellLabels (me, flg, NowClass);
         }
     }
     InProg = 1;
@@ -497,36 +528,42 @@ WrtEquates (int stdflg)
 /* TellLabels(me) - Print out the labels for class in "me" tree */
 
 void
-TellLabels (struct nlist *me, int flg)
+TellLabels (struct nlist *me, int flg, char class)
 {
     struct printbuf PBF, *pb = &PBF;
 
     memset (pb, 0, sizeof (struct printbuf));
     if (me->LNext)
-        TellLabels (me->LNext, flg);
+    {
+        TellLabels (me->LNext, flg, class);
+    }
 
     if ((flg < 0) || (flg == me->stdnam))
     {
-        if (!HadWrote)
+        /* Don't print real OS9 Data variables here */
+        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr<=ModData)))
         {
-            BlankLine ();
-            printf (ClsHd, LinNum++, "", NowClass);
-            ++PgLin;
-            if (outpath)
-                fprintf (outpath, SrcHd, NowClass);
-            HadWrote = 1;
-            BlankLine ();
+            if (!HadWrote)
+            {
+                BlankLine ();
+                printf (ClsHd, LinNum++, "", NowClass);
+                ++PgLin;
+                if (outpath)
+                    fprintf (outpath, SrcHd, NowClass);
+                HadWrote = 1;
+                BlankLine ();
+            }
+    
+            strcpy (pb->lbnm, me->sname);
+            strcpy (pb->mnem, "equ");
+            sprintf (pb->operand, "$%04x", me->myaddr);
+            if (UpCase)
+                UpString (pb->operand);
+            CmdEnt = PrevEnt = me->myaddr;
+            PrintLine (realcmd, pb);
         }
-
-        strcpy (pb->lbnm, me->sname);
-        strcpy (pb->mnem, "equ");
-        sprintf (pb->operand, "$%04x", me->myaddr);
-        if (UpCase)
-            UpString (pb->operand);
-        CmdEnt = PrevEnt = me->myaddr;
-        PrintLine (realcmd, pb);
     }
 
     if (me->RNext)
-        TellLabels (me->RNext, flg);
+        TellLabels (me->RNext, flg,class);
 }

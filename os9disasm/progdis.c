@@ -446,7 +446,10 @@ TxIdx ()
     {
         regNam = RegOrdr[((postbyte >> 5) & 3)];       /* Current register offset */
         if (UpCase)
+        {
             regNam = toupper (regNam);
+        }
+        
         AMode += (postbyte >> 5) & 3;
 
         if (!(postbyte & 0x80))
