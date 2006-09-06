@@ -1,0 +1,338 @@
+<section><title>G09Dis - A graphical front-end to Os9Dis</title>
+  <para>&odis; is a command-line application. It is operated from the command
+    line and uses the various files to perform its work. This is all well and
+    good, but it can become tedious trying to remember all the Addressing modes
+    and such when attempting to add entries to the <filename>command
+    file</filename>, especially.
+  </para>
+  <para>This is where a helper application can be quite helpful. This is just
+    what g09dis is. With it, you can add command lines to the <filename>command
+    file</filename> or the <filename>label file</filename>, depending upon the
+    content of the line upon which you are working.
+  </para>
+  <section><title>Installing and Compiling G09dis</title>
+    <para>The installation and compilation is in principle the same as the
+      general installation, so you are encouraged to read
+      <xref linkend="ssetup"/> for instruction on this.
+    </para>
+  </section>
+  <section><title>Running G09Dis</title>
+    <para>Operation of <command>g09dis</command> is relatively
+      straightforward.  A few notes are in order.
+    </para>
+    <section><title>The Options Menu</title>
+      <para>The Options menu allows you manipulate options both for the
+        disassembler and for preferences in the operation of
+        <command>g09dis</command>.
+      </para>
+      <variablelist><title>Elements of the Options Menu</title>
+        <varlistentry><term>Disassembler Options</term>
+          <listitem>
+            <para>This allows you to set the options passed to the
+              disassembler when disassembling the program.  When Tootips are
+              turned on, a short description for most is displayed when you
+              hover the mouse over the title momentarily.  Note that to
+              disassemble a program, an entry <emphasis>must</emphasis> be
+              present in "Program to Disassemble".  This is the only item that
+              is definitely required.  Please refer to the documentation for
+              &odis; for a more in-depth explanation of the various options.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry><term>Load Options from File</term>
+                      <term>Save Options to file</term>
+          <listitem>
+            <para>This is a convenience feature.  If you are working on a
+              larger project, you often won't complete it in one session.
+              Rather than inputting all the data each time, you can, after
+              setting the parameters, click "Save Options to File" and
+              save the settings.  Then, when you come back to work on the
+              project further, simply reload the setting with "Load Options
+              from File".  Note that any of the options can still be changed
+              during the session.  Of course if you want to save these changes,
+              you will need to resave them.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry><term>Show Tooltips</term>
+          <listitem><para>This is a toggle option.  If it is checked, many
+            of the items appearing in the windows will show some tips if you
+            hover the mouse over the item for a bit.  Not every item has
+            this feature, but many do have some helpful tips.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+    <section><title>Loading and usage of the Listing</title>
+      <para>The Listing is where you will need to reference your work.
+        It is from a reference to a line in the Listing where you add
+        the commands or labels.  This listing is the Listing output
+        from &odis;.
+      </para>
+      <important><title>Do not use a regular Listing!</title>
+        <para>Be sure you do not try to load a regular listing.  These
+          <emphasis>WILL NOT LOAD</emphasis>.  You MUST use a specially
+          formatted Listing!  See below for details.
+        </para>
+      </important>
+      <section>
+        <title>Obtaining and Loading a compatible Listing for G09Dis</title>
+        <para>As stated above, a normal listing will not work.  If you
+          attempt to use one of these, nothing will happen, nothing will
+          be loaded.  You must use a specially formatted listing using
+          tabs to separate the fields rather than spaces.  This can be
+          obtained in one of two ways.
+        </para>
+        <orderedlist>
+          <listitem>Generate a separate file externally with &odis; using
+            the <command>-g</command> option, redirecting the output to
+            a file and then loading from
+            <command>File->Load Listing</command> in the main menu, or
+          </listitem>
+          <listitem>Check the <command>Disassemble to GUI</command> option
+            in <command>Options->Disassembler Options</command> and then
+            <command>Tools->Disassemble</command> in the Main Menu.  This
+            will disassemble the program and load the Listing directly into
+            the GUI window.  No file will be generated in this case.
+          </listitem>
+        </orderedlist>
+      </section>
+    </section>
+    <section>
+      <title>Adding command or label lines from Listing context</title>
+      <para>To add a command or label, right-click on the desired line
+        displayed in the Listing window.  You will get a pop-up menu
+        like this:
+      </para>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/listmnu.png"/>
+        </imageobject>
+        <caption><para>The <command>List Menu</command></para>
+        </caption>
+      </mediaobject>
+      <para>Of course <command>Load Listing</command> loads a specially
+        formatted listing from a file.  What we are now interested in
+        are the editing functions.
+      </para>
+      <note>
+        <para>In the following, the window decoration will be different,
+          depending upon the window manager or windowing system under which
+          you are running.
+        </para>
+      </note>
+      <section>
+        <title>The <command>Rename Label</command> Menu Option</title>
+        <para>If we click on "<command>Rename Label</command>", we get a
+          window similar to the following.
+        </para>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/renamlbl.png"/>
+          </imageobject>
+          <caption><para>The <command>Rename Label window</command></para>
+          </caption>
+        </mediaobject>
+        <para>Here we see three input boxes.  The <command>Label Name
+          </command> box allows to give the Label a meaningful name.  The
+          <command>Label Address</command> box is the Address (in
+          hexadecimal).  Note that this address <emphasis>MUST</emphasis>
+          be given in hexadecimal.  The <command>Addressing Mode</command>
+          is the Addressing mode under which this address will be given
+          this name.  If you are changing a Label Name for a line under
+          which you clicked, the Address should not be changed and in most
+          cases, the <command>Addressing Mode</command> should be correct.
+          Note, however, that by changing the <command>Label
+          Address</command>, a label could be added for a different
+          address.  A new label can also be added by right clicking in the
+          <command>Label File</command> window and clicking on
+          "<command>Insert After</command>".
+        </para>
+      </section>
+      <section id="definebnds">
+        <title>The <command>Define Bounds</command> Window</title>
+        <para>Next we have <command>Define Bounds</command>.  With this
+          menu option, we get a window similar to:
+        </para>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/defbnds.png"/>
+          </imageobject>
+          <caption><para>The <command>Define Bounds Window</command></para>
+          </caption>
+        </mediaobject>
+        <para>In this window, we define a boundary range.  In the Boundary
+          type, we have a pulldown list where we can specify the type of
+          data this range represents.  Please refer to
+          <xref linkend="dataaddr"/> for more details on data boundaries.
+        </para>
+        <para>Under this is the "Addressing Mode".  This is not applicable
+          to all Boundary types.  Again, refer to <xref linkend="dataaddr"/>
+          for more information on this.  If the Boundary type does not
+          use an Amode, then this will be ignored when the entry is saved.
+          You can choose a mode from the pull-down menu, or enter a single
+          letter for a custom mode if you desire.  If you need information
+          on Addressing modes, you may wish to refer to <xref
+          linkend="laddrmod"/>.
+        </para>
+        <para id="adrbox">The Address is the current address where you
+          clicked.  This can be edited.  If a range is desired, you can
+          specify the range in any format acceptable to &odis;.  The above
+          link should give more details if needed.  Again, as with "Rename
+          Label", you can change this address to any other you wish.
+        </para>
+        <formalpara><title>The Offset from Address</title>
+          <para>This allows you to specify an offset from the destination
+            address.  Please refer to the description of offset addressing
+            below <xref linkend="laddrmod"/> for details on offset addressing.
+          </para>
+        </formalpara>
+        <para>The Offset entry utilizes a drop-down menu along with an entry
+          box.  You can type in an offset or click the arrow to select a
+          previously-selected item.  On startup, the list is empty, except
+          for a single entry "NONE".  If this is selected, or an empty line
+          is there when you click "OK", then no offset is inserted in the
+          command line.
+        </para>
+        <para>As the program progresses, a history of offsets is maintained.
+          Each time you enter a new offset, if it does not match exactly an
+          entry already present, then it is added to the list.  This is a
+          convenience feature whereby you aren't required to enter the same
+          offset repeatedly.  Note that a functionally identical entry, but
+          differing by a space will be added.  There is no harm in this except
+          that it adds a bit of "clutter" in repeated functionally identical
+          entries.
+        </para>
+        <note><para>There is no provision to save these entries.  All are lost
+          upon close of the program.
+        </para></note>
+      </section>
+      <section>
+        <title>The <command>Set Addressing Mode</command> Window</title>
+        <para>This window looks like:
+        </para>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/setamode.png"/>
+          </imageobject>
+          <caption>
+            <para>The <command>Set Addressing Mode</command> Window</para>
+          </caption>
+        </mediaobject>
+        <para>Here we set an Addressing Mode specification for an address
+          or address range.  At the top center of the window, we see a
+          single letter.  This represents the label class for the
+          instruction in the current line.  It is obvious that this is not
+          editable.
+        </para>
+        <para>In the <command>Addressing Mode</command> box, we can select
+          the mode in which we wish the operand to appear either by
+          choosing from the drop-down box or by typing in our own choice.
+          Label Classes are discussed in more detail in the section <xref
+          linkend="laddrmod"/>.
+        </para>
+        <para>The Address box works identical to that of <command>Data
+          Bounds</command> described for <xref linkend="definebnds"/>
+        </para>
+      </section>
+    </section>
+    <section><title>Embedding Label Classes in Files</title>
+      <para>There are several Label Classes that are defined by default
+        and are inserted on startup.  However, you will find that, with
+        a project of any appreciable size, that you will probably wish
+        to have additional classes besides those already defined.  There
+        is a handy way to reload these definitions into <command>g09dis
+        </command> rather than having to reenter them each time you
+        run the program.  Once you have a label file started, you can
+        embed these classes in a comment line<footnote><simpara>A comment
+        line is  a line beginning with an asterisk (*)</simpara>
+        </footnote>.  All you do is begin a line with "<command>*\
+        </command>" followed by the letter designating the label class.
+        What follows does not matter.  The spacing is totally irrelevant,
+        but a recommended format is
+      </para>
+      <!-- NOTE: Don't break the following line - it loads literally -->
+      <programlisting>*\&lt;space&gt; &lt;class&gt; &lt;space&gt; - &lt;space&gt; &lt;description&gt;</programlisting>
+      <para>By using embedded commands, as the label file is loaded, the
+        custom label
+        classes are automatically added.  If the label file is reloaded,
+        they won't be reappended as long as the line remains <emphasis>
+        exactly</emphasis> as it was.  If one of these definitions is
+        loaded and the string is <emphasis>exactly</emphasis> identical to
+        one already present, it won't get reloaded.  However, if you
+        should, for example, load a file, edit the description for
+        one of these defs, save and then reload the file, you will get
+        duplicate entries for that class.  It won't hurt anything except
+        you'll just have two entries in the drop-down list.
+      </para>
+      <note>
+        <simpara>You can also write a separate file for these embedded
+          label definitions and load them from the Tools->Edit Amode
+          menu option.
+        </simpara>
+      </note>
+    </section>
+    <section><title>G09Dis and Finding Files</title>
+      <para>If you're not careful, you may encounter problems with <command>
+        g09dis</command> locating specific files.  Here are some details
+        that might need to be noted.
+      </para>
+      <itemizedlist>
+        <listitem><para>If you run <command>g09dis</command> from the
+            command line, you can specify a full path to the program to get
+            it to execute.  If it is not in the PATH environment, and not in
+            the current directory, this may be necessary.
+          </para>
+          <formalpara>
+            <title>If <command>g09dis</command> is in the current directory
+            </title>
+            If you are in MS Windows, often simply issuing the command
+            <command>g09dis</command> is sufficient.  However, on any system,
+            if "." is not in the PATH environment, then you will have to
+            issue the command <command>./g09dis</command>
+          </formalpara>
+          <note><para>For Windows use, it may be difficult to operate
+            <command>g09dis</command> by clicking on the icon in Explorer
+            unless this copy of <command>g09dis</command> happens to be
+            in the same directory as your label files, especially.</para>
+          </note>
+        </listitem>
+      </itemizedlist>
+      <para>For greater details on locating files and possible ways to
+        avoid difficulty, please refer to <xref linkend="installwhere"/>.
+      </para>
+      <section><title>Finding the label file specified in the command file
+        </title>
+        <para>While the full path binary to be disassembled and the command
+          file can be specified in the <command>Options</command> menu,
+          the label file could cause some difficulty.
+        </para>
+        <para>This difficulty can arise in the following scenario.  If you
+          specify a label file to include in the <command>command file
+          </command> by merely the filename with out a full path list,
+          &odis; will not be able to find it if you called
+          <command>g09dis</command> from a directory different from
+          that in which the label file resides.  The only case in which
+          this would work would be if the <command>label file</command>
+          happened to be in the "default" directory or in $HOME.  This is
+          caused by the fact that &odis; searches for a file simply specified
+          by the filename in the following manner:
+        </para>
+        <orderedlist>
+          <listitem>&odis; first searches in the current directory. (This
+            would be in this case the directory from which <command>g09dis
+            </command> was called from).
+          </listitem>
+          <listitem>Next the "default" directory is searched</listitem>
+          <listitem>Finally the HOME directory is searched.
+          </listitem>
+        </orderedlist>
+        <para>If the file is not found in any of these places, an error
+          message is issued.  In the case of a label file, the program
+          does not abort, but continues, but the labels defined in this
+          file will not be included.
+        </para>
+      </section>
+    </section>
+  </section>
+</section>
