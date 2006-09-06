@@ -359,8 +359,13 @@
          <row>
           <entry><command>@</command></entry>
           <entry><emphasis>Generates a decimal or hex constant </emphasis>
-             If the value is from 0 to 9, then &odis; will generate a decimal
-             constant, otherwise, it will generate a hexadecimal constant.
+             If the value is between -9 and 9, then &odis; will generate a
+             decimal constant, otherwise, it will generate a hexadecimal
+             constant.  Note that this differs from the original
+             <filename>dynamite+</filename> in that there, only positive
+             values between 0 and 9 would generate a decimal constant.
+             However, it seems more logical to include the same range of
+             negative values in the same class.
            </entry>
          </row>
          <row>
