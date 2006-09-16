@@ -1,3 +1,11 @@
+os9disasm (0.4.0)
+  * cmdfile.c, dprint.c, odis.h, structures.h - First version supporting
+    inclusion of comments in listing/source file outputs.  This version
+	includes a single Comments tree, and supports only comments in the
+	mainline program listing.
+
+-- davebree     Sat, 16 Sep 2006 17:34:28 -0500
+
 os9disasm (0.3.1)
   * progdis.c - changed calling parameter to MovASC.  The old way was
     allowing a wrong stopping point if the begin address was wrong.

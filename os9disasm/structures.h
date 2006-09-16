@@ -89,4 +89,22 @@ struct printbuf {
 	     mnem[6],
 	     operand[50];
 };
-	     
+
+/* ****************** *
+ * Comment structures *
+ * ****************** */
+
+/* Single line of a comment */
+struct cmntline {
+    struct cmntline *nextline;
+    char *ctxt;
+};
+
+/* Main tree */
+struct commenttree {
+    int adrs;
+    struct commenttree *cmtUp;
+    struct commenttree *cmtLeft;
+    struct commenttree *cmtRight;
+    struct cmntline *commts;
+};

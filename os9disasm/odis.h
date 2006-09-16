@@ -3,7 +3,7 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-# $Id:$                                          #
+# $Id$                                          #
 #                                                                          #
 ############################################################################
 #                                                                          #
@@ -169,6 +169,8 @@ GLOBAL struct nlist *SymLst[33]; /* [0] is empty - to avoid adjusting strpos */
 GLOBAL struct databndaries *LAdds[33];
 	/* (the single) root to data boundaries tree */
 GLOBAL struct databndaries *dbounds;
+    /* Comments tree */
+GLOBAL struct commenttree *Comments;
 
 	/* ascii names for control characters */
 GLOBAL const char *CtrlCod[]

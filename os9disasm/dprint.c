@@ -95,6 +95,7 @@ PrintLine (char *pfmt, struct printbuf *pb)
 {
     NonBoundsLbl ();            /*Check for non-boundary labels */
 
+    PrintComment();
     OutputLine (pfmt, pb);
 
     PrintCleanup (pb);
@@ -175,6 +176,59 @@ BlankLine ()                    /* Prints a blank line */
     ++PgLin;
     if (WrtSrc)
         fprintf (outpath, "\n");
+}
+
+/* print any comments appropriate */
+void
+PrintComment()
+{
+    struct commenttree *me = Comments;
+    register int x;
+
+    if (InProg)
+    {
+        me = Comments;
+    }
+    else
+    {
+        return;     /* Temporary fix..  add Data later...   */
+    }
+    
+    for (x = CmdEnt; x < Pc; x++)
+    {
+        while (me)
+        {
+            if (x < me->adrs)
+            {
+                me = me->cmtLeft;
+            }
+            else
+            {
+                if (x > me->adrs)
+                {
+                    me = me->cmtRight;
+                }
+                else        /* Assume for now it's equal */
+                {
+                    struct cmntline *line;
+    
+                    line = me->commts;
+    
+                    do {
+                        printf("%5d       * %s\n", LinNum++, line->ctxt);
+                        
+                        if (WrtSrc)
+                        {
+                            fprintf (outpath, "* %s\n", line->ctxt);
+                        }
+                        
+                    } while ((line = line->nextline));
+
+                    return;
+                }
+            }
+        }
+    }
 }
 
 void
@@ -330,6 +384,7 @@ WrtEmod ()
     memset (prtbf, 0, sizeof (struct printbuf));
     Pc += 3;
     CmdEnt = Pc;
+
     if ((nl = FindLbl (SymLst[strpos (lblorder, 'L')], Pc)))
     {
         strcpy (prtbf->lbnm, nl->sname);
@@ -337,6 +392,7 @@ WrtEmod ()
         strcpy (prtbf->operand, "*");
         PrintLine (realcmd, prtbf);
     }
+
     BlankLine ();
     memset (prtbf, 0, sizeof (struct printbuf));
     strcpy (prtbf->mnem, "end");
@@ -378,6 +434,7 @@ OS9DataPrint ()
         srch = dta;
         while (srch->LNext)
             srch = srch->LNext;
+
         if ((srch->myaddr))
         {                       /* i.e., if not D000 */
             strcpy (pbf->mnem, "rmb");
@@ -415,6 +472,7 @@ ListData (struct nlist *me, int upadr)
     {
         ListData (me->LNext, me->myaddr);
     }
+
     /* Now we've come back, print this entry */
     strcpy (pbf->lbnm, me->sname);
     if (me->myaddr != ModData)
@@ -425,8 +483,10 @@ ListData (struct nlist *me, int upadr)
     if (me->RNext)
     {
         srch = me->RNext;       /* Find smallest entry in that list */
+
         while (srch->LNext)
             srch = srch->LNext;
+
         datasize = (srch->myaddr) - (me->myaddr);
     }
     else

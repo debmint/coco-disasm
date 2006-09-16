@@ -16,6 +16,7 @@
 # Purpose: process command file                                              #
 ############################################################################*/
 
+#include <ctype.h>
 #include "odis.h"
 #include "amodes.h"
 
@@ -58,7 +59,7 @@ do_cmd_file ()
             continue;
         }
         
-        if (*mbf == '*')        /* Comment?     */
+        if (*mbf == '*')        /* Cmdfile Comment?     */
         {
             continue;           /*yes, ignore   */
         }
@@ -68,6 +69,17 @@ do_cmd_file ()
             if (optincmd (++mbf) == -1)
             {   /* an error in an option would probably be fatal, anyway */
                 fprintf (stderr, "Error processing cmd line #%d\n", LinNum);
+                exit (1);
+            }
+
+            continue;
+        }
+
+        if (*mbf == '"')        /* Assembler file comment(s)    */
+        {
+            if (asmcomment (++mbf, cmdfp) == -1)
+            {
+                fprintf(stderr, "Drror processing cmd line #%d\n", LinNum);
                 exit (1);
             }
 
@@ -88,6 +100,211 @@ do_cmd_file ()
         {
             fprintf (stderr, "Illegal cmd or switch in line %d\n", LinNum);
             exit (1);
+        }
+    }
+}
+
+/* *********************************************** *
+ * newcomment() adds new commenttree address       *
+ * Passed: address for comment,                    *
+ *         parent or null if first in tree         *
+ * *********************************************** */
+struct commenttree *
+newcomment (int addrs, struct commenttree *parent)
+{
+    struct commenttree *newtree;
+
+    if (!(newtree = calloc(1,sizeof (struct commenttree))))
+    {
+        fprintf (stderr, "Cannot allocate memory for commenttree\n");
+        exit (1);
+    }
+
+    newtree->adrs = addrs;
+    newtree->cmtUp = parent;
+    return newtree;
+}
+
+/* ************************************************************************ *
+ * asmcomment() Add comments to be placed into the assembler source/listing *
+ * Format for this entry:                                                   *
+ *      " addr Dtext                                                        *
+ *      ---                                                                 *
+ *      textD\n                                                             *
+ * D represents any delimiter, following lines will be added until a line   *
+ *      ended by the delimiter is encountered.  The delimiter can be        *
+ *      included in the text as long as it's not the last char on the line. *
+ *      The delimiter can be the last character if it's doubled             *
+ * ************************************************************************ */
+
+int
+asmcomment (char *lpos, FILE *cmdfile)
+{
+    unsigned int adr = 0;
+    register char *txtsrc;
+    char *txt;
+    char delim;
+    int lastline;
+    struct commenttree *me;
+    struct cmntline *prevline = 0;
+    
+    lpos = skipblank (lpos);    /* lpos now points to address */
+    
+    if (sscanf(lpos,"%x",&adr) != 1)
+    {
+        fprintf(stderr,"Error in getting address of comment : Line #%d\n",
+                LinNum);
+        exit(1);
+    }
+    
+    /* Now find begin of text */
+
+    while (!(isblank(*lpos)))
+    {
+        ++lpos;
+    }
+
+    lpos = skipblank (lpos);     /* Now lpos is begin of (first) line of text */
+    
+    switch (*lpos)
+    {
+        case '\r':
+        case '\n':
+            return;     /* Require AT LEAST the delimiter on the first line */
+        default:
+            delim = *lpos;
+            ++lpos;
+    }
+
+    /* Now locate or set up an appropriate tree structure */
+
+    if (!Comments)
+    {
+        me = Comments = newcomment (adr, 0);
+    }
+    else
+    {
+        struct commenttree *oldme;
+        
+       /* int cmtfound = 0;*/
+        me = Comments;
+
+        while (1) {
+            if (adr < me->adrs)
+            {
+                if (me->cmtLeft)
+                {
+                    me = me->cmtLeft;
+                    continue;
+                }
+                else
+                {
+                    oldme = me;
+                    me = newcomment (adr, me);
+                    oldme->cmtLeft = me;
+
+                    /*cmtfound = 1;*/
+                    break;
+                }
+            }
+            else
+            {
+                if (adr > me->adrs)
+                {
+                    if (me->cmtRight)
+                    {
+                        me = me->cmtRight;
+                        continue;
+                    }
+                    else        /* The same address was previously done */
+                    {
+                        oldme = me; 
+                        me = newcomment (adr, me);
+                        oldme->cmtRight = me;
+                        break;
+                    }
+                }
+                else
+                {
+                    /*cmtfound = 1;*/
+
+                    /* Here, we need to find the last comment */
+                    prevline = me->commts;
+                    while (prevline->nextline) {
+                        prevline = prevline->nextline;
+                    }
+
+                    /*cmtfound = 1;*/
+                    break;
+                }
+            }
+        }       /* while (1) ( for locating or adding comments */
+    }           /* end of search in commenttree - me = appropriate tree */
+
+/************************************************************************** */
+
+    /* Now get the comment strings */
+    while (1)
+    {
+        struct cmntline *cline;
+        char mbuf[500];
+        
+        lastline = 0;
+        if (strchr(lpos,'\n'))
+        {
+            *strchr(lpos,'\n') = '\0';
+        }
+        if (strchr(lpos,'\r'))
+        {
+            *strchr(lpos,'\r') = '\0';
+        }
+
+        /* If this is the last line, set flag for later */
+        if (lpos[strlen(lpos) - 1] == delim)
+        {
+            lastline = 1;
+            lpos[strlen(lpos) - 1] = '\0'; /* Get rid of the delimiter */
+        }
+
+        /* Now we can finally store the comment */
+        if (!(txt = calloc (1, strlen(lpos)+1)))
+        {
+            fprintf(stderr,"Error - cannot allocate memory for comment\n");
+            exit(1);
+        }
+        strncpy (txt,lpos,strlen(lpos));
+
+        if (!(cline = calloc (1, sizeof (struct cmntline))))
+        {
+            fprintf (stderr,
+                    "Error - cannot allocate memory for comment line\n");
+            exit(1);
+        }
+        if (prevline)
+        {
+            prevline->nextline = cline;
+        }
+        else
+        {
+            me->commts = cline;
+        }
+
+        prevline = cline;
+        cline->ctxt = txt;
+
+        if (lastline)
+        {
+            return;
+        }
+        else
+        {
+            if (!(lpos = fgets(mbuf,sizeof(mbuf),cmdfile)))
+            {
+                return; /* Try to proceed on error */
+            }
+
+            ++LinNum;
+            lpos = skipblank(lpos);
         }
     }
 }
@@ -287,7 +504,7 @@ DoMode (char *lpos)
 {
     struct databndaries *mptr;
     register int class;         /* addressing mode */
-    register int notimm = 5;
+    register int notimm = 4;    /* Was 5, but we moved AM_DRCT */
     char c;
     int lo, hi;
     register struct databndaries *lp;
@@ -301,11 +518,11 @@ DoMode (char *lpos)
     switch (c = toupper (*(lpos++)))
     {
     case 'D':
-/*			if(notimm)
+			if(notimm)
 				AMode=AM_DRCT;
 			else
 				AMode=AM_DIMM;
-			break;*/
+			break;
     case 'X':
     case 'Y':
     case 'U':
