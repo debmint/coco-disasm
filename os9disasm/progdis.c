@@ -99,7 +99,7 @@ MovBytes (struct databndaries *db)
             if (strlen (pbuf->operand) > 22)
             {
                 strcpy (pbuf->mnem, PBytSiz == 1 ? "fcb" : "fdb");
-                PrintLine (pseudcmd, pbuf);
+                PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc + PBytSiz);
                 CmdEnt = Pc + PBytSiz;
             }
         }
@@ -108,7 +108,7 @@ MovBytes (struct databndaries *db)
     if (strlen (pbuf->operand))
     {
         strcpy (pbuf->mnem, PBytSiz == 1 ? "fcb" : "fdb");
-        PrintLine (pseudcmd, pbuf);
+        PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
     }
 }
 
@@ -204,7 +204,7 @@ MovASC (int nb)
                 {
                     strcpy (pbuf->mnem, "fcs");
                     AddDelims (pbuf->operand, oper_tmp);
-                    PrintLine (pseudcmd, pbuf);
+                    PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
                     *oper_tmp = '\0';
                     CmdEnt = Pc + 1;
                     strcpy (pbuf->mnem, "fcc");
@@ -214,7 +214,7 @@ MovASC (int nb)
                     (strlen (oper_tmp) && FindLbl (ListRoot ('L'), Pc + 1)))
                 {
                     AddDelims (pbuf->operand, oper_tmp);
-                    PrintLine (pseudcmd, pbuf);
+                    PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
                     *oper_tmp = '\0';
                     CmdEnt = Pc + 1;
                     strcpy (pbuf->mnem, "fcc");
@@ -226,7 +226,7 @@ MovASC (int nb)
             if (Pass2 && (strlen (oper_tmp)))
             {
                 AddDelims (pbuf->operand, oper_tmp);
-                PrintLine (pseudcmd, pbuf);
+                PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
                 *oper_tmp = '\0';
                 CmdEnt = Pc;
             }
@@ -252,7 +252,7 @@ MovASC (int nb)
                 strcpy (pbuf->mnem, "fcb");
                 PrintLbl (pbuf->operand, strpos (lblorder, '^'), x, nlp);
                 sprintf (pbuf->instr, "%02x", x & 0xff);
-                PrintLine (pseudcmd, pbuf);
+                PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
                 strcpy (pbuf->mnem, "fcc");
             }
             CmdEnt = Pc + 1;
@@ -263,7 +263,7 @@ MovASC (int nb)
     if (strlen (oper_tmp))
     {                           /* Clear out any pending string */
         AddDelims (pbuf->operand, oper_tmp);
-        PrintLine (pseudcmd, pbuf);
+        PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
         *oper_tmp = '\0';
     }
 }
@@ -1102,7 +1102,7 @@ progdis ()
             {
                 if (Pass2)
                 {
-                    PrintLine (realcmd, pbuf);
+                    PrintLine (realcmd, pbuf, 'L', CmdEnt, Pc);
                 }
 
                 /* allocate byte */
@@ -1134,7 +1134,7 @@ progdis ()
                     strcpy (pbuf->mnem, "fcb");
                     pp = stpcpy (pbuf->operand, "$");
                     sprintf (pp, "%02x", bcode);
-                    PrintLine (pseudcmd, pbuf);
+                    PrintLine (pseudcmd, pbuf, 'L', CmdEnt, CmdEnt+1);
                 }
                 
                 Pc = ++CmdEnt;

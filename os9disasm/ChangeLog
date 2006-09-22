@@ -1,3 +1,12 @@
+os9disasm (0.4.1)
+  * progdis.c - Changed prototype for calls to PrintLine().
+  * dprint.c, cmdfile.c, odis.h - Expanded Program source comments so that
+    they now can be specific to an individual label class
+  * doc/odcmd.xml - Added documentation for specifying comments for the
+    listings.
+
+-- davebree    Fri, 22 Sep 2006 12:31:29 -0500
+
 os9disasm (0.4.0)
   * cmdfile.c, dprint.c, odis.h, structures.h - First version supporting
     inclusion of comments in listing/source file outputs.  This version

@@ -16,7 +16,8 @@
 # Purpose: process command file                                              #
 ############################################################################*/
 
-#include <ctype.h>
+/*#include <ctype.h>*/
+#define _GNU_SOURCE     /* Needed to get isblank() defined */
 #include "odis.h"
 #include "amodes.h"
 
@@ -141,19 +142,35 @@ int
 asmcomment (char *lpos, FILE *cmdfile)
 {
     unsigned int adr = 0;
-    register char *txtsrc;
-    char *txt;
+    register char *txt;
     char delim;
     int lastline;
-    struct commenttree *me;
+    struct commenttree *treebase;
+    register struct commenttree *me;
     struct cmntline *prevline = 0;
+    char lblclass;
+    
+    lpos = skipblank (lpos);
+
+    lblclass = *(lpos++);       /* first element is Label Class */
+
+    if (isalpha (lblclass) && islower (lblclass))
+    {
+        lblclass = toupper(lblclass);
+    }
+    
+    if (!strchr(lblorder,lblclass))
+    {
+        fprintf (stderr, "Illegal label class for comment, Line %d\n", LinNum);
+        return -1;
+    }
     
     lpos = skipblank (lpos);    /* lpos now points to address */
     
     if (sscanf(lpos,"%x",&adr) != 1)
     {
-        fprintf(stderr,"Error in getting address of comment : Line #%d\n",
-                LinNum);
+        fprintf (stderr,"Error in getting address of comment : Line #%d\n",
+                 LinNum);
         exit(1);
     }
     
@@ -170,7 +187,7 @@ asmcomment (char *lpos, FILE *cmdfile)
     {
         case '\r':
         case '\n':
-            return;     /* Require AT LEAST the delimiter on the first line */
+            return 0;    /* Require AT LEAST the delimiter on the first line */
         default:
             delim = *lpos;
             ++lpos;
@@ -178,16 +195,19 @@ asmcomment (char *lpos, FILE *cmdfile)
 
     /* Now locate or set up an appropriate tree structure */
 
-    if (!Comments)
+    treebase = Comments[strpos (lblorder, lblclass)];
+    
+    if (!treebase)
     {
-        me = Comments = newcomment (adr, 0);
+        me = treebase = Comments[strpos (lblorder, lblclass)] =
+            newcomment (adr, 0);
     }
     else
     {
         struct commenttree *oldme;
         
        /* int cmtfound = 0;*/
-        me = Comments;
+        me = treebase;
 
         while (1) {
             if (adr < me->adrs)
@@ -294,13 +314,13 @@ asmcomment (char *lpos, FILE *cmdfile)
 
         if (lastline)
         {
-            return;
+            return 0;
         }
         else
         {
             if (!(lpos = fgets(mbuf,sizeof(mbuf),cmdfile)))
             {
-                return; /* Try to proceed on error */
+                return -1; /* Try to proceed on error */
             }
 
             ++LinNum;

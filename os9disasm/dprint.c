@@ -19,6 +19,7 @@
 #include "odis.h"
 #include <time.h>
 
+#define CNULL '\0'
 
 extern char *CmdBuf;
 
@@ -91,11 +92,11 @@ PrintCleanup (struct printbuf *pb)
  * *********************************************** */
 
 void
-PrintLine (char *pfmt, struct printbuf *pb)
+PrintLine (char *pfmt, struct printbuf *pb, char class, int cmdlow, int cmdhi)
 {
     NonBoundsLbl ();            /*Check for non-boundary labels */
 
-    PrintComment();
+    PrintComment (class, cmdlow, cmdhi);
     OutputLine (pfmt, pb);
 
     PrintCleanup (pb);
@@ -180,22 +181,15 @@ BlankLine ()                    /* Prints a blank line */
 
 /* print any comments appropriate */
 void
-PrintComment()
+PrintComment(char lblclass, int cmdlow, int cmdhi)
 {
-    struct commenttree *me = Comments;
+    register struct commenttree *me;
     register int x;
 
-    if (InProg)
+    for (x = cmdlow; x < cmdhi; x++)
     {
-        me = Comments;
-    }
-    else
-    {
-        return;     /* Temporary fix..  add Data later...   */
-    }
-    
-    for (x = CmdEnt; x < Pc; x++)
-    {
+        me = Comments[strpos (lblorder, lblclass)];
+
         while (me)
         {
             if (x < me->adrs)
@@ -224,7 +218,7 @@ PrintComment()
                         
                     } while ((line = line->nextline));
 
-                    return;
+                    break;  /* This address done, proceed with next x */
                 }
             }
         }
@@ -304,7 +298,7 @@ RsEnd (void)
     strcpy (prtbf->mnem, "end");
     sprintf (prtbf->operand, "$%04x", ModExe);
     BlankLine ();
-    PrintLine (realcmd, prtbf);
+    PrintLine (realcmd, prtbf, CNULL, 0, 0);
     BlankLine ();
 }
 
@@ -346,7 +340,7 @@ OS9Modline ()
         /*strcat (prtbf->operand, FindLbl (SymLst[0], ModData)->sname);*/
     }
     /*PrintLine("%5d  %08x %-10s%s %-10s %-6s %s\n",prtbf); */
-    PrintLine (pseudcmd, prtbf);
+    PrintLine (pseudcmd, prtbf, CNULL, 0, 0);
     InProg = 1;
     fseek (progpath, progstart+HdrLen, SEEK_SET);
 }
@@ -379,7 +373,7 @@ WrtEmod ()
     strcpy (prtbf->mnem, "emod");
     BlankLine ();
 /*	PrintLine("%5d  %06x %-12s%s %-10s %-6s %s\n",prtbf);*/
-    PrintLine (pseudcmd, prtbf);
+    PrintLine (pseudcmd, prtbf, CNULL, 0, 0);
     BlankLine ();
     memset (prtbf, 0, sizeof (struct printbuf));
     Pc += 3;
@@ -390,7 +384,7 @@ WrtEmod ()
         strcpy (prtbf->lbnm, nl->sname);
         strcpy (prtbf->mnem, "equ");
         strcpy (prtbf->operand, "*");
-        PrintLine (realcmd, prtbf);
+        PrintLine (realcmd, prtbf, CNULL, 0, 0);
     }
 
     BlankLine ();
@@ -420,8 +414,9 @@ OS9DataPrint ()
 
     InProg = 0;                 /* Stop looking for Inline program labels to substitute */
     memset (pbf, 0, sizeof (struct printbuf));
-    if ((dta=ListRoot('D')))
+
     /*if ((dta = SymLst[0]))*/
+    if ((dta=ListRoot('D')))
     {                           /* special tree for OS9 data defs */
         BlankLine ();
         printf ("%5d %22s%s\n", LinNum++, "", what);
@@ -440,7 +435,7 @@ OS9DataPrint ()
             strcpy (pbf->mnem, "rmb");
             sprintf (pbf->operand, "%d", srch->myaddr);
             CmdEnt = PrevEnt = 0;
-            PrintLine (realcmd, pbf);
+            PrintLine (realcmd, pbf, 'D', 0, srch->myaddr);
         }
         ListData (dta, ModData);
     }
@@ -507,7 +502,7 @@ ListData (struct nlist *me, int upadr)
 
     CmdEnt = me->myaddr;
     PrevEnt = CmdEnt;
-    PrintLine (realcmd, pbf);
+    PrintLine (realcmd, pbf, 'D', me->myaddr, (me->myaddr + datasize));
 
     if (me->RNext)
     {
@@ -620,7 +615,7 @@ TellLabels (struct nlist *me, int flg, char class)
             if (UpCase)
                 UpString (pb->operand);
             CmdEnt = PrevEnt = me->myaddr;
-            PrintLine (realcmd, pb);
+            PrintLine (realcmd, pb, class, me->myaddr, me->myaddr + 1);
         }
     }
 

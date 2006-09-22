@@ -170,7 +170,7 @@ GLOBAL struct databndaries *LAdds[33];
 	/* (the single) root to data boundaries tree */
 GLOBAL struct databndaries *dbounds;
     /* Comments tree */
-GLOBAL struct commenttree *Comments;
+GLOBAL struct commenttree *Comments[33];
 
 	/* ascii names for control characters */
 GLOBAL const char *CtrlCod[]
