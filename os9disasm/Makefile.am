@@ -2,12 +2,13 @@
 
 #include ../Makefile.rules
 
-##SUBDIRS	= doc
-EXTRA_DIST = doc/html/*.html doc/html/style.css doc/README doc/*.xml doc/Makefile doc/html/images/
+SUBDIRS	= doc
+##EXTRA_DIST = doc/html/*.html doc/README doc/*.xml doc/Makefile doc/html/images/*
 
 AM_LDFLAGS	=-L../lib
 
 AM_CFLAGS	=-Wall
 
 bin_PROGRAMS = os9disasm
-os9disasm_SOURCES = os9disasm.c cmdfile.c dprint.c lbltree.c progdis.c util_dis.c amodes.h odis.h structures.h dtble.h proto.h
+os9disasm_SOURCES = os9disasm.c cmdfile.c dprint.c lbltree.c progdis.c\
+		util_dis.c amodes.h odis.h structures.h dtble.h proto.h
