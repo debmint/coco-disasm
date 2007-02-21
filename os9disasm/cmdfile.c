@@ -190,6 +190,7 @@ asmcomment (char *lpos, FILE *cmdfile)
             return 0;    /* Require AT LEAST the delimiter on the first line */
         default:
             delim = *lpos;
+            *lpos = '\0';   /* So we can have an empty string for first line */
             ++lpos;
     }
 
