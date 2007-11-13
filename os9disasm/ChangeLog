@@ -1,3 +1,12 @@
+os9disasm (0.5.0)
+  * perldis.pl, dtble.pm - Added a first preliminary perl os9disasm to the
+    archive.  This version is a first version that works only with a straight
+	disassembly.  The command-file reading capability has not been integrated
+	yet.  This is at this stage, a preliminary test to see how perl handles
+	this size project.  It may be deleted if it does not pan out.
+
+-- davebree    Mon, 12 Nov 2007 20:47:05 -0600
+
 os9disasm (0.4.1)
   * progdis.c - Changed prototype for calls to PrintLine().
   * dprint.c, cmdfile.c, odis.h - Expanded Program source comments so that
