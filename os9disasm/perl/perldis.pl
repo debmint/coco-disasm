@@ -8,7 +8,7 @@
 #                                                           #
 # ######################################################### #
 
-# $Id:$
+# $Id$
 
 # Include getopt functions
 
@@ -20,7 +20,7 @@ use dtble;
 
 use Data::Dumper;
 
-use constant VERSION => "0.4.1";
+use constant VERSION => "0.5.1";
 # CPU TYPE DEFS
 use constant M_09 => 0;
 use constant M_03 => 1;
@@ -424,12 +424,8 @@ sub lblcalc {
     my $kls;
     my $oclass;
 
-    my $np = $pc;
     if ($amod eq 'am_rel') {
         $raw += $pc;
-    }
-    if ($cmdent == 0x86 or $cmdent == 0x9f) {
-        printf STDERR "CmdEnt=%04x;   original adr %d; \$pc=%04x   raw= %04x;  adr+pc=%04x\n", $cmdent,$adr,$pc,$raw,$adr+$np;
     }
 
     # If $amod is defined, we're doing a label class
@@ -1530,11 +1526,15 @@ sub txidx {
                 $oper1 = sprintf "d,%s", $regnam;
             }
             elsif (($pbflg == 8) || ($pbflg == 9)) { # <n,R >nn,R
-                regput ($postbyte, $pbuf, \$amode, $regnam, \$oper1, \$oper2);
+                regput ($postbyte, $pbuf, \$amode, \$oper1);
+                $oper2 = ",$regnam";
             }
             elsif (($pbflg == hex "0c") ||              # n,PC (8-bit)
                             ($pbflg == hex "0d")) {     # nn,PC (16-bit)
-                regput ($postbyte, $pbuf, \$amode, 'pcr', \$oper1, \$oper2);
+                $amode = 'am_rel';                
+                $myclass = $dfltlbls->{$amode};
+                regput ($postbyte, $pbuf, \$amode, \$oper1);
+                $oper2 = ',pcr';
             }
             else {
                 return undef;
@@ -1557,33 +1557,31 @@ sub txidx {
 # Passed: $postbyte                                    #
 #         $pbf - print buffer ref                      #
 #         $amode - REFERENCE to amode variable         #
-#         $reg - register name, or "pc"                #
+#         $op1 - the first part of the operand string  #
 # #################################################### #
 
 sub regput {
-    my ($postbyte, $pbf, $amode, $reg, $op1, $op2) = @_;
+    my ($postbyte, $pbf, $amode, $op1) = @_;
 
     my $offset = getidxoffset ($postbyte);
 
-    if (($offset < 127) && ($offset > -128) && ($postbyte & 1)) {
-        $$op1 = ">";
-    }
-
-    # If "pcr" redefrine $amode
-
-    if ($reg =~ 'pc') {
-        $$amode = 'am_rel';
-    }
-
-    $$op1 .= lblcalc ($offset, $$amode, 1);
-    $$op2 = sprintf ",%s", $reg;
+#    if (($offset < 127) && ($offset > -128) && ($postbyte & 1)) {
+#        $$op1 = ">";
+#    }
 
     if ($postbyte & 1) {
+        if ($offset < 0x80 and $offset >= -128) {
+            $$op1 = ">";
+        }
+
         $pbf->{opcod} .= sprintf "%04x", $offset & hex "ffff";
     }
     else {
         $pbf->{opcod} .= sprintf "%02x", $offset & hex "ff";
     }
+
+    $$op1 .= lblcalc ($offset, $$amode, 1);
+#    $$op2 = sprintf ",%s", $reg;
 }
 
 # #################################################### #

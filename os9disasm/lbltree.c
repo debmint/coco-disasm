@@ -500,7 +500,7 @@ addlbl (int loc, char C)
     
     if (UpCase)
         UpString (me->sname);
-    (int) (me->myaddr) = loc;
+    me->myaddr = loc;
 
     if (pt)
     {

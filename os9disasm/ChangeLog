@@ -1,3 +1,11 @@
+os9disasm (0.5.1)
+  * os9disasm/progdis.c - Added function regput() - common routine for
+    register or pcr offsets.
+	Fixed output for short offsets in extended (">") mode.
+  * os9disasm/perl/perldis.c - eliminated passing $regnam and $oper2 to
+    regput()..  These are better handled in the calling procedure.
+
+-- davebree    Tue, 13 Nov 2007 17:46:06 -0600
 os9disasm (0.5.0)
   * perldis.pl, dtble.pm - Added a first preliminary perl os9disasm to the
     archive.  This version is a first version that works only with a straight

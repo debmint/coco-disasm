@@ -382,18 +382,20 @@ GetIdxOffset (int postbyte)
     {                   /* postbyte size */
     case 0:            /* single byte */
         byt_offset = (char)fgetc (progpath);
-        offset = (int)byt_offset;;
+        offset = (int)byt_offset;
         break;
     default:           /* 16-bit (only other option */
         msk = o9_fgetword (progpath);
 
+        /* The Following makes the 16-bit word a signed value. */
+
         if (msk > 0x7fff)
         {
-            offset = (-1) ^ 0xffff;
+            offset = (-1) ^ 0xffff;     /* Sort of a sign-extend */
         }
         else
         {
-            offset = 0;
+            offset = 0;     /* to be or'ed with the raw obtained value */
         }
         
         offset |= msk;
@@ -404,6 +406,47 @@ GetIdxOffset (int postbyte)
     Pc += (postbyte & 1) + 1;
 
     return offset;
+}
+
+/* ******************************************************* *
+ * regput() - Common setup for n,R or n,Pc indexed modes.  *
+ *                                                         *
+ * Passed:  int pbyte- the postbyte, (to determine whether *
+ *                     ofst is 8-bit or 16-bit             *
+ *          char *op1 - pointer to oper1 (the first part   *
+ *                     of the opcode string data           *
+ * ******************************************************* */
+
+static void
+regput (int pbyte, char *op1)
+{
+    int ofst;
+    char tmp[10];
+
+    ofst = GetIdxOffset (pbyte);
+
+    if (pbyte & 1)
+    {
+        if ((ofst < 0x80) && (ofst >= -128))
+        {
+            strcpy (op1, ">");
+        }
+        else
+        {
+            *op1 = '\0';
+        }
+
+        sprintf (tmp, "%04x", ofst & 0xffff);
+    }
+    else
+    {
+        sprintf (tmp, "%02x", ofst & 0xff);
+    }
+
+    strcat (pbuf->opcod, tmp);
+    /*Pc += (pbyte & 1) + 1;*/
+
+    LblCalc (op1, ofst, AMode);
 }
 
 static int
@@ -519,62 +562,20 @@ TxIdx ()
                 if (UpCase)
                     UpString (oper1);
                 break;
-            case 0x08:         /* <n,R */
-            case 0x09:         /* >nn,R */
-                offset = GetIdxOffset (postbyte);
-               
-                if (offset < 0x127 && offset > -128 &&  (postbyte & 1))
-                {
-                    strcpy (oper1, ">");
-                }
-
-                LblCalc (oper1, offset, AMode);
+            case 0x08:                      /*  n,R */
+            case 0x09:                      /* nn,R */
+                regput (postbyte, oper1);
                 sprintf (oper2, ",%c", regNam);
-
-                if (postbyte & 1)
-                {
-                    sprintf (tmp, "%04x", offset & 0xffff);
-                }
-                else
-                {
-                    sprintf (tmp, "%02x", offset & 0xff);
-                }
-
-                strcat (pbuf->opcod, tmp);
                 break;
-            case 0x0c:         /* n,PC (8-bit) */
-            case 0x0d:         /*nn,PC (16 bit) */
-                offset = GetIdxOffset (postbyte);
+            case 0x0c:                      /*  n,PC (8-bit) */
+            case 0x0d:                      /* nn,PC (16 bit) */
                 AMode = AM_REL;
                 /* below is a temporary fix */
                 myclass = DEFAULTCLASS;
+                regput (postbyte, oper1);
 
-                /* Define the following because offset is unsigned */
-                if (((offset < 0x127) && (offset > -128)) && (postbyte & 1))
-                {
-                    strcpy (oper1, ">");
-                }
-                else
-                {
-                    if (!(postbyte & 1))
-                    {
-                        strcpy (oper1, "<");
-                    }
-                }
-
-                if (postbyte & 1)
-                {
-                    sprintf (tmp, "%04x", offset & 0xffff);
-                }
-                else
-                {
-                    sprintf (tmp, "%02x", offset & 0xff);
-                }
-
-                strcat (pbuf->opcod, tmp);
                 /*Pc += (postbyte & 1) + 1;*/
 
-                LblCalc (oper1, offset, AMode);
                 sprintf (oper2, ",%s", "pcr");
                 break;
             default:           /* Illegal Code */
