@@ -160,7 +160,10 @@ ClasHere (struct databndaries *bp, int adrs)
 
 /* ********************************************** *
  * LblCalc() - Calculate the Label for a location *
- *    Passed: size of postbyte (1 or 2)           *
+ *    Passed: dst - pointer to character string   *
+ *                  to APPEND result to           *
+ *            adr - the address of the label      *
+ *            amod - the AMode desired            *
  * ********************************************** */
 
 int
@@ -217,7 +220,9 @@ LblCalc (char *dst, int adr, int amod)
             }
         }
         else
+        {
             return 0;
+        }
     }
 
     if (!Pass2)
@@ -337,8 +342,6 @@ PrintLbl (char *dest, char clas, int adr, struct nlist *dl)
         else
             adr &= 0xffff;
         sprintf (tmp, OpCodFmt[PBytSiz], adr);
-        if (UpCase)
-            UpString (tmp);
         sprintf (dest, "$%s", tmp);
         break;
     case '&':
@@ -384,8 +387,6 @@ PrintLbl (char *dest, char clas, int adr, struct nlist *dl)
         break;
     default:
         strcpy (dest, dl->sname);
-        if (UpCase)
-            UpString (dl->sname);
     }
 }
 
@@ -498,8 +499,6 @@ addlbl (int loc, char C)
     sprintf (tmplbl, "%04x", loc & 0xffff);
     strncat (me->sname, tmplbl, 4);
     
-    if (UpCase)
-        UpString (me->sname);
     me->myaddr = loc;
 
     if (pt)

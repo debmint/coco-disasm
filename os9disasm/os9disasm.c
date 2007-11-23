@@ -304,32 +304,41 @@ RdLblFile ()
     {
         fgets (rdbuf, sizeof (rdbuf), inpath);
         if (!(lbegin = skipblank (rdbuf)) || (*lbegin == '*'))
+        {
             continue;
+        }
+
         if (sscanf (rdbuf, "%s %s %s %c", labelname, eq, strval, &clas) == 4)
         {
             clas = toupper (clas);
 
             if (!strcasecmp (eq, "equ"))
             {
-                if (strval[0] == '$')
+                /* Store address in proper place */
+
+                if (strval[0] == '$')   /* if represented in hex */
                 {
                     sscanf (&strval[1], "%x", &address);
                 }
                 else
+                {
                     address = atoi (strval);
+                }
+
                 if ((OSType == OS_9) && (clas == 'D') && (address <= ModData))
-                    /*nl = FindLbl (SymLst[0], address);*/
+                {
                     nl = FindLbl (ListRoot ('D'), address);
+                }
                 else
+                {
                     nl = FindLbl (ListRoot (clas), address);
+                }
 
                 if (nl)
                 {
                     strncpy (nl->sname, labelname, ShortLbl);
                     nl->sname[ShortLbl] = '\0';
                     nl->stdnam = 1;
-                    if (UpCase)
-                        UpString (nl->sname);
                 }
             }
         }
@@ -358,18 +367,16 @@ GetLabels ()                    /* Read the labelfiles */
         if ((nl = FindLbl (ListRoot ('^'), x)))
         {
             strcpy (nl->sname, CtrlCod[x]);
-            if (UpCase)
-                UpString (nl->sname);
         }
     }
+
     if ((nl = FindLbl (ListRoot ('^'), 0x7f)))
     {
         strcpy (nl->sname, "del");
-        if (UpCase)
-            UpString (nl->sname);
     }
 
     /* Next read in the Standard systems names file */
+
     if ((OSType == OS_9) || (OSType == OS_Moto))
     {
         tmpnam = build_path ("sysnames", filename, sizeof (filename));
@@ -450,7 +457,8 @@ InitDefaults ()
 
     DefDir = "~/coco/defs/";    /* Default defs location */
 
-    /*for (x = 0; x <= sizeof (SymLst) / sizeof (SymLst[0]); x++)*/
+    /* Initialize all SymLst tree bases to NULL */
+
     for (x = 1; x <= sizeof (SymLst) / sizeof (SymLst[1]); x++)
     {
         SymLst[x] = 0;

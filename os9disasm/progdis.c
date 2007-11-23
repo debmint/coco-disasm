@@ -444,7 +444,6 @@ regput (int pbyte, char *op1)
     }
 
     strcat (pbuf->opcod, tmp);
-    /*Pc += (pbyte & 1) + 1;*/
 
     LblCalc (op1, ofst, AMode);
 }
@@ -487,33 +486,27 @@ TxIdx ()
     }
     else
     {
-        regNam = RegOrdr[((postbyte >> 5) & 3)];       /* Current register offset */
-        if (UpCase)
-        {
-            regNam = toupper (regNam);
-        }
-        
+        regNam = RegOrdr[((postbyte >> 5) & 3)]; /* Current register offset */
         AMode += (postbyte >> 5) & 3;
 
         if (!(postbyte & 0x80))
         {                       /* 0RRx xxxx = 5-bit    */
             int sbit;           /*the offset portion of the postbyte */
 
-            if (!(postbyte & 0x1f))    /* 0,r not valid asm mode? */
+            if (!(postbyte & 0x1f))     /* 0,r not valid asm mode? */
+            {
                 return 0;
-            sbit = postbyte & 0x0f;
+            }
 
-            if (postbyte & 0x10)
-            {                   /* sign bit */
-                /* Test the following */
-                /*      sbit = 0x10-sbit;
-                   strcpy(pbuf->operand,"-"); */
-                sbit -= 0x10;
+            sbit = postbyte & 0x0f;     /* 4 bits of data in this mode */
+
+            if (postbyte & 0x10)        /* sign bit */
+            {
+                sbit -= 0x10;   /* sbit is now a signed integer */
             }
             
-            LblCalc (oper1, sbit, AMode);
-            sprintf (oper2, "%s,%c", oper1, regNam);
-            strcat (pbuf->operand, oper2);
+            LblCalc (pbuf->operand, sbit, AMode);
+            sprintf (pbuf->operand, "%s,%c", pbuf->operand, regNam);
             return 1;
         }
         else
@@ -549,23 +542,17 @@ TxIdx ()
                 break;
             case 5:
                 sprintf (oper1, "b,%c", regNam);
-                if (UpCase)
-                    UpString (oper1);
                 break;
             case 6:
                 sprintf (oper1, "a,%c", regNam);
-                if (UpCase)
-                    UpString (oper1);
                 break;
             case 0x0b:
                 sprintf (oper1, "d,%c", regNam);
-                if (UpCase)
-                    UpString (oper1);
                 break;
             case 0x08:                      /*  n,R */
             case 0x09:                      /* nn,R */
                 regput (postbyte, oper1);
-                sprintf (oper2, ",%c", regNam);
+                sprintf (oper1, "%s,%c", oper1, regNam);
                 break;
             case 0x0c:                      /*  n,PC (8-bit) */
             case 0x0d:                      /* nn,PC (16 bit) */
@@ -574,27 +561,21 @@ TxIdx ()
                 myclass = DEFAULTCLASS;
                 regput (postbyte, oper1);
 
-                /*Pc += (postbyte & 1) + 1;*/
-
-                sprintf (oper2, ",%s", "pcr");
+                sprintf (oper1, "%s,%s", oper1, "pcr");
                 break;
             default:           /* Illegal Code */
                 return 0;
             }
+    
+            if (postbyte & 0x10)
+            {
+                sprintf (pbuf->operand, "%s[%s]", pbuf->operand, oper1);
+            }
+            else
+            {
+                sprintf (pbuf->operand, "%s%s", pbuf->operand, oper1);
+            }
         }
-    }
-    if (UpCase)
-        UpString (oper2);
-
-    if (postbyte & 0x10)
-    {
-        strcat (pbuf->operand, "[");
-        strcat (pbuf->operand, strcat (oper1, oper2));
-        strcat (pbuf->operand, "]");
-    }
-    else
-    {
-        strcat (pbuf->operand, strcat (oper1, oper2));
     }
 
     return 1;
@@ -636,6 +617,7 @@ GetCmd ()
     }
 
     /* If illegal code is present, then print it out if pass 2 */
+    
     if (noncode && Pass2)
     {
         /* Pc hasn't moved, data from Pc to
@@ -659,6 +641,7 @@ GetCmd ()
     PBytSiz = tbl->adbyt;
 
     /* Special case for OS9 */
+    
     if ((OSType == OS_9) && !(strncasecmp (tbl->mnem, "swi2", 4)))
     {
         register unsigned int ch;
@@ -680,13 +663,16 @@ GetCmd ()
                 strcat (pbuf->operand, nl->sname);
             }
             else
+            {
                 sprintf (pbuf->operand, "%02x", ch);
+            }
         }
         return 1;
     }
 
     /* take care of aim/oim/tim immediate # */
     /* TODO  add addressing mode for this!!! */
+    
     if (strstr (tbl->mnem, "im"))
     {
         unsigned int im = fgetc (progpath);
@@ -812,6 +798,7 @@ GetCmd ()
             return 0;
 
         /* Can't tfr between different-sized registers */
+        
         if (ct != 0x0c)         /* "0" register for 6309 */
         {
             if ((ct & 0x08) != (pbyte & 0x08))
@@ -820,9 +807,7 @@ GetCmd ()
             }
         }
 
-        strcpy (pbuf->operand, regpt[ct]);
-        strcat (pbuf->operand, ",");
-        strcat (pbuf->operand, regpt[(pbyte) & 0x0f]);
+        sprintf (pbuf->operand, "%s,%s", regpt[ct], regpt[(pbyte) & 0x0f]);
         break;
     case AM_BYTI:
     case AM_DIMM:
@@ -839,20 +824,17 @@ GetCmd ()
         case 4:                /* only one instance, "ldq (immediate mode)" */
             offset = o9_fgetword (progpath);
             sprintf (pbuf->opcod, "%04x", offset & 0xffff);
-            strcat (pbuf->operand, "$");
-            strcat (pbuf->operand, pbuf->opcod);
+            sprintf (pbuf->operand, "%s$%s", pbuf->operand, pbuf->opcod);
             Pc += 2;
 
             offset = o9_fgetword (progpath);
-            sprintf (tmpbuf, "%04x", offset & 0xffff);
-            strcat (pbuf->opcod, tmpbuf);
-            strcat (pbuf->operand, tmpbuf);
+            sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, offset & 0xffff);
+            sprintf (pbuf->operand, "%s%04x", pbuf->operand, offset & 0xffff);
             Pc += 2;
             return 1;           /* done */
         case 2:
             offset = o9_fgetword (progpath);
-            sprintf (tmpbuf, "%04x", offset & 0xffff);
-            strcat (pbuf->opcod, tmpbuf);
+            sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, offset & 0xffff);
             Pc += 2;
             break;
         default:
@@ -866,13 +848,11 @@ GetCmd ()
                 offset &= 0xff;
             }
             
-            sprintf (tmpbuf, "%02x", offset & 0xff);
-            strcat (pbuf->opcod, tmpbuf);
+            sprintf (pbuf->opcod, "%s%02x", pbuf->opcod, offset & 0xff);
             break;
         }
 
-        LblCalc (tmp, offset, AMode);
-        strcat (pbuf->operand, tmp);
+        LblCalc (pbuf->operand, offset, AMode);
         break;
 
     case AM_BIT:
@@ -886,15 +866,13 @@ GetCmd ()
         if (tmpbyt > 3)
             return 0;
 
-        sprintf (pbuf->operand, "%s.", PshPuls[(int)tmpbyt]);
-        tmpbyt = (pbyte >> 3) & 0x7;
-        sprintf (tmpbuf, "%d,", tmpbyt);
-        strcat (pbuf->operand, tmpbuf);
+        sprintf (pbuf->operand, "%s.%d,",
+                    PshPuls[(int)tmpbyt], (pbyte >> 3) & 7);
         sprintf (tmpbuf, "$%02x", fgetc (progpath));
         ++Pc;
         strcat (pbuf->operand, tmpbuf);
         strcat (pbuf->operand, ".");
-        strcat (pbuf->opcod, &tmpbuf[1]);
+        strcat (pbuf->opcod, &tmpbuf[1]);   /* drop leading "$" */
         tmpbyt = pbyte & 0x7;
         sprintf (tmpbuf, "%d", tmpbyt);
         strcat (pbuf->operand, tmpbuf);
@@ -902,8 +880,6 @@ GetCmd ()
 
     }
 
-    if (UpCase)
-        UpString (pbuf->operand);
     return 1;
 }
 

@@ -58,15 +58,6 @@ OutputLine (char *pfmt, struct printbuf *pb)
         strcpy (pb->lbnm, nl->sname);
     }
 
-    if (UpCase)
-    {
-        /*UpString(pb->lbnm); */
-        UpString (pb->instr);
-        UpString (pb->opcod);
-        UpString (pb->mnem);
-        /*UpString(pb->operand); */
-    }
-    
     PrintFormatted (pfmt, pb);
 
     if (WrtSrc)
@@ -115,12 +106,36 @@ UpString (char *s)              /* Translate a string to uppercase */
     }
 }
 
+/* *********************************************** *
+ * UpPbuf() - Translates a whole print buffer's    *
+ *            contents to upper case, if UpCase    *
+ * Passed: Pointer to the print buffer to upcase   *
+ * *********************************************** */
+
+void
+UpPbuf (struct printbuf *pb)
+{
+    if (UpCase)
+    {
+        UpString (pb->instr);
+        UpString (pb->opcod);
+        UpString(pb->lbnm);
+        UpString (pb->mnem);
+        UpString(pb->operand);
+    }
+}
+
 void
 PrintFormatted (char *pfmt, struct printbuf *pb)
 {
     if (!PgLin || PgLin > (PgDepth - 6))
         StartPage ();
 
+    if (UpCase)
+    {
+        UpPbuf (pb);
+    }
+    
     if (pfmt == pseudcmd)
     {
         printf (pfmt, LinNum, CmdEnt, pb->instr, pb->lbnm,
@@ -393,7 +408,7 @@ WrtEmod ()
 
     if (UpCase)
     {
-        UpString (prtbf->mnem);
+        UpPbuf (prtbf);
     }
 
     PrintFormatted (realcmd, prtbf);
@@ -613,7 +628,7 @@ TellLabels (struct nlist *me, int flg, char class)
             strcpy (pb->mnem, "equ");
             sprintf (pb->operand, "$%04x", me->myaddr);
             if (UpCase)
-                UpString (pb->operand);
+                UpPbuf (pb);
             CmdEnt = PrevEnt = me->myaddr;
             PrintLine (realcmd, pb, class, me->myaddr, me->myaddr + 1);
         }
