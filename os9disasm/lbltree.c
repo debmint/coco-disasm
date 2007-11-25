@@ -13,27 +13,27 @@
 #  01 2003/01/31 First began project                                   dlb   #
 ##############################################################################
 # File:  lbltree.c                                                           #
-# Purpose: handle operations on label trees				                     #
-#									                                         #
-# Calls:								                                     #
-#	struct databndaries *ClasHere(struct databndaries *bp):		             #
-#		Passed: ptr to struct to match address			                     #
-#		Returns: ptr to boundary if matched			                         #
-#			 0 if no match, -1 if out-of-bounds "bp" passed	                 #
+# Purpose: handle operations on label trees                                  #
 #                                                                            #
-#	struct databndaries *bGoBegin(struct databndaries *)		             #
-#		Passed: ptr to head of appropriate tree or branch	                 #
-#		Returns: ptr positioned to begin of tree or branch	                 #
+# Calls:                                                                     #
+#   struct databndaries *ClasHere(struct databndaries *bp):                  #
+#       Passed: ptr to struct to match address                               #
+#       Returns: ptr to boundary if matched                                  #
+#            0 if no match, -1 if out-of-bounds "bp" passed                  #
 #                                                                            #
-#	struct nlist *addlbl(int loc, char C)				                     #
-#		Descr: adds a label to list of existing labels		                 #
-#		Passed:  loc=address of label				                         #
-#			 C=class (espressed as offset into lblorder string               #
-#		Returns: ptr to new entry if added, 0 if match found	             #	
-#									                                         #
-#	struct nlist *ListRoot(char symbol)				                         #
-#		Passed:  symbol for label class (char)			                     #
-#		Returns: ptr to entry point for that class		                     #
+#   struct databndaries *bGoBegin(struct databndaries *)                     #
+#       Passed: ptr to head of appropriate tree or branch                    #
+#       Returns: ptr positioned to begin of tree or branch                   #
+#                                                                            #
+#   struct nlist *addlbl(int loc, char C)                                    #
+#       Descr: adds a label to list of existing labels                       #
+#       Passed:  loc=address of label                                        #
+#            C=class                                                         #
+#       Returns: ptr to new entry if added, 0 if match found                 #  
+#                                                                            #
+#   struct nlist *ListRoot(char symbol)                                      #
+#       Passed:  symbol for label class (char)                               #
+#       Returns: ptr to entry point for that class                           #
 #									                                         #
 ############################################################################*/
 
@@ -186,6 +186,7 @@ LblCalc (char *dst, int adr, int amod)
         if ((kls = ClasHere (LAdds[amod], CmdEnt)))
         {
             mainclass = kls->b_typ;
+
             if (kls->dofst)
             {
                 oclass = (char) (kls->dofst->oclas_maj);
@@ -199,7 +200,8 @@ LblCalc (char *dst, int adr, int amod)
         }
         else
         {
-            mainclass = DEFAULTCLASS;
+            /*mainclass = DEFAULTCLASS;*/
+            mainclass = DfltLbls[AMode-1];
         }
     }
     else
@@ -208,6 +210,7 @@ LblCalc (char *dst, int adr, int amod)
         {
             kls = ClasHere (dbounds, CmdEnt);
             mainclass = NowClass;
+
             if (kls->dofst)
             {
                 oclass = kls->dofst->oclas_maj;
@@ -239,18 +242,14 @@ LblCalc (char *dst, int adr, int amod)
             mainclass = 0;
         }*/
 
-        if ((mylabel = FindLbl (SymLst[(unsigned int) mainclass], raw)))
+        if ((mylabel = FindLbl (SymLst[strpos (lblorder, mainclass)], raw)))
         {
             PrintLbl (tmpname, mainclass, raw, mylabel);
             strcat (dst, tmpname);
         }
         else
         {                       /* Special case for these */
-            if (mainclass == strpos (lblorder, '^') ||
-                mainclass == strpos (lblorder, '$') ||
-                mainclass == strpos (lblorder, '@') ||
-                mainclass == strpos (lblorder, '&') ||
-                mainclass == strpos (lblorder, '%'))
+            if (index ("^$@&%", mainclass))
             {
                 PrintLbl (tmpname, mainclass, raw, mylabel);
                 strcat (dst, tmpname);
@@ -259,10 +258,10 @@ LblCalc (char *dst, int adr, int amod)
             {
                 char t;
 
-                t = (mainclass ? lblorder[mainclass - 1] : 'D');
+                t = (mainclass ? mainclass : 'D');
                 fprintf (stderr, "Lookup error on Pass 2 (main)\n");
                 fprintf (stderr, "Cannot find %c%x\n", t, raw);
-                fprintf (stderr, "Cmd line thus far: %s\n", tmpname);
+             /*   fprintf (stderr, "Cmd line thus far: %s\n", tmpname);*/
                 exit (1);
             }
         }
@@ -283,7 +282,7 @@ LblCalc (char *dst, int adr, int amod)
             {
                 c = 0;
             }*/
-            if ((mylabel = FindLbl (SymLst[(unsigned int) c],
+            if ((mylabel = FindLbl (SymLst[strpos (lblorder, c)],
                                     kls->dofst->of_maj)))
             {
                 PrintLbl (tmpname, c, kls->dofst->of_maj, mylabel);
@@ -291,10 +290,7 @@ LblCalc (char *dst, int adr, int amod)
             }
             else
             {                   /* Special case for these */
-                if (c == strpos (lblorder, '^') ||
-                    c == strpos (lblorder, '$') ||
-                    c == strpos (lblorder, '@') ||
-                    c == strpos (lblorder, '&'))
+                if (index ("^$@&", c))
                 {
                     PrintLbl (tmpname, c, kls->dofst->of_maj, mylabel);
                     strcat (dst, tmpname);
@@ -303,11 +299,11 @@ LblCalc (char *dst, int adr, int amod)
                 {
                     char t;
 
-                    t = (c ? lblorder[c - 1] : 'D');
+                    t = (c ? c : 'D');
                     fprintf (stderr, "Lookup error on Pass 2 (offset)\n");
                     fprintf (stderr, "Cannot find %c%x\n", t,
                              kls->dofst->of_maj);
-                    fprintf (stderr, "Cmd line thus far: %s\n", tmpname);
+                    //fprintf (stderr, "Cmd line thus far: %s\n", tmpname);
                     exit (1);
                 }
             }
@@ -325,16 +321,16 @@ PrintLbl (char *dest, char clas, int adr, struct nlist *dl)
     short decn = adr & 0xffff;
     register int mask;
 
-    if (clasdef == '@')
+    if (clas == '@')
     {
         if ((adr < 9) || ((PBytSiz == 1) && adr > 244) ||
             ((PBytSiz == 2) && adr > 65526))
-            clasdef = '&';
+            clas = '&';
         else
-            clasdef = '$';
+            clas = '$';
     }
 
-    switch (clasdef)
+    switch (clas)
     {
     case '$':
         if (PBytSiz == 1)       /* This may be a kludge */
@@ -417,7 +413,8 @@ addlbl (int loc, char C)
 {
     struct nlist *me, *pt;
     char tmplbl[NLMAX + 3];
-    register int realC = C;
+/*    register int c_indx = C;*/
+    register int c_indx = strpos (lblorder, C);
 
     loc &= 0xffff;              /* 6809 addressing is never more than 2 bytes */
 
@@ -427,23 +424,24 @@ addlbl (int loc, char C)
 /*    if ((OSType == OS_9) && (C == strpos (lblorder, 'D')) &&
         ((unsigned int) loc <= ModData))
     {
-        realC = 0;
+        c_indx = 0;
     }*/
 
     /* (for now, at least), don't add labels for class '@', '$', or '&' */
-    if ((C == strpos (lblorder, '@')) || (C == strpos (lblorder, '$')) ||
-        (C == strpos (lblorder, '&')))
+    
+    if (index ("@$&", C))
+    {
         return 0;
+    }
 
-    /*if(!C || C>strlen(lblorder)) { *//* Nonexistant label class      */
-    if (C > strlen (lblorder))
+    if (!index (lblorder, C))
     {                           /* Nonexistant label class      */
         fprintf (stderr, "Illegal label Class - '\\%x'\n", C);
         exit (1);
     }
 
     /* This may be a kludge - may need to fix later */
-    if (C == strpos (lblorder, '^'))
+    if (C == '^')
     {
         loc &= 0x7f;
         if (loc > 0x20)
@@ -454,7 +452,7 @@ addlbl (int loc, char C)
     }
 
     /* Now search list to see if label already defined      */
-    if ((pt = SymLst[realC]))
+    if ((pt = SymLst[c_indx]))
     {                           /* Already have entries      */
         register int found = 0;
         while (!found)
@@ -495,7 +493,7 @@ addlbl (int loc, char C)
         exit (errno);
     }
 
-    strncpy (me->sname, &lblorder[C - 1], 1);
+    strncpy (me->sname, &C, 1);
     sprintf (tmplbl, "%04x", loc & 0xffff);
     strncat (me->sname, tmplbl, 4);
     
@@ -525,7 +523,7 @@ addlbl (int loc, char C)
     }
     else
     {                           /* First entry to this class */
-        SymLst[realC] = me;
+        SymLst[c_indx] = me;
         me->parent = 0;         /* Not needed, but just to be safe */
     }
     return me;

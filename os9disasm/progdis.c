@@ -184,7 +184,14 @@ MovASC (int nb)
         register int x;
         char c[6];
 
+        fprintf (stderr, "Getting ASCII byte - ");
         x = fgetc (progpath);
+        if (isprint(x)){
+            fprintf (stderr, "'%c'\n", x);
+        }
+        else {
+            fprintf (stderr, "0x%02x\n",x);
+        }
         
         if ((isprint (x)) || ((x & 0x80) && UseFCC && isprint (x & 0x7f)))
         {
@@ -235,7 +242,7 @@ MovASC (int nb)
             {
                 if ((x & 0x7f) < 33)
                 {
-                    addlbl (x & 0x7f, strpos (lblorder, '^'));
+                    addlbl (x & 0x7f, '^');
                 }
             }
             else
@@ -250,13 +257,14 @@ MovASC (int nb)
                 nlp = NULL;
                 
                 strcpy (pbuf->mnem, "fcb");
-                PrintLbl (pbuf->operand, strpos (lblorder, '^'), x, nlp);
+                PrintLbl (pbuf->operand, '^', x, nlp);
                 sprintf (pbuf->instr, "%02x", x & 0xff);
                 PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
                 strcpy (pbuf->mnem, "fcc");
             }
             CmdEnt = Pc + 1;
         }
+        fprintf (stderr, "ASCII byte moved\n\n");
         ++Pc;
     }  /* end while (nb--) - all chars moved */
     
@@ -654,7 +662,7 @@ GetCmd ()
         
         if (!Pass2)
         {
-            addlbl (ch, strpos (lblorder, '!'));
+            addlbl (ch, '!');
         }
         else
         {
@@ -974,20 +982,20 @@ os9hdr (void)
 
     /* Translate Header information in Header to big-endian format */
     ModSiz = o9_fgetword (progpath);
-    addlbl (ModSiz, strpos (lblorder, 'L'));
+    addlbl (ModSiz, 'L');
     ModNam = o9_fgetword (progpath);
-    addlbl (ModNam, strpos (lblorder, 'L'));
+    addlbl (ModNam, 'L');
     ModTyp = fgetc (progpath);
     ModRev = fgetc (progpath);
     fgetc (progpath);  /* Discard the parity byte */
     ModExe = o9_fgetword (progpath);
-    addlbl (ModExe, strpos (lblorder, 'L'));
+    addlbl (ModExe, 'L');
 
     if ((ModTyp < 3) || (ModTyp == 0x0c) || (ModTyp > 0x0b))
     {
         ModData = o9_fgetword (progpath);
         PBytSiz = 2;        /* Kludge??? */
-        addlbl (ModData, strpos (lblorder, 'D'));
+        addlbl (ModData, 'D');
         HdrLen = 13;
     }
     else
@@ -1152,7 +1160,7 @@ progdis ()
             {
                 o9_fgetword (progpath); /* Skip two null bytes in Postamble */
                 ModExe = o9_fgetword (progpath);
-                addlbl (ModExe, strpos (lblorder, 'L'));
+                addlbl (ModExe, 'L');
 
                 /* Now everything should be set to do another block */
             }
