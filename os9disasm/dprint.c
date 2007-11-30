@@ -22,6 +22,8 @@
 #define CNULL '\0'
 
 extern char *CmdBuf;
+extern struct printbuf *pbuf;
+extern struct rof_hdr *rofptr;
 
 char *pseudcmd = "%5d  %04X %-14s %-10s %-6s %s\n";
 char *realcmd = "%5d  %04X %-04s %-9s %-10s %-6s %s\n";
@@ -70,10 +72,51 @@ static void
 PrintCleanup (struct printbuf *pb)
 {
     PrevEnt = CmdEnt;
-    memset (pb, 0, sizeof (struct printbuf));
+
+    if (pb)
+    {
+        memset (pb, 0, sizeof (struct printbuf));
+    }
+
     CmdLen = 0;
     ++PgLin;
     ++LinNum;
+}
+
+/* *********************************************** *
+ * PrintNonCmd() - A utility function to print any *
+ *          non-command line (except stored        *
+ *          comments).  Prints the line with line  *
+ *          number, and updates PgLin, LinNum      *
+ * Passed: str - the string to print               *
+ *         preblank - true if blankline before str *
+ *         postblank - true if blankline after str *
+ * *********************************************** */
+
+void
+PrintNonCmd (char *str, int preblank, int postblank)
+{
+    if (IsROF)
+    {
+        if (preblank)
+        {
+            BlankLine();
+        }
+
+        printf ("%5d %s\n", LinNum, str);
+        
+        if (WrtSrc)
+        {
+            fprintf (outpath, "%s", str);
+        }
+
+        if (postblank)
+        {
+            BlankLine();
+        }
+    }
+    
+    PrintCleanup (0);
 }
 
 /* *********************************************** *
@@ -317,12 +360,46 @@ RsEnd (void)
     BlankLine ();
 }
 
-/* ************************************** *
- * OS9Modline()  - print out OS9 mod line *
- * Note: We're going to assume that the   *
- *    file is positioned at the right     *
- *    place - we may try merged modules   *
- * ************************************** */
+/* ********************************************* *
+ * RIFPsect() - writes out psect                 *
+ * Passed: rof_hdr *rptr                         *
+ * ********************************************* */
+
+#define OPSCAT(str) sprintf (pbuf->operand, "%s,%s", pbuf->operand, str)
+#define OPDCAT(nu) sprintf (pbuf->operand, "%s,%d", pbuf->operand, nu)
+#define OPHCAT(nu) sprintf (pbuf->operand, "%s,%04x", pbuf->operand, nu)
+
+void
+ROFPsect (struct rof_hdr *rptr)
+{
+    char psct[200];
+    struct nlist *nl;
+
+    strcpy (pbuf->instr, "");
+    strcpy (pbuf->opcod, "");
+    strcpy (pbuf->lbnm, "");
+    strcpy (pbuf->mnem, "psect");
+    sprintf (pbuf->operand, "%s,0,0,0,0", rptr->rname);
+
+    if ((nl = FindLbl (ListRoot('L'), rptr->modent)))
+    {
+        OPSCAT(nl->sname);
+    }
+    else
+    {
+        OPHCAT ((int)(rptr->modent));
+    }
+
+    PrintLine (pseudcmd, pbuf, CNULL, 0, 0); 
+}
+
+
+/* ********************************************* *
+ * OS9Modline()  - print out OS9 mod line        *
+ * Note: We're going to assume that the          *
+ *    file is positioned at the right            *
+ *    place - we may try merged modules          *
+ * ********************************************* */
 
 void
 OS9Modline ()
@@ -417,20 +494,104 @@ WrtEmod ()
         fprintf (outpath, " %s\n", "end");
 }
 
-/* OS9DataPrint()	Mainline routine to list data defs
- */
+/* *************************************************** *
+ * ROFDataPrint() - Mainline routine to list data defs *
+ *          for ROF's                                  *
+ * *************************************************** */
+
+void
+ROFDataPrint ()
+{
+    struct nlist *dta, *srch;
+    char *vstyp[2] = {"vsect dp", "vsect"};
+    char *dptell[2] = {"* Uninitialized data (class %c)",
+                       "* Initialized Data (class %c)"};
+    int sizes[4] = { rofptr->udpsz, rofptr->idpsz,
+                     rofptr->udatsz, rofptr->idatsz
+                   },
+        *thissz = sizes;
+
+    int vs,
+        isinit;
+    char *dattyp = "DFCE";
+    char mytmp[50];
+
+    InProg = 0;
+    memset (pbuf, 0, sizeof (struct printbuf));
+
+    for ( vs = 0; vs <= 1; vs++)    /* Cycle through DP, non-dp */
+    {
+        if ((ListRoot (dattyp[0]) || ListRoot (dattyp[1])))
+        {
+            strcpy (pbuf->mnem, vstyp[vs]);
+            BlankLine();
+            PrintLine (realcmd, pbuf, *dattyp, 0, 0);
+            BlankLine();
+
+            /* Process each of un-init, init */
+
+            for (isinit = 0; isinit <= 1; isinit++)
+            {
+                if (dta = ListRoot (*dattyp))
+                {
+                    sprintf (mytmp, dptell[isinit], *dattyp);
+
+                    /* for PrintNonCmd(), send isinit so that a pre-blank line
+                     * is not printed, since it is provided by PrinLine above
+                     */
+
+                    PrintNonCmd (mytmp, isinit, 1);
+                    srch = dta;
+
+                    while (srch->LNext)
+                    {
+                        srch = srch->LNext;
+                    }
+
+                    if ((srch->myaddr))
+                    {                       /* i.e., if not D000 */
+                        strcpy (pbuf->mnem, "rmb");
+                        sprintf (pbuf->operand, "%d", srch->myaddr);
+                        CmdEnt = PrevEnt = 0;
+                        PrintLine (realcmd, pbuf, 'D', 0, srch->myaddr);
+                    }
+
+                    /* Note: We'll need to do something different for
+                     * init data - but try to get it to work for now */
+
+                    /* For max value, send a large value so ListData
+                     * will print all for class
+                     */
+
+                    ListData (dta, *(thissz++));
+                    ++dattyp;   /* Done with this class, point to next */
+                }
+            }
+
+            /* Do "ends" for this vsect */
+
+            strcpy (pbuf->mnem, "ends");
+            BlankLine();
+            PrintLine (realcmd, pbuf, 'D', 0, 0);
+            BlankLine();
+        }
+    }
+}
+
+/* *************************************************** *
+ * OS9DataPrint()	Mainline routine to list data defs *
+ * *************************************************** */
 
 void
 OS9DataPrint ()
 {
     struct nlist *dta, *srch;
-    struct printbuf PB, *pbf = &PB;
+/*    struct printbuf PB, *pbuf = &PB;*/
     char *what = "* OS9 data area definitions";
 
-    InProg = 0;                 /* Stop looking for Inline program labels to substitute */
-    memset (pbf, 0, sizeof (struct printbuf));
+    InProg = 0;    /* Stop looking for Inline program labels to substitute */
+    memset (pbuf, 0, sizeof (struct printbuf));
 
-    /*if ((dta = SymLst[0]))*/
     if ((dta=ListRoot('D')))
     {                           /* special tree for OS9 data defs */
         BlankLine ();
@@ -447,10 +608,10 @@ OS9DataPrint ()
 
         if ((srch->myaddr))
         {                       /* i.e., if not D000 */
-            strcpy (pbf->mnem, "rmb");
-            sprintf (pbf->operand, "%d", srch->myaddr);
+            strcpy (pbuf->mnem, "rmb");
+            sprintf (pbuf->operand, "%d", srch->myaddr);
             CmdEnt = PrevEnt = 0;
-            PrintLine (realcmd, pbf, 'D', 0, srch->myaddr);
+            PrintLine (realcmd, pbuf, 'D', 0, srch->myaddr);
         }
         ListData (dta, ModData);
     }
@@ -485,6 +646,7 @@ ListData (struct nlist *me, int upadr)
 
     /* Now we've come back, print this entry */
     strcpy (pbf->lbnm, me->sname);
+
     if (me->myaddr != ModData)
         strcpy (pbf->mnem, "rmb");
     else
@@ -555,6 +717,7 @@ WrtEquates (int stdflg)
         if ((me = ListRoot (NowClass)))
         {
             /* For OS9, we only want external labels this pass */
+            
             if ( (OSType == OS_9) && (NowClass == 'D'))
             {
                 if (stdflg)     /* Don't print data defs */
@@ -565,10 +728,18 @@ WrtEquates (int stdflg)
                 /* Probably an error if this happens
                  * What we're doing is positioning me to
                  * last real data element*/
+                
                 if (!(me = FindLbl (me, ModData)))
                 {
                     return;
                 }
+            }
+
+            /* Don't write vsect data for ROF's */
+
+            if ((IsROF) && (NowClass >= 'C') && (NowClass <= 'D'))
+            {
+                return;
             }
             
             switch (NowClass)
@@ -592,6 +763,7 @@ WrtEquates (int stdflg)
             TellLabels (me, flg, NowClass);
         }
     }
+
     InProg = 1;
 }
 

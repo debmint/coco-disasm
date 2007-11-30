@@ -87,6 +87,7 @@ GLOBAL int UpCase
 = 0			/* default to off (lower case */
 #endif
 ;
+GLOBAL int IsROF;       /* ROF flag.  if true, we're doing a ROF */
 GLOBAL char *DfltLbls;	/* Ptr to default label class table	*/
 GLOBAL char OS9Dflt[]	/* Default addressing modes for diff. OS's */
 #ifdef MAIN

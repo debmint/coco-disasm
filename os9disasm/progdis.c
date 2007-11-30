@@ -47,6 +47,11 @@ struct databndaries *amodes[sizeof (lblorder)];
 struct lkuptbl *tabl;
 struct printbuf *pbuf = &PBuf;
 
+extern struct rof_extrn *xtrn_ndp[],
+       *xtrn_dp[],
+       *xtrn_code;
+extern struct rof_hdr *rofptr;
+
 int CodEnd;                     /* End of executable code (ModSize-3 for OS9 */
 
 static void
@@ -184,7 +189,14 @@ MovASC (int nb)
         register int x;
         char c[6];
 
+        fprintf (stderr, "Getting ASCII byte - ");
         x = fgetc (progpath);
+        if (isprint(x)){
+            fprintf (stderr, "'%c'\n", x);
+        }
+        else {
+            fprintf (stderr, "0x%02x\n",x);
+        }
         
         if ((isprint (x)) || ((x & 0x80) && UseFCC && isprint (x & 0x7f)))
         {
@@ -235,7 +247,7 @@ MovASC (int nb)
             {
                 if ((x & 0x7f) < 33)
                 {
-                    addlbl (x & 0x7f, strpos (lblorder, '^'));
+                    addlbl (x & 0x7f, '^');
                 }
             }
             else
@@ -250,13 +262,14 @@ MovASC (int nb)
                 nlp = NULL;
                 
                 strcpy (pbuf->mnem, "fcb");
-                PrintLbl (pbuf->operand, strpos (lblorder, '^'), x, nlp);
+                PrintLbl (pbuf->operand, '^', x, nlp);
                 sprintf (pbuf->instr, "%02x", x & 0xff);
                 PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
                 strcpy (pbuf->mnem, "fcc");
             }
             CmdEnt = Pc + 1;
         }
+        fprintf (stderr, "ASCII byte moved\n\n");
         ++Pc;
     }  /* end while (nb--) - all chars moved */
     
@@ -272,7 +285,7 @@ MovASC (int nb)
  * NsertBnds():	Insert boundary area *
  * ********************************* */
 
-static void
+void
 NsrtBnds (struct databndaries *bp)
 {
     memset (pbuf, 0, sizeof (struct printbuf));
@@ -375,8 +388,8 @@ GetIdxOffset (int postbyte)
 
     char byt_offset;
 
-    /* Set up for n,R or n,PC later if other
-     * cases don't apply */
+            /* Set up for n,R or n,PC later if other
+            * cases don't apply */
     
     switch (postbyte & 1)
     {                   /* postbyte size */
@@ -417,14 +430,57 @@ GetIdxOffset (int postbyte)
  *                     of the opcode string data           *
  * ******************************************************* */
 
+char *opfmt[] = {"%s%02x", "%s%04x"};
+int bytmsk[] = {0xff, 0xffff};
+
 static void
 regput (int pbyte, char *op1)
 {
     int ofst;
     char tmp[10];
+    int bofst = pbyte & 1;
+    int oldpc = Pc;
 
     ofst = GetIdxOffset (pbyte);
+    
+    if (IsROF)
+    {
+        struct rof_extrn *myref;
+        struct nlist *nl;
 
+        if ((myref = find_extrn (xtrn_code, oldpc)))
+        {
+            sprintf (pbuf->opcod, opfmt[bofst], pbuf->opcod,
+                                                ofst & bytmsk[bofst]);
+            if (Pass2)
+            {
+                if (myref->Extrn)
+                {
+                    strcpy (op1, myref->name);
+                }
+                else
+                {
+                    nl = FindLbl (ListRoot (rof_class (myref->Type)), ofst);
+
+                    if (nl)
+                    {
+                        strcpy (op1, nl->sname);
+                        //strcpy (op1, myref->name);
+                    }
+                }
+            }
+            else
+            {
+                if (!myref->Extrn)
+                {
+                    addlbl (ofst, rof_class (myref->Type));
+                }
+            }
+
+            return;
+        }
+    }
+ 
     if (pbyte & 1)
     {
         if ((ofst < 0x80) && (ofst >= -128))
@@ -445,7 +501,13 @@ regput (int pbyte, char *op1)
 
     strcat (pbuf->opcod, tmp);
 
-    LblCalc (op1, ofst, AMode);
+/*    if (IsROF)
+    {
+        sprintf (op1, "%s%04x", op1, ofst);
+    }
+    else {*/
+        LblCalc (op1, ofst, AMode);
+    /*}*/
 }
 
 static int
@@ -453,7 +515,6 @@ TxIdx ()
 {
     int postbyte;
     struct databndaries *kls;   /* Class for this address */
-    int offset;
     char myclass;
     char oper1[25],
          oper2[5],
@@ -473,18 +534,61 @@ TxIdx ()
 
         AMode = AM_EXT;
 
-        da = o9_fgetword (progpath);
-        sprintf (tmp, "%04x", da);
-        strcat (pbuf->opcod, tmp);
+        if (IsROF)
+        {
+            struct rof_extrn *myval;
+            int destval;
+
+            if (!(myval = rof_lblref (&destval))) {
+                destval = o9_fgetword (progpath);
+
+            }
+
+            if (Pass2)
+            {
+                sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, destval);
+
+                if (myval)
+                {
+                    sprintf (pbuf->operand, "%s[%s]",
+                            pbuf->operand, myval->name);
+                }
+                else {
+                    sprintf (pbuf->operand, "%s[%d]", pbuf->operand, destval);
+                }
+            }
+            else
+            {
+                if (myval)
+                {
+                    rof_addlbl (destval, myval);
+                }
+            }
+
+            return 1;
+        }
+        else {
+            da = o9_fgetword (progpath);
+        }
+
+        if (Pass2)
+        {
+            sprintf (tmp, "%04x", da);
+            strcat (pbuf->opcod, tmp);
+        }
+
         Pc += 2;
 
         LblCalc (oper1, da, AMode);
-        strcat (pbuf->operand, "[");
-        strcat (pbuf->operand, oper1);
-        strcat (pbuf->operand, "]");
+
+        if (Pass2)
+        {
+            sprintf (pbuf->operand, "%s[%s]", pbuf->operand, oper1);
+        }
+
         return 1;
     }
-    else
+    else    /* Then anything BUT extended indirect */
     {
         regNam = RegOrdr[((postbyte >> 5) & 3)]; /* Current register offset */
         AMode += (postbyte >> 5) & 3;
@@ -493,7 +597,8 @@ TxIdx ()
         {                       /* 0RRx xxxx = 5-bit    */
             int sbit;           /*the offset portion of the postbyte */
 
-            if (!(postbyte & 0x1f))     /* 0,r not valid asm mode? */
+                /* 0,r not valid asm mode? (except for rof's)*/
+            if (!(postbyte & 0x1f))
             {
                 return 0;
             }
@@ -505,11 +610,18 @@ TxIdx ()
                 sbit -= 0x10;   /* sbit is now a signed integer */
             }
             
-            LblCalc (pbuf->operand, sbit, AMode);
-            sprintf (pbuf->operand, "%s,%c", pbuf->operand, regNam);
+            if (IsROF)
+            {       /* Don't think that 5-bit mode will occur for labels */
+                sprintf (pbuf->operand, "%s%d,%c", pbuf->operand, sbit, regNam);
+            }
+            else {
+                LblCalc (pbuf->operand, sbit, AMode);
+                sprintf (pbuf->operand, "%s,%c", pbuf->operand, regNam);
+            }
+
             return 1;
         }
-        else
+        else        /* then it's 8- or 16-bit offset */
         {
             if ((kls = ClasHere (LAdds[AMode], Pc)))
             {
@@ -601,6 +713,7 @@ GetCmd ()
     int offset;
     char byte_offset;
     long file_pos = ftell (progpath);   /* Save entry position in file */
+    int oprandpc;
 
     *tmp = '\0';
     CmdLen = 0;
@@ -627,16 +740,22 @@ GetCmd ()
     
     /* Now move stuff to printer buffer */
     
-    if (pcbump == 2)
+    if (Pass2)
     {
-        sprintf (pbuf->instr, "%04x", firstbyte);
+        if (pcbump == 2)
+        {
+            sprintf (pbuf->instr, "%04x", firstbyte);
+        }
+        else
+        {
+            sprintf (pbuf->instr, "%02x", firstbyte);
+        }
+
+        strcpy (pbuf->mnem, tbl->mnem);
     }
-    else
-        sprintf (pbuf->instr, "%02x", firstbyte);
 
     Pc += pcbump;
     pcbump = 0;                 /* reset offset - not sure if needed */
-    strcpy (pbuf->mnem, tbl->mnem);
     AMode = tbl->amode;
     PBytSiz = tbl->adbyt;
 
@@ -652,9 +771,27 @@ GetCmd ()
         sprintf (pbuf->opcod, "%02x", (ch = fgetc (progpath)));
         ++Pc;
         
+        if (IsROF)
+        {
+            if (Pass2)
+            {
+                struct rof_extrn *myref;
+
+                if (myref = find_extrn (xtrn_code, Pc - 1))
+                {
+                    strcat (pbuf->operand, myref->name);
+                }
+                else {
+                    nerrexit ("Cannot find external reference");
+                }
+            }
+
+            return 1;
+        }
+
         if (!Pass2)
         {
-            addlbl (ch, strpos (lblorder, '!'));
+            addlbl (ch, '!');
         }
         else
         {
@@ -819,6 +956,8 @@ GetCmd ()
     case AM_DRCT:
     case AM_EXT:
     case AM_REL:
+        oprandpc = Pc;
+
         switch (tbl->adbyt)
         {
         case 4:                /* only one instance, "ldq (immediate mode)" */
@@ -850,6 +989,51 @@ GetCmd ()
             
             sprintf (pbuf->opcod, "%s%02x", pbuf->opcod, offset & 0xff);
             break;
+        }
+
+        if (IsROF)
+        {
+            struct rof_extrn *myref;
+    
+            myref = find_extrn (xtrn_code, oprandpc);
+
+            if (myref)
+            {
+                char C = rof_class (myref->Type);
+                struct nlist *nl;
+
+                if (Pass2)
+                {
+                    nl =  FindLbl (ListRoot (C), offset);
+
+                    if (nl)
+                    {
+                        sprintf (pbuf->operand, "%s%s", pbuf->operand,
+                                                        nl->sname);
+                    }
+                    else
+                    {
+                        if (strlen (myref->name))
+                        {
+                            sprintf (pbuf->operand, "%s%s", pbuf->operand,
+                                                            myref->name);
+                        }
+                        else
+                        {
+                            sprintf (pbuf->operand, "%s%c%04x", pbuf->operand,
+                                    C, offset);
+                        }
+                    }
+                    
+                    //sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, offset);
+                }
+                else        /* else Pass 1 */
+                {
+                    rof_addlbl (offset, myref);
+                }
+            
+                return 1;
+            }
         }
 
         LblCalc (pbuf->operand, offset, AMode);
@@ -974,20 +1158,20 @@ os9hdr (void)
 
     /* Translate Header information in Header to big-endian format */
     ModSiz = o9_fgetword (progpath);
-    addlbl (ModSiz, strpos (lblorder, 'L'));
+    addlbl (ModSiz, 'L');
     ModNam = o9_fgetword (progpath);
-    addlbl (ModNam, strpos (lblorder, 'L'));
+    addlbl (ModNam, 'L');
     ModTyp = fgetc (progpath);
     ModRev = fgetc (progpath);
     fgetc (progpath);  /* Discard the parity byte */
     ModExe = o9_fgetword (progpath);
-    addlbl (ModExe, strpos (lblorder, 'L'));
+    addlbl (ModExe, 'L');
 
     if ((ModTyp < 3) || (ModTyp == 0x0c) || (ModTyp > 0x0b))
     {
         ModData = o9_fgetword (progpath);
         PBytSiz = 2;        /* Kludge??? */
-        addlbl (ModData, strpos (lblorder, 'D'));
+        addlbl (ModData, 'D');
         HdrLen = 13;
     }
     else
@@ -1007,6 +1191,8 @@ os9hdr (void)
 /* *************************************** *
  * progdis(): mainline disassembly routine *
  * *************************************** */
+
+extern int code_begin;
 
 void
 progdis ()
@@ -1028,7 +1214,14 @@ progdis ()
     {
         if (OSType == OS_9)
         {
-            OS9Modline ();
+            if (IsROF)
+            {
+                ROFPsect(rofptr);
+            }
+            else
+            {
+                OS9Modline ();
+            }
         }
         
         WrtEquates (1);         /* now do standard named labels */
@@ -1036,7 +1229,14 @@ progdis ()
         
         if (OSType == OS_9)
         {
-            OS9DataPrint ();
+            if (IsROF)
+            {
+                ROFDataPrint ();
+            }
+            else
+            {
+                OS9DataPrint ();
+            }
         }
     }
 
@@ -1053,7 +1253,15 @@ progdis ()
             }
             break;
         default:               /* Os9 */
-            Pc = HdrLen;       /* Entry point for executable code */
+            if (IsROF)
+            {
+                Pc = 0;
+                fseek (progpath, code_begin, SEEK_SET);
+            }
+            else
+            {
+                Pc = HdrLen;       /* Entry point for executable code */
+            }
     }
     
     while (Pc < (CodEnd))
@@ -1152,7 +1360,7 @@ progdis ()
             {
                 o9_fgetword (progpath); /* Skip two null bytes in Postamble */
                 ModExe = o9_fgetword (progpath);
-                addlbl (ModExe, strpos (lblorder, 'L'));
+                addlbl (ModExe, 'L');
 
                 /* Now everything should be set to do another block */
             }

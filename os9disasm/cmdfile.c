@@ -569,8 +569,9 @@ DoMode (char *lpos)
     }
 
     lpos = skipblank (lpos);
+    class = *(lpos++);
     
-    if (!(class = (int) strpos (lblorder, *(lpos++))))
+    if (!index (lblorder, class))
     {
         nerrexit ("Illegal class definition");
     }
@@ -741,7 +742,8 @@ setoffset (char *p, struct ofsetree *oft)
 
     p = skipblank (p);
     c = toupper (*(p++));
-    if (!(oft->oclas_maj = (int) strpos (lblorder, c)))
+
+    if (! index (lblorder, oft->oclas_maj = c))
         nerrexit ("No offset specified !!");
 
     p = skipblank (p);
@@ -756,7 +758,7 @@ setoffset (char *p, struct ofsetree *oft)
 
     if (*(p = skipblank (p)) == ')')
     {
-        addlbl (oft->of_maj, strpos (lblorder, c));
+        addlbl (oft->of_maj, c);
     }
     else {
         nerrexit ("Illegal character.. offset must end with \")\"");
@@ -791,8 +793,9 @@ setupbounds (char *lpos)
         PBytSiz = 2;
     case 'S':
         lpos = skipblank (++lpos);
+        lclass = toupper (*lpos);
         
-        if (!(lclass = (int) strpos (lblorder, *lpos)))
+        if (!index (lblorder, lclass))
         {
             nerrexit ("Illegal Label Class");
         }
@@ -801,10 +804,10 @@ setupbounds (char *lpos)
     case 'W':
         PBytSiz = 2;
     case 'B':
-        lclass = strpos (lblorder, '$');
+        lclass = '$';
         break;
     case 'A':
-        lclass = strpos (lblorder, '^');
+        lclass = '^';
         break;
     default:
         fprintf(stderr, "%s\n", lpos);

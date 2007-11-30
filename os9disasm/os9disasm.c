@@ -165,6 +165,9 @@ do_opt (char *c)
         }
 
         break;
+    case 'r':           /* File is an ROF file */
+        IsROF = 1;
+        break;
     case 's':                  /* Label file name       */
         if (LblFilz < MAX_LBFIL)
         {
@@ -281,7 +284,15 @@ pass1 ()
             break;
         default:   /* default is OS_9 */
             UseFCC = 1;
-            os9hdr ();
+
+            if (IsROF)
+            {
+                rofhdr ();
+            }
+            else
+            {
+                os9hdr ();
+            }
     }
 
     if (cmdfilename)
@@ -564,7 +575,16 @@ main (int argc, char **argv)
     fclose (inpath);*/
 
     pass1 ();
-    progdis ();
+
+/*    if (IsROF)
+    {
+        rofhdr ();
+    }
+    else
+    {*/
+        progdis ();
+/*    }*/
+
     GetLabels ();               /* Read in Label files */
     Pass2 = 1;
     rewind (progpath);
@@ -575,5 +595,6 @@ main (int argc, char **argv)
     }
 
     progdis ();
+
     exit (0);
 }

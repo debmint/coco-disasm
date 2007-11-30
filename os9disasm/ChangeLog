@@ -1,3 +1,11 @@
+os9disasm (0.6.0)
+  * cmdfile.c, progdis.c, lbltree.c - Changed the addlbl() parameters.  The
+    class is now passed by the class letter itself rather than as a number,
+	the complex strpos(lblorder,class) element.  This should simplify matters,
+	especially for any new additions.
+
+-- davebree    Sat, 24 Nov 2007 23:59:03 -0600
+
 os9disasm (0.5.1)
   * os9disasm/progdis.c - Added function regput() - common routine for
     register or pcr offsets.
