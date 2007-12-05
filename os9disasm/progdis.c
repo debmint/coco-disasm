@@ -189,7 +189,6 @@ MovASC (int nb)
         register int x;
         char c[6];
 
-        fprintf (stderr, "Getting ASCII byte - ");
         x = fgetc (progpath);
         if (isprint(x)){
             fprintf (stderr, "'%c'\n", x);
@@ -269,7 +268,6 @@ MovASC (int nb)
             }
             CmdEnt = Pc + 1;
         }
-        fprintf (stderr, "ASCII byte moved\n\n");
         ++Pc;
     }  /* end while (nb--) - all chars moved */
     

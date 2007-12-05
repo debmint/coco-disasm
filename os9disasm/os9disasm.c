@@ -94,7 +94,8 @@ build_path (char *fname, char *fullname, int nsize)
         strncpy (fullname, myhome, nsize);
         nsize -= strlen (fullname);
         strncat (fullname, &fname[1], nsize);
-        realname = strdup (fullname);
+        //realname = strdup (fullname);
+        realname = fullname;
     }
 
     if (!realname)
@@ -123,7 +124,7 @@ build_path (char *fname, char *fullname, int nsize)
             }
 
             strncat (fullname, fname, nsize);
-            realname = strdup (fullname);
+            realname = fullname;
         }
     }
 
@@ -400,7 +401,7 @@ GetLabels ()                    /* Read the labelfiles */
             fclose (inpath);
         }
 
-        free (tmpnam);
+        //free (tmpnam);
     }
     
     /* and now the standard label file */
@@ -430,7 +431,7 @@ GetLabels ()                    /* Read the labelfiles */
         fclose (inpath);
     }
 
-    free (tmpnam);
+    //free (tmpnam);
 
     /* Now read in label files specified on the command line */
 
@@ -449,7 +450,7 @@ GetLabels ()                    /* Read the labelfiles */
                      filename);
         }
 
-        free (tmpnam);
+        //free (tmpnam);
     }
 }
 
