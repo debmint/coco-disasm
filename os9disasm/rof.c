@@ -26,8 +26,10 @@ struct rof_glbl *glbl_code = 0,
                 *glbl_dp = 0,
                 *glbl_nondp = 0,
                 *glbls;                     /* Generic global pointer */
-struct rof_extrn *xtrn_ndp[] = {0, 0},
-                 *xtrn_dp[] = {0, 0},
+/*struct rof_extrn *xtrn_ndp[] = {0, 0},
+                 *xtrn_dp[] = {0, 0},*/
+struct rof_extrn *xtrn_ndp = 0,
+                 *xtrn_dp = 0,
                  *xtrn_code = 0,
                  *extrns;                   /* Generic external pointer */
 struct nlist *dp_base,
@@ -38,9 +40,13 @@ struct nlist *dp_base,
 struct rof_hdr ROF_hd,
                *rofptr = &ROF_hd;
 
-int code_begin;
+int code_begin,
+    idp_begin,
+    indp_begin;
 
-extern int CodEnd;
+extern int CodEnd,
+           PrevEnt;
+extern char *realcmd;
 extern struct printbuf *pbuf;
 
 /* ************************************************** *
@@ -50,7 +56,7 @@ extern struct printbuf *pbuf;
  *           terminated string                        *
  * Passed: char *dest - the destination               *
  *         int  n     - the maximum number of chars   *
- *         FILENO fp  - the filehandle for the source *
+ *         FILE *fp   - the file ptr for the source   *
  * Returns: pointer to the stored string              *
  * ************************************************** */
 
@@ -59,7 +65,7 @@ fstrncpy (char *dest, int n, FILE *fp)
 {
     char *pt = dest;
 
-    while (--n )
+    while (n-- )
     {
         if (!(*(pt++) = fgetc (fp)))    /* Null == end of string */
         {
@@ -83,7 +89,6 @@ rofhdr (void)
     int glbl_cnt,
         ext_count,
         count;          /* Generic counter */
-    char *pt;
 
     /* get header data */
 
@@ -122,8 +127,6 @@ rofhdr (void)
         int adrs;
         int typ;
 
-        char class;
-
 /*        if (!(lblptr = calloc (1, sizeof(struct nlist)))) {
             errexit ("Cannot allocate memory for rof_glbl");
         }
@@ -137,7 +140,7 @@ rofhdr (void)
         typ = fgetc (progpath);
         adrs = o9_fgetword (progpath);
 
-        if (me = addlbl (adrs, rof_class (typ))) {
+        if ((me = addlbl (adrs, rof_class (typ)))) {
             strcpy (me->sname, name);
             me->global = 1;
         }
@@ -145,6 +148,8 @@ rofhdr (void)
 
     /* Code section... read, or save file position   */
     code_begin = ftell (progpath);
+    idp_begin = code_begin + rofptr->codsz;
+    indp_begin = idp_begin + rofptr->idpsz;
 
     fseek (progpath, rofptr->codsz + rofptr->idatsz + rofptr->idpsz, SEEK_CUR);
 
@@ -229,7 +234,7 @@ rof_addlbl (int adrs, struct rof_extrn *ref)
 {
     struct nlist *nl;
 
-    if (nl = addlbl (adrs, rof_class (ref->Type)))
+    if ((nl = addlbl (adrs, rof_class (ref->Type))))
     {
         if (strlen (ref->name))
         {
@@ -265,11 +270,13 @@ void get_refs(char *vname, int count, int is_extern)
         switch (_ty & 0xf0)
         {
             case 0x00:
-                base = &(xtrn_ndp[_ty & 1]);
+                /*base = &(xtrn_ndp[_ty & 1]);*/
+                base = &xtrn_ndp;
                 extrns = *base;
                 break;
             case 0x10:
-                base = &(xtrn_dp[_ty & 1]);
+                /*base = &(xtrn_dp[_ty & 1]);*/
+                base = &xtrn_dp;
                 extrns = *base;
                 break;
 
@@ -319,7 +326,6 @@ void get_refs(char *vname, int count, int is_extern)
             extrns = *base;     /* Use the global externs pointer */
         
             while (1) {
-                struct rof_extrn *prev = extrns;
                 struct rof_extrn **to_me = 0;
         
                 if (_ofst < extrns->Ofst)
@@ -398,6 +404,10 @@ find_extrn ( struct rof_extrn *xtrn, int adrs)
             }
         }
     }
+
+    /* Don't think we'll get here, but to prevent compiler error message */
+
+    return 0;
 }
 
 /* ************************************************** *
@@ -414,7 +424,6 @@ struct rof_extrn *
 rof_lblref (int *value)
 {
     struct rof_extrn *thisref;
-    int loc = Pc;
 
     if (!(thisref = find_extrn (xtrn_code, Pc)))
     {
@@ -447,6 +456,182 @@ rof_lblref (int *value)
     }
 
     return thisref;
+}
+
+/* ******************************************************** *
+ * DataDoBlock - Process a block composed of an initialized *
+ *               reference from a data area                 *
+ * Passed: struct rof_extrn *mylist - pointer to tree       *
+ *                      tree element                        *
+ *         int datasize - the size of the area to process   *
+ *         char class - the label class (D or C)            *
+ * ******************************************************** */
+
+static void
+DataDoBlock (struct rof_extrn *mylist, int datasize, char class)
+{
+    struct rof_extrn *srch;
+    struct nlist *nl;
+
+    while (datasize > 0)
+    {
+        int bump = 2,
+            my_val;
+
+        if ( (nl = FindLbl (ListRoot (class), CmdEnt)) )
+        {
+            strcpy (pbuf->lbnm, nl->sname);
+
+            if (nl->global)
+            {
+                strcat (pbuf->lbnm, ":");
+            }
+        }
+
+        if ( (srch = find_extrn (mylist, CmdEnt)) )
+        {
+
+            if (srch->Type & LOC1BYT)
+            {
+                my_val = fgetc (progpath);
+                bump = 1;
+                strcpy (pbuf->mnem, "fcb");
+            }
+            else
+            {
+                my_val = o9_fgetword (progpath);
+                bump = 2;
+                strcpy (pbuf->mnem, "fdb");
+            }
+
+            if (strlen (srch->name))
+            {
+                strcpy (pbuf->operand, srch->name);
+            }
+
+            else
+            {
+                if ( (nl = FindLbl (ListRoot (rof_class (srch->Type)),
+                                              my_val)) )
+                {
+                    strcpy (pbuf->operand, nl->sname);
+                }
+                else
+                {
+                    sprintf (pbuf->operand, "%c$%04x", rof_class (srch->Type),
+                           my_val);
+                }
+            }
+        }
+        else {
+            my_val = fgetc (progpath);
+            bump = 1;
+            strcpy (pbuf->mnem, "fcb");
+            sprintf (pbuf->operand, "$%02x", my_val);
+        }
+
+        PrintLine (realcmd, pbuf, class, CmdEnt, (CmdEnt + datasize));
+        CmdEnt += bump;
+        PrevEnt = CmdEnt;
+        datasize -= bump;
+    }
+}
+
+static void
+ROFDataLst (struct rof_extrn *mylist, int maxcount, char class)
+{
+    struct rof_extrn *my_ref,
+                     *srch;
+    int datasize;
+
+    my_ref = mylist;
+
+    /* First, process all entries below this one */
+
+    if (my_ref->LNext)
+    {
+        ROFDataLst (my_ref->LNext, my_ref->Ofst, class);
+    }
+
+    /* ************************************** *
+     * Now we've returned, process this entry *
+     * ************************************** */
+
+    /* Determine how many bytes in this block */
+
+    if (my_ref->RNext)
+    {
+
+        srch = my_ref->RNext;
+
+        while (srch->LNext)
+        {
+            srch = srch->LNext;
+        }
+
+        datasize = srch->Ofst - my_ref->Ofst;
+    }
+    else
+    {
+        datasize = maxcount - my_ref->Ofst;
+    }
+
+    CmdEnt = my_ref->Ofst;
+    DataDoBlock (my_ref, datasize, class);
+
+
+    if (my_ref->RNext)
+    {
+        ROFDataLst (my_ref->RNext, maxcount, class);
+    }
+}
+
+/* ************************************************** *
+ * ListInitROF() - moves initialized data into the    *
+ *                 listing.  Really a setup routine   *
+ * Passed: nl - Ptr to proper nlist, positioned at    *
+ *               the first element to be listed       *
+ *         mycount - count of elements in this sect.  *
+ *         notdp   - 0 if DP, 1 if non-DP             *
+ *         class   - Label Class letter               *
+ * ************************************************** */
+
+void
+ListInitROF (struct nlist *nl, int mycount, int notdp, char class)
+{
+    struct rof_extrn *mylist,
+                     *srchlst;
+
+    /* Set up pointers, and file position */
+
+    CmdEnt = 0;
+
+    if (notdp)
+    {
+        mylist = xtrn_ndp;
+        fseek (progpath, indp_begin, SEEK_SET);
+    }
+    else
+    {
+        mylist = xtrn_dp;
+        fseek (progpath, idp_begin, SEEK_SET);
+    }
+
+    nl = ListRoot (class);  /* Entry point for this class's label list */
+
+    srchlst = mylist;
+
+    while (srchlst->LNext)
+    {
+        srchlst = srchlst->LNext;
+    }
+
+    if (srchlst->Ofst != 0)   /* I.E., if not 0 */
+    {
+        DataDoBlock (mylist, srchlst->Ofst, class);
+    }
+
+    ROFDataLst (mylist, mycount, class);
 }
 
 /* ************************************************** *

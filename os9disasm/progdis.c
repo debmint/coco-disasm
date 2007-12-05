@@ -773,20 +773,20 @@ GetCmd ()
         
         if (IsROF)
         {
-            if (Pass2)
-            {
-                struct rof_extrn *myref;
+            struct rof_extrn *myref;
 
-                if (myref = find_extrn (xtrn_code, Pc - 1))
+            myref = find_extrn (xtrn_code, Pc - 1);
+
+            if (myref)
+            {
+                if (Pass2)
                 {
                     strcat (pbuf->operand, myref->name);
                 }
-                else {
-                    nerrexit ("Cannot find external reference");
-                }
+
+                return 1;
             }
 
-            return 1;
         }
 
         if (!Pass2)
@@ -1027,10 +1027,10 @@ GetCmd ()
                     
                     //sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, offset);
                 }
-                else        /* else Pass 1 */
-                {
+                /*else */       /* else Pass 1 */
+                /*{
                     rof_addlbl (offset, myref);
-                }
+                }*/
             
                 return 1;
             }
@@ -1376,7 +1376,14 @@ progdis ()
                 RsEnd ();
                 break;
             default:
-                WrtEmod ();
+                if (IsROF)
+                {
+                    WrtEnds ();
+                }
+                else
+                {
+                    WrtEmod ();
+                }
         }
     }
 }

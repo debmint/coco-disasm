@@ -58,6 +58,11 @@ OutputLine (char *pfmt, struct printbuf *pb)
         && (nl = FindLbl (SymLst[(int) strpos (lblorder, 'L')], CmdEnt)))
     {
         strcpy (pb->lbnm, nl->sname);
+
+        if (IsROF && nl->global)
+        {
+            strcat (pb->lbnm, ":");
+        }
     }
 
     PrintFormatted (pfmt, pb);
@@ -361,7 +366,7 @@ RsEnd (void)
 }
 
 /* ********************************************* *
- * RIFPsect() - writes out psect                 *
+ * ROFPsect() - writes out psect                 *
  * Passed: rof_hdr *rptr                         *
  * ********************************************* */
 
@@ -372,14 +377,18 @@ RsEnd (void)
 void
 ROFPsect (struct rof_hdr *rptr)
 {
-    char psct[200];
     struct nlist *nl;
 
     strcpy (pbuf->instr, "");
     strcpy (pbuf->opcod, "");
     strcpy (pbuf->lbnm, "");
     strcpy (pbuf->mnem, "psect");
-    sprintf (pbuf->operand, "%s,0,0,0,0", rptr->rname);
+    sprintf (pbuf->operand, "%s,$%x,$%x,%d,%d", rptr->rname,
+                                              rptr->ty_lan >> 8,
+                                              rptr->ty_lan & 0xff,
+                                              rptr->edition,
+                                              rptr->stksz
+            );
 
     if ((nl = FindLbl (ListRoot('L'), rptr->modent)))
     {
@@ -390,6 +399,8 @@ ROFPsect (struct rof_hdr *rptr)
         OPHCAT ((int)(rptr->modent));
     }
 
+    CmdEnt = 0;
+    PrevEnt = 1;    /* To prevent NonBoundsLbl() output */
     PrintLine (pseudcmd, pbuf, CNULL, 0, 0); 
 }
 
@@ -495,6 +506,19 @@ WrtEmod ()
 }
 
 /* *************************************************** *
+ * WrtEnds() - writes the "ends" command line          *
+ * *************************************************** */
+
+void
+WrtEnds(void)
+{
+    strcpy (pbuf->mnem, "ends");
+    BlankLine();
+    PrintLine (realcmd, pbuf, 'D', 0, 0);
+    BlankLine();
+}
+
+/* *************************************************** *
  * ROFDataPrint() - Mainline routine to list data defs *
  *          for ROF's                                  *
  * *************************************************** */
@@ -532,7 +556,9 @@ ROFDataPrint ()
 
             for (isinit = 0; isinit <= 1; isinit++)
             {
-                if (dta = ListRoot (*dattyp))
+                dta = ListRoot (*dattyp);
+
+                if (dta)
                 {
                     sprintf (mytmp, dptell[isinit], *dattyp);
 
@@ -563,19 +589,27 @@ ROFDataPrint ()
                      * will print all for class
                      */
 
-                    ListData (dta, *(thissz++));
-                    ++dattyp;   /* Done with this class, point to next */
+                    if (!isinit)
+                    {
+                        ListData (dta, *thissz);
+                    }
+                    else
+                    {
+                        ListInitROF (dta, *thissz, vs, *dattyp);
+                    }
                 }
+
+                ++dattyp;   /* Done with this class, point to next */
+                ++thissz;   /* And to the next data size */
             }
 
             /* Do "ends" for this vsect */
 
-            strcpy (pbuf->mnem, "ends");
-            BlankLine();
-            PrintLine (realcmd, pbuf, 'D', 0, 0);
-            BlankLine();
+            WrtEnds();
         }
     }
+
+    InProg = 1;
 }
 
 /* *************************************************** *
@@ -625,9 +659,13 @@ OS9DataPrint ()
     InProg = 1;
 }
 
-/* ListData() - recursive routine to print rmb's for Data definitions
- *    Passed: address of upper (or calling) ListData() routine
- */
+/* ****************************************************** *
+ * ListData() - recursive routine to print rmb's for Data *
+ *              definitions                               *
+ * Passed: pointer to current nlist element               *
+ *         address of upper (or calling) ListData()       *
+ *             routine                                    *
+ * ****************************************************** */
 
 void
 ListData (struct nlist *me, int upadr)
@@ -638,7 +676,8 @@ ListData (struct nlist *me, int upadr)
 
     memset (pbf, 0, sizeof (struct printbuf));
 
-    /* Process preceding entries first */
+    /* Process lower entries first */
+    
     if (me->LNext)
     {
         ListData (me->LNext, me->myaddr);
@@ -646,6 +685,11 @@ ListData (struct nlist *me, int upadr)
 
     /* Now we've come back, print this entry */
     strcpy (pbf->lbnm, me->sname);
+
+    if (IsROF && me->global)
+    {
+        strcat (pbf->lbnm, ":");
+    }
 
     if (me->myaddr != ModData)
         strcpy (pbf->mnem, "rmb");
@@ -799,8 +843,6 @@ TellLabels (struct nlist *me, int flg, char class)
             strcpy (pb->lbnm, me->sname);
             strcpy (pb->mnem, "equ");
             sprintf (pb->operand, "$%04x", me->myaddr);
-            if (UpCase)
-                UpPbuf (pb);
             CmdEnt = PrevEnt = me->myaddr;
             PrintLine (realcmd, pb, class, me->myaddr, me->myaddr + 1);
         }
