@@ -234,6 +234,17 @@ rof_addlbl (int adrs, struct rof_extrn *ref)
 {
     struct nlist *nl;
 
+    /* The following may be a kludge.  The problem is that Relative
+     * external references get added to class C.
+     * Hopefully, no external references are needed in the label ref
+     * tables.  We'll try this to see...
+     */
+
+    if (ref->Extrn)
+    {
+        return;
+    }
+
     if ((nl = addlbl (adrs, rof_class (ref->Type))))
     {
         if (strlen (ref->name))
@@ -243,6 +254,7 @@ rof_addlbl (int adrs, struct rof_extrn *ref)
                 strcpy (nl->sname, ref->name);
             }
         }
+        printf("\nrof_addlbl() added name %-12s addres= %04x to class %c\n\n", nl->sname, nl->myaddr, rof_class (ref->Type));
     }
 }
 
@@ -488,7 +500,11 @@ DataDoBlock (struct rof_extrn *mylist, int datasize, char class)
             }
         }
 
-        if ( (srch = find_extrn (mylist, CmdEnt)) )
+        /* First check that mylist is not null. If this vsect has no
+         * references, 'mylist' will be null
+         */
+
+        if ( mylist && (srch = find_extrn (mylist, CmdEnt)) )
         {
 
             if (srch->Type & LOC1BYT)
@@ -619,19 +635,26 @@ ListInitROF (struct nlist *nl, int mycount, int notdp, char class)
 
     nl = ListRoot (class);  /* Entry point for this class's label list */
 
-    srchlst = mylist;
-
-    while (srchlst->LNext)
+    if (mylist)
     {
-        srchlst = srchlst->LNext;
+        srchlst = mylist;
+    
+        while (srchlst->LNext)
+        {
+            srchlst = srchlst->LNext;
+        }
+    
+        if (srchlst->Ofst != 0)   /* I.E., if not 0 */
+        {
+            DataDoBlock (mylist, srchlst->Ofst, class);
+        }
+    
+        ROFDataLst (mylist, mycount, class);
     }
-
-    if (srchlst->Ofst != 0)   /* I.E., if not 0 */
+    else
     {
-        DataDoBlock (mylist, srchlst->Ofst, class);
+        DataDoBlock(mylist, mycount, class);
     }
-
-    ROFDataLst (mylist, mycount, class);
 }
 
 /* ************************************************** *

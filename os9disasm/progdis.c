@@ -1027,10 +1027,10 @@ GetCmd ()
                     
                     //sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, offset);
                 }
-                /*else */       /* else Pass 1 */
-                /*{
+                else        /* else Pass 1 */
+                {
                     rof_addlbl (offset, myref);
-                }*/
+                }
             
                 return 1;
             }
