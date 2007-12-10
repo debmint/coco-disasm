@@ -557,10 +557,10 @@ TxIdx ()
             }
             else
             {
-                if (myval)
-                {
+               // if (myval)
+               // {
                     rof_addlbl (destval, myval);
-                }
+                //}
             }
 
             return 1;

@@ -595,7 +595,6 @@ ROFDataLst (struct rof_extrn *mylist, int maxcount, char class)
     CmdEnt = my_ref->Ofst;
     DataDoBlock (my_ref, datasize, class);
 
-
     if (my_ref->RNext)
     {
         ROFDataLst (my_ref->RNext, maxcount, class);

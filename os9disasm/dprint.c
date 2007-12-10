@@ -527,7 +527,7 @@ void
 ROFDataPrint ()
 {
     struct nlist *dta, *srch;
-    char *vstyp[2] = {"vsect dp", "vsect"};
+//    char *vstyp[2] = {"vsect dp", "vsect"};
     char *dptell[2] = {"* Uninitialized data (class %c)",
                        "* Initialized Data (class %c)"};
     int sizes[4] = { rofptr->udpsz, rofptr->idpsz,
@@ -547,20 +547,30 @@ ROFDataPrint ()
     {
         if ((ListRoot (dattyp[0]) || ListRoot (dattyp[1])))
         {
-            strcpy (pbuf->mnem, vstyp[vs]);
+            strcpy (pbuf->mnem, "vsect");
+
+            if (!vs)
+            {
+                strcpy (pbuf->operand, "dp");
+            }
+            else
+            {
+                strcpy (pbuf->operand, "");
+            }
+
             BlankLine();
-            PrintLine (realcmd, pbuf, *dattyp, 0, 0);
+            PrintLine (realcmd, pbuf, dattyp[vs], 0, 0);
             BlankLine();
 
             /* Process each of un-init, init */
 
             for (isinit = 0; isinit <= 1; isinit++)
             {
-                dta = ListRoot (*dattyp);
+                dta = ListRoot (dattyp[isinit]);
 
                 if (dta)
                 {
-                    sprintf (mytmp, dptell[isinit], *dattyp);
+                    sprintf (mytmp, dptell[isinit], dattyp[isinit]);
 
                     /* for PrintNonCmd(), send isinit so that a pre-blank line
                      * is not printed, since it is provided by PrinLine above
@@ -579,7 +589,8 @@ ROFDataPrint ()
                         strcpy (pbuf->mnem, "rmb");
                         sprintf (pbuf->operand, "%d", srch->myaddr);
                         CmdEnt = PrevEnt = 0;
-                        PrintLine (realcmd, pbuf, 'D', 0, srch->myaddr);
+                        PrintLine (realcmd, pbuf, dattyp[isinit], 0,
+                                                  srch->myaddr);
                     }
 
                     /* Note: We'll need to do something different for
@@ -591,22 +602,22 @@ ROFDataPrint ()
 
                     if (!isinit)
                     {
-                        ListData (dta, *thissz);
+                        ListData (dta, thissz[isinit]);
                     }
                     else
                     {
-                        ListInitROF (dta, *thissz, vs, *dattyp);
+                        ListInitROF (dta, thissz[isinit], vs, dattyp[isinit]);
                     }
                 }
-
-                ++dattyp;   /* Done with this class, point to next */
-                ++thissz;   /* And to the next data size */
             }
 
             /* Do "ends" for this vsect */
 
             WrtEnds();
         }
+
+        dattyp += 2;   /* Done with this class, point to next */
+        thissz += 2;   /* And to the next data size */
     }
 
     InProg = 1;
