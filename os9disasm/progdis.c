@@ -174,8 +174,8 @@ AddDelims (char *dest, char *src)
  * MovAsc() - Move nb byes int fcc (or fcs) statement *
  * ************************************************** */
 
-static void
-MovASC (int nb)
+void
+MovASC (int nb, char class)
 {
     char oper_tmp[30];
 
@@ -190,12 +190,12 @@ MovASC (int nb)
         char c[6];
 
         x = fgetc (progpath);
-        if (isprint(x)){
+/*        if (isprint(x)){
             fprintf (stderr, "'%c'\n", x);
         }
         else {
             fprintf (stderr, "0x%02x\n",x);
-        }
+        }*/
         
         if ((isprint (x)) || ((x & 0x80) && UseFCC && isprint (x & 0x7f)))
         {
@@ -215,29 +215,29 @@ MovASC (int nb)
                 {
                     strcpy (pbuf->mnem, "fcs");
                     AddDelims (pbuf->operand, oper_tmp);
-                    PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
+                    PrintLine (pseudcmd, pbuf, class, CmdEnt, Pc);
                     *oper_tmp = '\0';
                     CmdEnt = Pc + 1;
                     strcpy (pbuf->mnem, "fcc");
                 }
                 
                 if ((strlen (oper_tmp) > 24) ||
-                    (strlen (oper_tmp) && FindLbl (ListRoot ('L'), Pc + 1)))
+                    (strlen (oper_tmp) && FindLbl (ListRoot (class), Pc + 1)))
                 {
                     AddDelims (pbuf->operand, oper_tmp);
-                    PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
+                    PrintLine (pseudcmd, pbuf, class, CmdEnt, Pc);
                     *oper_tmp = '\0';
                     CmdEnt = Pc + 1;
                     strcpy (pbuf->mnem, "fcc");
                 }
             }   /* end if (Pass2) */
         }
-        else
-        {                       /* it's a control character */
+        else            /* then it's a control character */
+        {
             if (Pass2 && (strlen (oper_tmp)))
             {
                 AddDelims (pbuf->operand, oper_tmp);
-                PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
+                PrintLine (pseudcmd, pbuf, class, CmdEnt, Pc);
                 *oper_tmp = '\0';
                 CmdEnt = Pc;
             }
@@ -263,7 +263,7 @@ MovASC (int nb)
                 strcpy (pbuf->mnem, "fcb");
                 PrintLbl (pbuf->operand, '^', x, nlp);
                 sprintf (pbuf->instr, "%02x", x & 0xff);
-                PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
+                PrintLine (pseudcmd, pbuf, class, CmdEnt, Pc);
                 strcpy (pbuf->mnem, "fcc");
             }
             CmdEnt = Pc + 1;
@@ -271,10 +271,10 @@ MovASC (int nb)
         ++Pc;
     }  /* end while (nb--) - all chars moved */
     
-    if (strlen (oper_tmp))
-    {                           /* Clear out any pending string */
+    if (strlen (oper_tmp))        /* Clear out any pending string */
+    {
         AddDelims (pbuf->operand, oper_tmp);
-        PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);
+        PrintLine (pseudcmd, pbuf, class, CmdEnt, Pc);
         *oper_tmp = '\0';
     }
 }
@@ -298,7 +298,7 @@ NsrtBnds (struct databndaries *bp)
             /* Bugfix?  Pc was bp->b_lo...  that setup allowed going past
              * the end if the lower bound was not right. */
 
-            MovASC ((bp->b_hi) - Pc + 1);
+            MovASC ((bp->b_hi) - Pc + 1, 'L');
             break;                  /* bump PC  */
         case 6:                    /* Word */
         case 4:                    /* Long */
@@ -1336,8 +1336,6 @@ progdis ()
            
             if ((hstart = fgetc (progpath)) == 0)  /* Another Block of code follows */
             {
-                int prevcmdent = CmdEnt;  /*Save for Coco block change (see below)*/
-                
                 ungetc (hstart, progpath);  /* Restore byte for rsdoshdr() */
                 rsdoshdr();
 
@@ -1346,8 +1344,6 @@ progdis ()
                     /* The following CmdEnt juggling is to try to get
                      * any label equ's just before the new org to print
                      * with the correct offset */
-                    
-                    int newcmdent = CmdEnt;
                     
                     /*CmdEnt = prevcmdent;*/
                     RsOrg();

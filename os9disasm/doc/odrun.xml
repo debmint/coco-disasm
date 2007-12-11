@@ -177,13 +177,13 @@
          assembler code, but rather are constant values that the program
          might use. These can be string constants, lookup tables, or simply
          numeric constants. These blocks of data code can be specified in one
-         of five ways
+         of six ways
        </para>
        <informaltable frame="none">
          <tgroup cols="2"><colspec colwidth='1.5in'/>
            <tbody valign="top">
              <row>
-               <entry><command>A</command></entry>
+               <entry id="asciis"><command>A</command></entry>
                <entry><command>ASCII data</command>
                  <para>
                    will generate <computeroutput>FCB</computeroutput>,
@@ -198,6 +198,18 @@
                  </para>
                </entry>
              </row>
+             <row>
+               <entry><command>=</command></entry>
+               <entry><command>ROF Data ASCII specification</command>
+                 <para>This is for use only with ROF disassemblies, and
+                   is for Initialized data.  Its usage is similar to the
+                   <command>A</command> specification, except that it is
+                   restricted to initialized vsects.  See
+                   <link linkend="asciis">ASCII Data</link> above.
+                 </para>
+               </entry>
+             </row>
+           </tbody>
              <row>
                <entry><command>W</command></entry>
                <entry><command>Word data</command>
@@ -239,7 +251,6 @@
                  </para>
                </entry>
              </row>
-           </tbody>
          </tgroup>
        </informaltable>
        <para>These Data bounds are further described in <xref
@@ -723,8 +734,10 @@
        ASCII data areas are those which contain ASCII characters, and should be
        disassembled using <command>FCC</command> or <command>FCS</command>
        statements, if possible. Graphic ASCII characters are collected together
-       and output in <command>FCC</command> or <command>FCS</command> statements,
-       with a double quote (") delimiter. The <command>FCS</command> statement
+       and output in <command>FCC</command> or <command>FCS</command>i
+       statements, with a double quote (") delimiter as the preferred
+       delimiter, but a delimiter will be chosen such that it does not occur in
+       the string.  The <command>FCS</command> statement
        will be used, if enabled (it can be optionally disabled), whenever a
        character with the high bit set.  Nongraphic ASCII characters, which
        include the control characters, <command>DEL</command> ($7F), and

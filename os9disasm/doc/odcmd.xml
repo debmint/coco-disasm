@@ -348,7 +348,7 @@
    </para>
    <screen>
      <literal>
-       &lt;type&gt; [&lt;class&gt;] [&lt;offset&gt; &lt;range&gt;
+       &lt;type&gt; [&lt;class&gt;] [&lt;offset&gt;] &lt;range&gt;
      </literal>
    </screen>
    <para>The <literal>type</literal> is the code for the data area type, which
@@ -363,10 +363,22 @@
      <computeroutput>L</computeroutput> or <computeroutput>S</computeroutput>
      must be followed by a label class.
    </para>
+   <para>
+     The format for the <command>=</command> specification is a bit different.
+   </para>
+   <screen>
+     = &lt;vsect&gt; &lt;range&gt;
+   </screen>
+   <para><computeroutput>vsect</computeroutput> is one of
+     '<computeroutput>d</computeroutput>' for direct page, or
+     '<computeroutput>n</computeroutput>' for non-dp data.
+   </para>
    <para>The optional <literal>offset</literal>, coming next, is used when
      specifying an offset to be applied to each data element in the data area.
      The format of the <literal>offset</literal> specification is identical to
      that used in the label addressing mode specification line.
+     <literal>offset</literal> is not available for
+     '<computeroutput>=</computeroutput>' mode.
    </para>
    <para>The <literal>range</literal> specifies the range of addresses to be
      used, and is composed of two parts, the starting address and the ending
@@ -377,7 +389,7 @@
      form, the starting address may be either a hex number or null, in which
      case the starting address will be one more than the previous ending
      address (which must be well-defined), and the ending address may take any
-     of four forms:
+     of four forms (some not available for<literal>=</literal> mode):
    </para>
      <informaltable>
        <tgroup cols="2">
@@ -410,6 +422,11 @@
          </tbody>
        </tgroup>
      </informaltable>
+   <note><para>
+       As previously said, only some modes are available with
+       <literal>=</literal>mode.  The available modes are
+       <literal>start-end</literal> and <literal>start/length</literal>.
+   </para></note>
    <para> Below are some example data boundary specifications, with the
      effects of each:
    </para>
@@ -449,6 +466,12 @@
        <term><computeroutput>B 1000-10FF</computeroutput></term>
        <listitem><para>$1000 to $100F delimit a byte data area.</para>
        </listitem>
+     </varlistentry>
+     <varlistentry>
+       <term><computeroutput>= n 04/6</computeroutput></term>
+       <listitem><para>The initialized bytes in the non-dp vsect from
+           $0004 to $0009 (six bytes) will be displayed as ASCII data.
+       </para></listitem>
      </varlistentry>
      <varlistentry>
        <term>

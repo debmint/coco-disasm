@@ -133,7 +133,7 @@ PrintNonCmd (char *str, int preblank, int postblank)
 void
 PrintLine (char *pfmt, struct printbuf *pb, char class, int cmdlow, int cmdhi)
 {
-    NonBoundsLbl ();            /*Check for non-boundary labels */
+    NonBoundsLbl (class);            /*Check for non-boundary labels */
 
     PrintComment (class, cmdlow, cmdhi);
     OutputLine (pfmt, pb);
@@ -289,7 +289,7 @@ PrintComment(char lblclass, int cmdlow, int cmdhi)
 }
 
 void
-NonBoundsLbl ()
+NonBoundsLbl (char class)
 {
     int x;
     struct nlist *nl;
@@ -297,7 +297,7 @@ NonBoundsLbl ()
 
     for (x = PrevEnt + 1; x < CmdEnt; x++)
     {
-        if ((nl = FindLbl (SymLst[(int) strpos (lblorder, 'L')], x)))
+        if ((nl = FindLbl (SymLst[(int) strpos (lblorder, class)], x)))
         {
             memset (bf, 0, sizeof (struct printbuf));
             strcpy (bf->lbnm, nl->sname);
@@ -340,7 +340,7 @@ RsOrg (void)
     /* Call NonBoundsLbl() after OutputLine to try to get any unlisted
      * labels listed with the correct Pc offsets */
 
-    NonBoundsLbl ();
+    NonBoundsLbl ('L');
     PrintCleanup (prtbf);
     BlankLine ();
     

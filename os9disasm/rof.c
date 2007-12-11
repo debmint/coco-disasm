@@ -22,6 +22,16 @@
 #define INIENT      0x01        /* refers to init data */
 #define LOCMASK     (CODLOC|DIRLOC)
 
+struct asc_data {
+    int start,
+        length;
+    struct asc_data *LNext,
+                    *RNext;
+};
+
+struct asc_data *dp_ascii = 0,
+                *nondp_ascii = 0;
+
 struct rof_glbl *glbl_code = 0,
                 *glbl_dp = 0,
                 *glbl_nondp = 0,
@@ -48,6 +58,24 @@ extern int CodEnd,
            PrevEnt;
 extern char *realcmd;
 extern struct printbuf *pbuf;
+
+/* DEBUGGING function */
+static void
+reflst (struct asc_data *cl)
+{
+
+    if (cl->LNext)
+    {
+        reflst (cl->LNext);
+    }
+
+    printf ("   >>>   %04x    %d\n",cl->start,cl->length);
+
+    if (cl->RNext)
+    {
+        reflst (cl->RNext);
+    }
+}
 
 /* ************************************************** *
  * fstrncpy() - equivalent to strncpy, except that    *
@@ -254,7 +282,6 @@ rof_addlbl (int adrs, struct rof_extrn *ref)
                 strcpy (nl->sname, ref->name);
             }
         }
-        printf("\nrof_addlbl() added name %-12s addres= %04x to class %c\n\n", nl->sname, nl->myaddr, rof_class (ref->Type));
     }
 }
 
@@ -471,6 +498,55 @@ rof_lblref (int *value)
 }
 
 /* ******************************************************** *
+ * rof_find_asc() - Find an ascii data block def            *
+ * Passed: tree - ptr to asc_dat tree                       *
+ *         entry - Command entry point (usually CmdEnt      *
+ * Returns: tree entry if present, 0 if no match            *
+ * ******************************************************** */
+
+struct asc_data *
+rof_find_asc (struct asc_data *tree, int entry)
+{
+    if (!tree)
+    {
+        return 0;
+    }
+
+    while (1)
+    {
+        if (entry < tree->start)
+        {
+            if (tree->LNext)
+            {
+                tree = tree->LNext;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        else
+        {
+            if (entry > tree->start)
+            {
+                if (tree->RNext)
+                {
+                    tree = tree->RNext;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                return tree;
+            }
+        }
+    }
+}
+
+/* ******************************************************** *
  * DataDoBlock - Process a block composed of an initialized *
  *               reference from a data area                 *
  * Passed: struct rof_extrn *mylist - pointer to tree       *
@@ -480,7 +556,8 @@ rof_lblref (int *value)
  * ******************************************************** */
 
 static void
-DataDoBlock (struct rof_extrn *mylist, int datasize, char class)
+DataDoBlock (struct rof_extrn *mylist, int datasize,
+             struct asc_data *ascdat, char class)
 {
     struct rof_extrn *srch;
     struct nlist *nl;
@@ -489,6 +566,8 @@ DataDoBlock (struct rof_extrn *mylist, int datasize, char class)
     {
         int bump = 2,
             my_val;
+
+        /* Insert Label if applicable */
 
         if ( (nl = FindLbl (ListRoot (class), CmdEnt)) )
         {
@@ -539,7 +618,24 @@ DataDoBlock (struct rof_extrn *mylist, int datasize, char class)
                 }
             }
         }
-        else {
+        else      /* No reference entry for this area */
+        {
+            struct asc_data *mydat;
+
+            /* Check for ASCII definition, and print it out if so */
+
+            mydat = rof_find_asc (ascdat, CmdEnt);
+
+            if (mydat)
+            {
+                Pc = CmdEnt;    /* MovASC sets CmdEnt = Pc */
+                MovASC (mydat->length, class);
+                CmdEnt += mydat->length;
+                PrevEnt = CmdEnt;
+                datasize -= mydat->length;
+                continue;
+            }
+
             my_val = fgetc (progpath);
             bump = 1;
             strcpy (pbuf->mnem, "fcb");
@@ -554,7 +650,8 @@ DataDoBlock (struct rof_extrn *mylist, int datasize, char class)
 }
 
 static void
-ROFDataLst (struct rof_extrn *mylist, int maxcount, char class)
+ROFDataLst (struct rof_extrn *mylist, int maxcount, struct asc_data *ascdat,
+            char class)
 {
     struct rof_extrn *my_ref,
                      *srch;
@@ -566,7 +663,7 @@ ROFDataLst (struct rof_extrn *mylist, int maxcount, char class)
 
     if (my_ref->LNext)
     {
-        ROFDataLst (my_ref->LNext, my_ref->Ofst, class);
+        ROFDataLst (my_ref->LNext, my_ref->Ofst, ascdat, class);
     }
 
     /* ************************************** *
@@ -593,11 +690,11 @@ ROFDataLst (struct rof_extrn *mylist, int maxcount, char class)
     }
 
     CmdEnt = my_ref->Ofst;
-    DataDoBlock (my_ref, datasize, class);
+    DataDoBlock (my_ref, datasize, ascdat, class);
 
     if (my_ref->RNext)
     {
-        ROFDataLst (my_ref->RNext, maxcount, class);
+        ROFDataLst (my_ref->RNext, maxcount, ascdat, class);
     }
 }
 
@@ -616,6 +713,7 @@ ListInitROF (struct nlist *nl, int mycount, int notdp, char class)
 {
     struct rof_extrn *mylist,
                      *srchlst;
+    struct asc_data *ascdat;
 
     /* Set up pointers, and file position */
 
@@ -624,11 +722,13 @@ ListInitROF (struct nlist *nl, int mycount, int notdp, char class)
     if (notdp)
     {
         mylist = xtrn_ndp;
+        ascdat = nondp_ascii;
         fseek (progpath, indp_begin, SEEK_SET);
     }
     else
     {
         mylist = xtrn_dp;
+        ascdat = dp_ascii;
         fseek (progpath, idp_begin, SEEK_SET);
     }
 
@@ -645,14 +745,14 @@ ListInitROF (struct nlist *nl, int mycount, int notdp, char class)
     
         if (srchlst->Ofst != 0)   /* I.E., if not 0 */
         {
-            DataDoBlock (mylist, srchlst->Ofst, class);
+            DataDoBlock (mylist, srchlst->Ofst, ascdat, class);
         }
     
-        ROFDataLst (mylist, mycount, class);
+        ROFDataLst (mylist, mycount, ascdat, class);
     }
     else
     {
-        DataDoBlock(mylist, mycount, class);
+        DataDoBlock(mylist, mycount, ascdat, class);
     }
 }
 
@@ -680,6 +780,170 @@ void rofdis()
         }
         else {
             old_pos = ftell (progpath); /* Remember position on entry */
+        }
+    }
+}
+
+/* *********************************************************** *
+ * rof_ascii() - set up ASCII specification for initialized    *
+ *               data                                          *
+ * Passed: ptr - pointer to command line position, Positioned  *
+ *               to the first character of the specification   *
+ *               line, past the "=" command file specifier     *
+ *         Format for cmdline is "= d|n <start> - <end> or     *
+ *                                      <start>/<length>       *
+ * *********************************************************** */
+
+void
+rof_ascii ( char *ptr)
+{
+    char vsct = *ptr;      /* vsect type, d=dp, b=bss */
+
+    char nd[20],
+         *dest;
+    int start,
+        length;
+    struct asc_data *me,
+                    **tree = NULL;
+
+    ptr = skipblank (++ptr);
+
+    sscanf (ptr, "%x", &start);
+
+    if (start > 0xffff)
+    {
+        nerrexit ("Start > $ffff");
+    }
+
+    while (isxdigit (*ptr))
+    {
+        ++ptr;
+    }
+
+    ptr = skipblank (ptr);
+
+    *nd = *(ptr++);
+    ptr = skipblank(ptr);
+
+    /* At this point, ptr is pointing to begin of second parameter
+     * past the "-" or "/" */
+
+    switch (*nd)
+    {
+        case '-':
+            dest = nd;
+            length = sizeof (nd);
+
+            while (isxdigit (*ptr))
+            {
+                *(dest++) = *(ptr++);
+
+                if ((--length) == 1)
+                {
+                    nerrexit ("Too many characters in number");
+                }
+            }
+
+            sscanf (nd, "%x", &length);
+
+            if (length > 0xffff)
+            {
+                nerrexit ("End > $ffff");
+            }
+            else
+            {
+                length -= (start - 1);  /* To include end byte */
+            }
+
+            break;
+        case '/':
+            sscanf (ptr, "%d", &length);
+
+            if ( length + start > 0xffff)
+            {
+                nerrexit ("End > $ffff");
+            }
+
+            while (isdigit (*ptr))
+            {
+                ++ptr;
+            }
+            
+            break;
+        default:
+            nerrexit ("Unknown range specifier");
+    }
+
+    if (length > 0)
+    {
+        if (!(me = calloc (1, sizeof (struct asc_data))))
+        {
+            nerrexit ("Cannot allocate memory for asc_data");
+        }
+
+        me->start = start;
+        me->length = length;
+
+        switch (tolower (vsct))
+        {
+            case 'd':
+                tree = &dp_ascii;
+                break;
+            case 'n':
+                tree = &nondp_ascii;
+                break;
+            default:
+                nerrexit ("Unknown ascii tree specification");
+        }
+
+        if (!(*tree))       /* If this tree has not been yet started */
+        {
+            *tree = me;
+        }
+        else
+        {
+            struct asc_data *srch;
+    
+            srch = *tree;
+    
+            while (1)
+            {
+                if (start < srch->start)
+                {
+                    if (srch->LNext)
+                    {
+                        srch = srch->LNext;
+                    }
+                    else
+                    {
+                        srch->LNext = me;
+                        return;
+                    }
+                }
+                else
+                {
+                    if (start > srch->start)
+                    {
+                        if (srch->RNext)
+                        {
+                            srch = srch->RNext;
+                        }
+                        else
+                        {
+                            srch->RNext = me;
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        fprintf (stderr,
+                                 "Address %04x for vsect %c already defined\n",
+                                 start, vsct
+                                );
+                        return;
+                    }
+                }
+            }
         }
     }
 }

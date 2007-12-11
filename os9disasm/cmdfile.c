@@ -92,6 +92,14 @@ do_cmd_file ()
             cmdamode (skipblank (++mbf));
             continue;
         }
+
+        /* rof ascii data definition */
+
+        if (*mbf == '=')
+        {
+            rof_ascii (skipblank (++mbf));
+            continue;
+        }
         
         if (strchr (BoundsNames, toupper (*mbf)) || isdigit (*mbf))
         {
