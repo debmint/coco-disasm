@@ -578,6 +578,7 @@ DoMode (char *lpos)
 
     lpos = skipblank (lpos);
     class = *(lpos++);
+    class = toupper (class);
     
     if (!index (lblorder, class))
     {
@@ -587,9 +588,12 @@ DoMode (char *lpos)
     /* Offset spec (if any) */
 
     /* check for default reset (no address) */
+    
     if (!(lpos = skipblank (lpos)) || !(*lpos) || (*lpos == ';'))
     {
-        DfltLbls[AMode - 1] = lblorder[class - 1];
+        /* Changed the following after change for addlbl() */
+        //DfltLbls[AMode - 1] = lblorder[class - 1];
+        DfltLbls[AMode - 1] = class;
         return 1;
     }
 
@@ -612,8 +616,11 @@ DoMode (char *lpos)
     getrange (lpos, &lo, &hi, 1);
 
     /* Now insert new range into tree */
+    
     if (!(mptr = calloc (1, sizeof (struct databndaries))))
+    {
         nerrexit ("Cannot allocate memory for data definition");
+    }
 
     mptr->b_lo = lo;
     mptr->b_hi = hi;
@@ -629,6 +636,7 @@ DoMode (char *lpos)
     else
     {
         lp = LAdds[AMode];
+        
         while (1)
         {
             if (hi < lp->b_lo)

@@ -1,16 +1,28 @@
 PACKAGE REQUIREMENTS
 -----------
 
+This package comes in two sections.  Os9disasm is the disassembler itself,
+and is all that is really required.  With this, you have a command-line
+disassembler.  For those who desire a GUI interface, the g09dis package
+is provided.  This is simply a front-end for os9disasm, and is not required,
+but can no doubt help bypass the learning curve a bit, as there are several
+things with which one must be familiar to get well-formatted disassembly
+output.  The default configuration is to compile WITHOUT G09DIS.  To get
+G09DIS to build, see below under "CONFIGURE OPTIONS".
+
 To compile these sources, especially g09dis, specific packages must be
 present.
 
 If you use the precompiled binary for g09dis, you will need several runtime
 packages for GTK.  For Linux distributions, these should be available in their
 packages.  For Windows several alternatives are available.  There are at least
-two install executables available for a MinGW install.  In addition to these,
-zip files are available from Tor Lillqvist's page.  These pages can be accessed
+two install executables available for a MinGW install.
+
+In addition to these,
+zip files are available from Tor Lillqvist's page.  The various packages from
+here are installed separately and as needed.  These pages can be accessed
 by following the links for GTK or Gimp for Windows from either
-http://www.gimp.org, or http://www.gimp.org.
+http://www.gimp.org, or http://www.gtk.org.
 
 These packages, to my understanding, work under MinGW, but not Cygwin.  But
 I also understand that there are GTK packages available for Cygwin, also.

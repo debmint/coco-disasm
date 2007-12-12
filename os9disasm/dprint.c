@@ -291,31 +291,40 @@ PrintComment(char lblclass, int cmdlow, int cmdhi)
 void
 NonBoundsLbl (char class)
 {
-    int x;
-    struct nlist *nl;
-    struct printbuf altbuf, *bf = &altbuf;
-
-    for (x = PrevEnt + 1; x < CmdEnt; x++)
+    if (class)
     {
-        if ((nl = FindLbl (SymLst[(int) strpos (lblorder, class)], x)))
+        int x;
+
+        for (x = PrevEnt + 1; x < CmdEnt; x++)
         {
-            memset (bf, 0, sizeof (struct printbuf));
-            strcpy (bf->lbnm, nl->sname);
-            strcpy (bf->mnem, "equ");
-            if (x > CmdEnt)
+            struct printbuf altbuf, *bf = &altbuf;
+            struct nlist *nl;
+            
+            if ((nl = FindLbl (ListRoot (class), x)))
             {
-                sprintf (bf->operand, "*+%d", x - CmdEnt);
+                memset (bf, 0, sizeof (struct printbuf));
+                strcpy (bf->lbnm, nl->sname);
+                strcpy (bf->mnem, "equ");
+
+                if (x > CmdEnt)
+                {
+                    sprintf (bf->operand, "*+%d", x - CmdEnt);
+                }
+                else
+                {
+                    sprintf (bf->operand, "*-%d", CmdEnt - x);
+                }
+
+                printf (pseudcmd, LinNum++, nl->myaddr, bf->instr,
+                        bf->lbnm, bf->mnem, bf->operand);
+                ++PgLin;
+                
+                if (WrtSrc)
+                {
+                    fprintf (outpath, "%s %s %s\n", bf->lbnm, bf->mnem,
+                             bf->operand);
+                }
             }
-            else
-            {
-                sprintf (bf->operand, "*-%d", CmdEnt - x);
-            }
-            printf (pseudcmd, LinNum++, nl->myaddr, bf->instr,
-                    bf->lbnm, bf->mnem, bf->operand);
-            ++PgLin;
-            if (WrtSrc)
-                fprintf (outpath, "%s %s %s\n", bf->lbnm, bf->mnem,
-                         bf->operand);
         }
     }
 }

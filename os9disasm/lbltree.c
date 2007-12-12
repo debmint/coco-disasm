@@ -436,11 +436,14 @@ addlbl (int loc, char C)
 
     if (!index (lblorder, C))
     {                           /* Nonexistant label class      */
-        fprintf (stderr, "Illegal label Class - '\\%x'\n", C);
+        fprintf (stderr,
+                 "Illegal label Class '\\%x' for location %04x Pc = %04x\n",
+                C, loc, Pc);
         exit (1);
     }
 
     /* This may be a kludge - may need to fix later */
+    
     if (C == '^')
     {
         loc &= 0x7f;
