@@ -22,7 +22,7 @@
 #include "amodes.h"
 
 static int NoEnd;      /* Flag that no end on last bound                 */
-static int TypeGet;    /* Flag 1=getting Addressing mode 0=Data Boundary */
+static int GettingAmode;    /* Flag 1=getting Addressing mode 0=Data Boundary */
 static struct databndaries *prevbnd ;
 
 void
@@ -405,12 +405,14 @@ cmdamode (char *pt)
 {
     char buf[80];
 
-    TypeGet = 1;
+    GettingAmode = 1;
     
     while ((pt = cmdsplit (buf, pt)))
     {
         DoMode (buf);
     }
+
+    GettingAmode = 0;
 }
 
 /* ********************************************* *
@@ -420,8 +422,8 @@ cmdamode (char *pt)
  *   (the addresses are passed by the caller     *
  * ********************************************* */
 
-static void
-getrange (char *pt, int *lo, int *hi, int usize)
+void
+getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
 {
     char tmpdat[50], *dpt, c;
 
@@ -430,8 +432,13 @@ getrange (char *pt, int *lo, int *hi, int usize)
     /* see if it's just a single byte/word */
     if (!(isxdigit (*(pt = skipblank (pt)))))
     {
-        if ((*pt == '-') || ((*pt == '/') && !TypeGet))
+        if ((*pt == '-') || ((*pt == '/')))
         {
+            if (GettingAmode)
+            {
+                nerrexit ("Open-ended ranges not permitted with Amodes");
+            }
+
             if (NoEnd)
             {
                 nerrexit ("No start address/no end address in prev line %d");
@@ -465,7 +472,7 @@ getrange (char *pt, int *lo, int *hi, int usize)
     switch (c = *(pt = skipblank (pt)))
     {
     case '/':
-        if (TypeGet == 1)
+        if (GettingAmode == 1)
         {
             nerrexit ("Cannot specify \"/\" in this mode!");
         }
@@ -613,7 +620,7 @@ DoMode (char *lpos)
 
      /*  Hopefully, passing a hard-coded 1 will work always.
      */
-    getrange (lpos, &lo, &hi, 1);
+    getrange (lpos, &lo, &hi, 1, 0);
 
     /* Now insert new range into tree */
     
@@ -693,7 +700,7 @@ boundsline (char *mypos)
     /*char *stophere=&mypos[strlen(mypos)]; */
     register int count = 1;
 
-    TypeGet = 0;
+    GettingAmode = 0;
 
     if (isdigit (*mypos))
     {                           /*      Repeat count for line   */
@@ -798,7 +805,7 @@ setupbounds (char *lpos)
     char c;
     struct ofsetree *otreept = 0;
 
-    TypeGet = 0;
+    GettingAmode = 0;
     PBytSiz = 1;                /* Default to single byte */
 
     /* First character should be boundary type */
@@ -842,7 +849,7 @@ setupbounds (char *lpos)
         lpos = setoffset (++lpos, otreept);
     }
 
-    getrange (lpos, &rglo, &rghi, PBytSiz);
+    getrange (lpos, &rglo, &rghi, PBytSiz, 1);
     
     /* Now create the addition to the list */
     

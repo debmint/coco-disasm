@@ -447,7 +447,7 @@ GetLabels ()                    /* Read the labelfiles */
         else
         {
             fprintf (stderr, "ERROR! cannot open Label File %s for read\n",
-                     filename);
+                     tmpnam);
         }
 
         //free (tmpnam);

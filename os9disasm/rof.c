@@ -795,152 +795,96 @@ void rofdis()
  * *********************************************************** */
 
 void
-rof_ascii ( char *ptr)
+rof_ascii ( char *cmdline)
 {
-    char vsct = *ptr;      /* vsect type, d=dp, b=bss */
 
-    char nd[20],
-         *dest;
-    int start,
-        length;
     struct asc_data *me,
                     **tree = NULL;
+    char oneline[80];
 
-    ptr = skipblank (++ptr);
-
-    sscanf (ptr, "%x", &start);
-
-    if (start > 0xffff)
+    while ((cmdline = cmdsplit (oneline, cmdline)))
     {
-        nerrexit ("Start > $ffff");
-    }
+        char vsct,      /* vsect type, d=dp, b=bss */
+             *ptr,
+             nd[20],
+             *dest;
+        int start,
+            end;
 
-    while (isxdigit (*ptr))
-    {
-        ++ptr;
-    }
+        ptr = oneline;
+        vsct = *ptr;
+        ptr = skipblank (++ptr);
 
-    ptr = skipblank (ptr);
+        getrange (ptr, &start, &end, 1, 0);
 
-    *nd = *(ptr++);
-    ptr = skipblank(ptr);
-
-    /* At this point, ptr is pointing to begin of second parameter
-     * past the "-" or "/" */
-
-    switch (*nd)
-    {
-        case '-':
-            dest = nd;
-            length = sizeof (nd);
-
-            while (isxdigit (*ptr))
+        if (end > 0)
+        {
+            if (!(me = calloc (1, sizeof (struct asc_data))))
             {
-                *(dest++) = *(ptr++);
-
-                if ((--length) == 1)
-                {
-                    nerrexit ("Too many characters in number");
-                }
+                nerrexit ("Cannot allocate memory for asc_data");
             }
-
-            sscanf (nd, "%x", &length);
-
-            if (length > 0xffff)
+    
+            me->start = start;
+            me->length = end - start + 1;
+    
+            switch (tolower (vsct))
             {
-                nerrexit ("End > $ffff");
+                case 'd':
+                    tree = &dp_ascii;
+                    break;
+                case 'n':
+                    tree = &nondp_ascii;
+                    break;
+                default:
+                    nerrexit ("Unknown ascii tree specification");
+            }
+    
+            if (!(*tree))       /* If this tree has not been yet started */
+            {
+                *tree = me;
             }
             else
             {
-                length -= (start - 1);  /* To include end byte */
-            }
-
-            break;
-        case '/':
-            sscanf (ptr, "%d", &length);
-
-            if ( length + start > 0xffff)
-            {
-                nerrexit ("End > $ffff");
-            }
-
-            while (isdigit (*ptr))
-            {
-                ++ptr;
-            }
-            
-            break;
-        default:
-            nerrexit ("Unknown range specifier");
-    }
-
-    if (length > 0)
-    {
-        if (!(me = calloc (1, sizeof (struct asc_data))))
-        {
-            nerrexit ("Cannot allocate memory for asc_data");
-        }
-
-        me->start = start;
-        me->length = length;
-
-        switch (tolower (vsct))
-        {
-            case 'd':
-                tree = &dp_ascii;
-                break;
-            case 'n':
-                tree = &nondp_ascii;
-                break;
-            default:
-                nerrexit ("Unknown ascii tree specification");
-        }
-
-        if (!(*tree))       /* If this tree has not been yet started */
-        {
-            *tree = me;
-        }
-        else
-        {
-            struct asc_data *srch;
-    
-            srch = *tree;
-    
-            while (1)
-            {
-                if (start < srch->start)
+                struct asc_data *srch;
+        
+                srch = *tree;
+        
+                while (1)
                 {
-                    if (srch->LNext)
+                    if (start < srch->start)
                     {
-                        srch = srch->LNext;
-                    }
-                    else
-                    {
-                        srch->LNext = me;
-                        return;
-                    }
-                }
-                else
-                {
-                    if (start > srch->start)
-                    {
-                        if (srch->RNext)
+                        if (srch->LNext)
                         {
-                            srch = srch->RNext;
+                            srch = srch->LNext;
                         }
                         else
                         {
-                            srch->RNext = me;
+                            srch->LNext = me;
                             return;
                         }
                     }
                     else
                     {
-                        fprintf (stderr,
-                                 "Address %04x for vsect %c already defined\n",
-                                 start, vsct
-                                );
-                        return;
+                        if (start > srch->start)
+                        {
+                            if (srch->RNext)
+                            {
+                                srch = srch->RNext;
+                            }
+                            else
+                            {
+                                srch->RNext = me;
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            fprintf (stderr,
+                                     "Address %04x for vsect %c already defined\n",
+                                     start, vsct
+                                    );
+                            return;
+                        }
                     }
                 }
             }

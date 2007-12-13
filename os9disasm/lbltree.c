@@ -323,7 +323,7 @@ PrintLbl (char *dest, char clas, int adr, struct nlist *dl)
 
     if (clas == '@')
     {
-        if ((adr < 9) || ((PBytSiz == 1) && adr > 244) ||
+        if ((adr <= 9) || ((PBytSiz == 1) && adr > 244) ||
             ((PBytSiz == 2) && adr > 65526))
             clas = '&';
         else
