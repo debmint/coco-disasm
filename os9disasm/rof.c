@@ -228,14 +228,14 @@ rof_class (int typ)
     int class;
 
     /* We'll tie up additional classes for data/bss as follows
-     * C for uninit non-dp
+     * B for uninit non-dp
      * D for uninit DP
-     * E for init non-dp
-     * F for init DP
+     * G for init non-dp
+     * H for init DP
      *
      */
 
-    char klasses[5] = "CDLEF",
+    char klasses[5] = "BDLGH",
          *real_to = klasses;
 
     if (typ & 1)

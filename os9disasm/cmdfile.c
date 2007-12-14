@@ -477,25 +477,27 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
             nerrexit ("Cannot specify \"/\" in this mode!");
         }
 
-        switch (*(pt = skipblank (++pt)))
+        pt = skipblank (++pt);
+
+        switch (*pt)
         {
-        case ';':
-        case '\0':
-            if (NoEnd)
-            {  /* if a NoEnd from prev cmd, second bump won't be done */
+            case ';':
+            case '\0':
+                if (NoEnd)          /* if a NoEnd from prev cmd, */
+                {                   /* second bump won't be done */
+                    ++NoEnd;
+                }
+                
                 ++NoEnd;
-            }
-            
-            ++NoEnd;
-            *hi = *lo;
-            break;
-        default:
-            pt = movdigit (tmpdat, pt);
-            NxtBnd = *lo + atoi (tmpdat);
-            /*fprintf(stderr,"Next bdry \\%x\n",NxtBnd);*/
-            *hi = NxtBnd - 1;
-            break;
+                *hi = *lo;
+                break;
+            default:
+                pt = movdigit (tmpdat, pt);
+                NxtBnd = *lo + atoi (tmpdat);
+                *hi = NxtBnd - 1;
+                break;
         }
+
         break;
     case '-':
         switch (*(pt = skipblank (++pt)))
@@ -804,6 +806,7 @@ setupbounds (char *lpos)
     int rglo, rghi;
     char c;
     struct ofsetree *otreept = 0;
+    char loc[20];
 
     GettingAmode = 0;
     PBytSiz = 1;                /* Default to single byte */
@@ -812,29 +815,35 @@ setupbounds (char *lpos)
 
     switch (c = toupper (*(lpos = skipblank (lpos))))
     {
-    case 'L':
-        PBytSiz = 2;
-    case 'S':
-        lpos = skipblank (++lpos);
-        lclass = toupper (*lpos);
-        
-        if (!index (lblorder, lclass))
-        {
-            nerrexit ("Illegal Label Class");
-        }
-        
-        break;
-    case 'W':
-        PBytSiz = 2;
-    case 'B':
-        lclass = '$';
-        break;
-    case 'A':
-        lclass = '^';
-        break;
-    default:
-        fprintf(stderr, "%s\n", lpos);
-        nerrexit ("Illegal boundary name");
+        case 'C':
+            lpos = skipblank (++lpos);
+            lpos = movxnum (loc, lpos);
+            sscanf (loc, "%x", &NxtBnd);
+            ++NxtBnd;   /* Position to start of NEXT boundary */
+            return;     /* Nothing else to do for this option */
+        case 'L':
+            PBytSiz = 2;
+        case 'S':
+            lpos = skipblank (++lpos);
+            lclass = toupper (*lpos);
+            
+            if (!index (lblorder, lclass))
+            {
+                nerrexit ("Illegal Label Class");
+            }
+            
+            break;
+        case 'W':
+            PBytSiz = 2;
+        case 'B':
+            lclass = '$';
+            break;
+        case 'A':
+            lclass = '^';
+            break;
+        default:
+            fprintf(stderr, "%s\n", lpos);
+            nerrexit ("Illegal boundary name");
     }
 
     bdtyp = (int) strpos (BoundsNames, c);
@@ -884,7 +893,8 @@ setupbounds (char *lpos)
             ++NoEnd;            /* flag for next pass */
             break;
         default:
-            fprintf(stderr,"NoEnd in prev cmd.. inserting \\x%x for prev hi\n", bdry->b_lo);
+            fprintf (stderr, "NoEnd in prev cmd.. ");
+            fprintf (stderr, "inserting \\x%x for prev hi\n", bdry->b_lo);
             fprintf(stderr,"...\n");
             prevbnd->b_hi = bdry->b_lo - 1;
             NoEnd -= 2;          /* undo one flagging */

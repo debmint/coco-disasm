@@ -546,11 +546,25 @@ ROFDataPrint ()
 
     int vs,
         isinit;
-    char *dattyp = "DFCE";
+    int reftyp[] = {2, 3, 0, 1};     /* Label ref Type */
+    char dattmp[5];
+    char *dattyp = dattmp;
     char mytmp[50];
 
     InProg = 0;
     memset (pbuf, 0, sizeof (struct printbuf));
+
+    /* We compute dattyp for flexibility.  If we change the label types,
+     * all we have to do is change it in rof_class() and it should work
+     * everywhere rather than hard-coding the classes here
+     */
+
+    dattyp[4] = '\0';
+
+    for (vs = 0; vs < 5; vs++)
+    {
+        dattyp[vs] = rof_class (reftyp[vs]);
+    }
 
     for ( vs = 0; vs <= 1; vs++)    /* Cycle through DP, non-dp */
     {
@@ -801,7 +815,7 @@ WrtEquates (int stdflg)
 
             /* Don't write vsect data for ROF's */
 
-            if ((IsROF) && (NowClass >= 'C') && (NowClass <= 'D'))
+            if ((IsROF) && index ("BDGH", NowClass))
             {
                 return;
             }
@@ -839,6 +853,7 @@ TellLabels (struct nlist *me, int flg, char class)
     struct printbuf PBF, *pb = &PBF;
 
     memset (pb, 0, sizeof (struct printbuf));
+
     if (me->LNext)
     {
         TellLabels (me->LNext, flg, class);
@@ -847,15 +862,18 @@ TellLabels (struct nlist *me, int flg, char class)
     if ((flg < 0) || (flg == me->stdnam))
     {
         /* Don't print real OS9 Data variables here */
-        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr<=ModData)))
+
+        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr <= ModData)))
         {
             if (!HadWrote)
             {
                 BlankLine ();
                 printf (ClsHd, LinNum++, "", NowClass);
                 ++PgLin;
+                
                 if (outpath)
                     fprintf (outpath, SrcHd, NowClass);
+                
                 HadWrote = 1;
                 BlankLine ();
             }
@@ -869,5 +887,7 @@ TellLabels (struct nlist *me, int flg, char class)
     }
 
     if (me->RNext)
+    {
         TellLabels (me->RNext, flg,class);
+    }
 }
