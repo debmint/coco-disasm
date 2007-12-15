@@ -138,7 +138,7 @@ struct rof_hdr {
                   codsz,
                   stksz,
                   modent;
-            char  rname[10];
+            char  rname[20];
 } ROFHD;
 
 /* Global definitions */

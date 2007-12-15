@@ -179,7 +179,12 @@ rofhdr (void)
     idp_begin = code_begin + rofptr->codsz;
     indp_begin = idp_begin + rofptr->idpsz;
 
-    fseek (progpath, rofptr->codsz + rofptr->idatsz + rofptr->idpsz, SEEK_CUR);
+    if (fseek (progpath,
+               rofptr->codsz + rofptr->idatsz + rofptr->idpsz, SEEK_CUR) == -1)
+    {
+        fprintf (stderr, "rofhdr(): Seek error on module");
+        exit (errno);
+    }
 
     /* external references... */
 
@@ -411,6 +416,11 @@ struct rof_extrn *
 find_extrn ( struct rof_extrn *xtrn, int adrs)
 {
     int found = 0;
+
+    if (!xtrn)
+    {
+        return 0;
+    }
 
     while (!found)
     {
@@ -805,9 +815,7 @@ rof_ascii ( char *cmdline)
     while ((cmdline = cmdsplit (oneline, cmdline)))
     {
         char vsct,      /* vsect type, d=dp, b=bss */
-             *ptr,
-             nd[20],
-             *dest;
+             *ptr;
         int start,
             end;
 
