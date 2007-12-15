@@ -36,12 +36,12 @@ struct rof_glbl *glbl_code = 0,
                 *glbl_dp = 0,
                 *glbl_nondp = 0,
                 *glbls;                     /* Generic global pointer */
-/*struct rof_extrn *xtrn_ndp[] = {0, 0},
-                 *xtrn_dp[] = {0, 0},*/
+
 struct rof_extrn *xtrn_ndp = 0,
                  *xtrn_dp = 0,
                  *xtrn_code = 0,
                  *extrns;                   /* Generic external pointer */
+
 struct nlist *dp_base,
              *vsect_base,
              *code_base,
@@ -154,15 +154,6 @@ rofhdr (void)
         struct nlist *me;
         int adrs;
         int typ;
-
-/*        if (!(lblptr = calloc (1, sizeof(struct nlist)))) {
-            errexit ("Cannot allocate memory for rof_glbl");
-        }
-
-        if (!(glbls = calloc (1, sizeof (struct (rof_glbl)))))
-        {
-            nerrexit ("Cannot allocate memory for rof_glbl");
-        }*/
 
         fstrncpy (name, sizeof (glbls->name), progpath);
         typ = fgetc (progpath);
@@ -314,12 +305,10 @@ void get_refs(char *vname, int count, int is_extern)
         switch (_ty & 0xf0)
         {
             case 0x00:
-                /*base = &(xtrn_ndp[_ty & 1]);*/
                 base = &xtrn_ndp;
                 extrns = *base;
                 break;
             case 0x10:
-                /*base = &(xtrn_dp[_ty & 1]);*/
                 base = &xtrn_dp;
                 extrns = *base;
                 break;
@@ -623,7 +612,7 @@ DataDoBlock (struct rof_extrn *mylist, int datasize,
                 }
                 else
                 {
-                    sprintf (pbuf->operand, "%c$%04x", rof_class (srch->Type),
+                    sprintf (pbuf->operand, "%c%04x", rof_class (srch->Type),
                            my_val);
                 }
             }
@@ -763,34 +752,6 @@ ListInitROF (struct nlist *nl, int mycount, int notdp, char class)
     else
     {
         DataDoBlock(mylist, mycount, ascdat, class);
-    }
-}
-
-/* ************************************************** *
- * rofdis() - do a disassembly pass through the code  *
- * ************************************************** */
-
-void rofdis()
-{
-    LinNum = PgLin = 0;
-
-    while (Pc < (CodEnd))
-    {
-        register struct databndaries *bp;
-        int old_pos;
-
-        /* Try this to see if it avoids buffer overflow */
-        memset (pbuf, 0, sizeof (struct printbuf));
-        CmdEnt = Pc;
-
-        /* check if in data boundary */
-        if ((bp = ClasHere (dbounds, Pc)))
-        {
-            NsrtBnds (bp);
-        }
-        else {
-            old_pos = ftell (progpath); /* Remember position on entry */
-        }
     }
 }
 

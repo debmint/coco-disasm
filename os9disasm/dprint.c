@@ -812,7 +812,7 @@ WrtEquates (int stdflg)
             {
                 if (stdflg)     /* Don't print data defs */
                 {
-                    return;
+                    continue;
                 }
 
                 /* Probably an error if this happens
@@ -821,7 +821,7 @@ WrtEquates (int stdflg)
                 
                 if (!(me = FindLbl (me, ModData)))
                 {
-                    return;
+                    continue;
                 }
             }
 
@@ -829,7 +829,7 @@ WrtEquates (int stdflg)
 
             if ((IsROF) && index ("BDGH", NowClass))
             {
-                return;
+                continue;
             }
             
             switch (NowClass)
