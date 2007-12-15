@@ -31,7 +31,7 @@
   </para>
  </section>
  <section><title>Building &amp; Installing the Package</title>
-   <para>The packages now come configured with <command>autotools</command>.
+   <para>The packages now comes configured with <command>autotools</command>.
      This means that the configure process should be able to detect under what
      system the process is running and set some compile parameters to suit
      your situation.  This should make it easier for the programs to be
@@ -69,7 +69,7 @@
        </para>
        <para>If you do find that the system is trying to do a reconfigure and
          you are stuck, you can always remove your install of the package and
-         reexpand it from the original tarfile.
+         re-extract it from the original tarfile.
        </para>
      </note>
      <section>
@@ -112,12 +112,75 @@
          subdirectories below that level, but won't bother anything in a
          sibling or higher directory outside that particular level.
        </para>
-       <para>This holds true for any of the <computeroutput>make
-         </computeroutput> commands.  The command will apply over only
+       <para>This holds true for any of the <command>make
+         </command> commands.  The command will apply over only
          that directory and any directories below it.  No higher directory
          or any outside this directory will be involved.
        </para>
      </note>
+   </section>
+   <section><title>Packages needed to build the programs</title>
+     <para>On a Linux system, most packages needed to build &odis; will
+       likely already be installed.  If not, with most distros, they will
+       be readily available.  If any needed packages are not installed,
+       it should be seen when <command>configure</command> is run.
+     </para>
+     <section><title>Packages needed by G09dis</title>
+       <para>To build and run <command>g09dis</command>, several packages
+         are needed.  Even if running a precompiled package, several &gtk;
+         runtime packages will be needed.
+       </para>
+       <para>In addition to the runtime packages, the corresponding -dev
+         packages will be required to build the system.  Some of the packages
+         needed are:
+         <simplelist>
+           <member><command>gtk+</command></member>
+           <member><command>glib</command></member>
+           <member><command>pango</command> (possibly)</member>
+         </simplelist>
+       </para>
+       <para>In addition, to compile, <command>pkgconfig</command> is
+         essential.
+       </para>
+       <para>Note that these package names will be accompanied with a version
+         number, also.  &gtk; and <command>glib</command> should be version 2
+         or greater.  Also rembember that each of the above runtime packages
+         (except for <command>pkgconfig</command>) will have a "-dev"
+         counterpart that will be needed for compiling.
+       </para>
+       <section><title>Building and/or running on Windows</title>
+         <para>These packages can be built and run on Windows systems.  The
+           first requirement, and this applies to both &odis; and &gtk;,
+           is the linux interface by which you can compile the programs.  I
+           recommend MinGW, available from sourceforge.net.  There is another
+           interface, called Cygwin, but it must be present to run the
+           programs, but, as I understand it, programs compiled under MinGW
+           can be run on a Windows system where MinGW is not installed.  Of
+           course, to run the program compiled on MinGW on another computer,
+           the runtimes for that program will have to be installed.
+         </para>
+         <para>The &gtk; interface is available for Windows, and &odis;, of
+           course, can be run from the command line without &gtk; if you do
+           not wish to bother with &gtk;.
+         </para>
+         <para>The &gtk; interface is available by several means.  There are
+           at least two executable install systems available (cannot recall
+           the sources at the present), or the various modules can be
+           installed piece by piece.
+         </para>
+         <para>
+           In my opinion, the piece-by-piece installation is better in that,
+           if one particular package is upgraded, you can simply overwrite
+           the existing package and not have to do a complete reinstall.
+           Tor Lillqvist maintains a pretty good and web page for this,
+           accessible through either the gtk.org or the gimp.org website,
+           following the links for Windows packages.  These are zip files,
+           and you can begin by installing only the ones you think you will
+           need, and, if you need something else, go back and install it in
+           addition.
+         </para>
+       </section>
+     </section>
    </section>
    <section><title>Installing the program(s)</title>
      <para>To install the program, you can issue the command <command>make
@@ -143,13 +206,12 @@
        <para>It may be very advisable to carefully contemplate the location
          where you will install the binaries.  This is especially true for
          &odis; if you are planning on calling it from within <computeroutput>
-         g09dis</computeroutput>.  If you disassemble a binary from the menu in
-         <computeroutput>g09dis</computeroutput>, a shell computeroutput will
-         be issued which will call up &odis; to do the work.  The call will be
-         of the form
-         <programlisting>"os9disasm program &lt;etc&gt;"</programlisting>
+         g09dis</computeroutput>.  If you disassemble a binary from the menu
+         in <computeroutput>g09dis</computeroutput>, a shell will be issued
+         which will call up &odis; to do the work.  The call will be of the
+         form <programlisting>"os9disasm program &lt;etc&gt;"</programlisting>
        </para>
-       <para>It would be a bit difficult, and harsh, to hardcode a specific
+       <para>It would be a bit difficult - and harsh - to hardcode a specific
          location into the program whereby everyone would be required to
          install &odis; at some specific location.  There are just too many
          differences between the various systems and people have preferences

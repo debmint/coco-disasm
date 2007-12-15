@@ -1,4 +1,4 @@
-<section><title>Invoking and Running &odis;</title>
+<section id="odrun"><title>Invoking and Running &odis;</title>
   <section><title>Invoking &odis;</title>
     <para>
       &odis; is invoked by issuing the command in the following format: 
@@ -13,17 +13,19 @@
       </para>
       <formalpara><title>The formatted listing</title>
         <para>The formatted listing - something like you'd get with the
-          <command>l</command> option with most assemblers, goes to
+          <command>-l</command> option with most assemblers, goes to
           the standard output path.  If you invoke &odis; with no
           redirection ( "> something"), the output will go to the screen,
           or wherever normal output would go.  This holds true if the
           <command>-g</command> option is invoked.  The output for this
-          goes to the same place as the regular listing would go.
+          goes to the same place as the regular listing would go.  To
+          get no listing, redirect output to <command>/dev/null</command>
+          or whatever the "bit bucket" for your system is.
         </para>
       </formalpara>
       <formalpara><title>The assembly source file</title>
         <para>The assembly source file, the one that would be used to
-          generate the binary, is not produced unless the <command>o
+          generate the binary, is not produced unless the <command>-o
           </command>option is used.  This is because normally, several
           invocations of &odis; will probably be called before there will
           be any interest in the source file.
@@ -36,7 +38,7 @@
         </para>
       </formalpara>
     </section>
-    <section><title>Options Used by &odis;</title>
+    <section id="cmdoptions"><title>Options Used by &odis;</title>
       <para>&odis; uses the following options. Some of these options will
         be more fully explained later.  The options cannot be grouped, and must
         be preceded by a minus sign (-).
@@ -48,17 +50,29 @@
               <entry><command>c[=]&lt;command-file&gt;</command></entry>
               <entry>Use &lt;command-file&gt; for disassembly commands.  This
                 is the only option that cannot be specified in the command file
-                (which would be itself).
+                (which would be itself).  Only one <computeroutput>command
+                file</computeroutput> is accepted - the first one encountered.
+                Any subsequent <command>-c</command> options encountered are
+                ignored - with an error message to the <computeroutput>standard
+                error</computeroutput> path.
               </entry>
             </row>
             <row>
               <entry><command>s[=]&lt;label-file&gt;</command></entry>
-              <entry>Use &lt;label-file&gt; for label assignments</entry>
+              <entry>Use &lt;label-file&gt; for label assignments.  More than
+                one label file can be specified, and these will be read one
+                after the other, in order that they are entered.
+              </entry>
             </row>
             <row>
               <entry><command>o[=]&lt;asm-source-filename&gt;</command></entry>
               <entry>Output assembly source code to filename (off by
                 default)
+              </entry>
+            </row>
+            <row>
+              <entry><command>r</command></entry>
+              <entry>Disassemble a <computeroutput>ROF</computeroutput> file.
               </entry>
             </row>
             <row>
@@ -75,7 +89,7 @@
             </row>
             <row>
               <entry><command>pd[=]&lt;pagedepth&gt;</command></entry>
-              <entry>Set page deptth for listing output (Default=80)</entry>
+              <entry>Set page depth for listing output (Default=80)</entry>
             </row>
             <row>
               <entry><command>d</command></entry>
@@ -115,7 +129,9 @@
       </informaltable>
       <para>Most of the above command options are self-explanatory. Briefly,
         you can (and ought to) use a single <filename>command file</filename>.
-        This file provides all the disassembly details. It defines the class by
+        This file provides all the disassembly details.  Any of the above
+        commands (except for the <command>c</command> can be embedded in
+        the <filename>command file</filename>.  It defines the class by
         which a label is defined at a given location, it defines data
         (non-code) regions in the program, and also can specify command-line
         options whereby you are not required to insert them on the command line
@@ -130,7 +146,7 @@
     </section>
     <section id="gmode"><title>Option "g" not good for general printouts</title>
       <para>
-        It should be noted that the option <literal>-g</literal> is not
+        It should be noted that the option <command>-g</command> is not
         really ideal for general printouts.  It uses tabs and there are
         disadvantages for this.
         <itemizedlist>
@@ -140,25 +156,26 @@
         </itemizedlist>
       </para>
       <para>The real purpose for this option is to output a listing that
-        can be interpreted by <literal>g09dis</literal>.  It was decided that
-        <literal>g09dis</literal> would use tabs to be the field delimiter
+        can be interpreted by <command>g09dis</command>.  It was decided that
+        <command>g09dis</command> would use tabs to be the field delimiter
         rather than trying to keep up with column widths in the listing
-        printout.  Therefore, <literal>g09dis</literal> <emphasis>
+        printout.  Therefore, <command>g09dis</command> <emphasis>
         must</emphasis> use this specially formatted file.  It cannot even load
         a standard space-formatted listing.
       </para>
-      <para><literal>G09dis</literal> can load files in one of two ways,
-        either by running &odis; separately with the <literal>-g</literal>
+      <para><command>G09dis</command> can load files in one of two ways,
+        either by running &odis; separately with the <command>-g</command>
         option and loading that file, or by generating the file directly
-        from within <literal>g09dis</literal> itself.
+        from within <command>g09dis</command> itself.
       </para>
     </section>
   </section>
-  <section><title>The command file</title>
-     <para>If you simply issue the command <computeroutput>os9disasm
-       &lt;programfile&gt;</computeroutput> on a program file, the resultant
-       code generated <emphasis>should</emphasis> assemble back into an
-       identical module or program file as that from which it was disassembled.
+  <section id="cmdfile"><title>The command file</title>
+     <para>If you simply issue the command <command>os9disasm
+       &lt;programfile&gt;</command> on a program file, the resultant
+       code that it would generate <emphasis>should</emphasis> assemble back
+       into an identical module or program file as that from which it was
+       disassembled.
      </para>
      <para>However, in this form, the source might not be very intelligible in
        places. Without some direction, &odis; blindly disassembles all byte
@@ -209,7 +226,6 @@
                  </para>
                </entry>
              </row>
-           </tbody>
              <row>
                <entry><command>W</command></entry>
                <entry><command>Word data</command>
@@ -251,6 +267,7 @@
                  </para>
                </entry>
              </row>
+           </tbody>
          </tgroup>
        </informaltable>
        <para>These Data bounds are further described in <xref
@@ -311,9 +328,9 @@
           instructions
         </para>
         <programlisting>
-          LDA &lt;$10   (direct)
-          LDA &gt;$0010  (extended)
-          BRA $0010      (relative),
+          LDA &lt;$10     (direct)
+          LDA &gt;$0010   (extended)
+          BRA $0010    (relative),
         </programlisting>
         <para>All seem to refer to the same address <command>$0010</command>,
           but in fact refer to three different memory locations. The direct
@@ -734,7 +751,7 @@
        ASCII data areas are those which contain ASCII characters, and should be
        disassembled using <command>FCC</command> or <command>FCS</command>
        statements, if possible. Graphic ASCII characters are collected together
-       and output in <command>FCC</command> or <command>FCS</command>i
+       and output in <command>FCC</command> or <command>FCS</command>
        statements, with a double quote (") delimiter as the preferred
        delimiter, but a delimiter will be chosen such that it does not occur in
        the string.  The <command>FCS</command> statement

@@ -1,20 +1,20 @@
-/*############################################################################
-#
-#  os9disasm - OS9-6809 CROSS DISASSEMBLER 
-#             following the example of Dynamite+
-#             
-# # ######################################################################## #
-#
-#  $Id$
-#                                                                            #
-#  Edition History:                                                          #
-#  #  Date       Comments                                              by    #
-#  -- ---------- -------------------------------------------------     ---   #
-#  01 2003/01/31 First began project                                   dlb   #
-##############################################################################
-# File:  dprint.c                                                            #
-# Purpose: handle printing and output function                               #
-############################################################################*/
+/************************************************************************** *
+*                                                                           *
+*  os9disasm - OS9-6809 CROSS DISASSEMBLER                                  *
+*             following the example of Dynamite+                            *
+*                                                                           *
+* ************************************************************************* *
+*                                                                           *
+*  $Id$                              *
+*                                                                           *
+*  Edition History:                                                         *
+*  *  Date       Comments                                              by   *
+*  -- ---------- -------------------------------------------------     ---  *
+*  01 2003/01/31 First began project                                   dlb  *
+*************************************************************************** *
+* File:  dprint.c                                                           *
+* Purpose: handle printing and output function                              *
+*************************************************************************** */
 
 #include "odis.h"
 #include <time.h>
@@ -554,9 +554,9 @@ ROFDataPrint ()
     InProg = 0;
     memset (pbuf, 0, sizeof (struct printbuf));
 
-    /* We compute dattyp for flexibility.  If we change the label types,
-     * all we have to do is change it in rof_class() and it should work
-     * everywhere rather than hard-coding the classes here
+    /* We compute dattyp for flexibility.  If we change the label type
+     * specification all we have to do is change it in rof_class() and it
+     * should work here automatically rather than hard-coding the classes
      */
 
     dattyp[4] = '\0';
