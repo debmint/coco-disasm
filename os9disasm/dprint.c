@@ -568,7 +568,8 @@ ROFDataPrint ()
 
     for ( vs = 0; vs <= 1; vs++)    /* Cycle through DP, non-dp */
     {
-        if ((ListRoot (dattyp[0]) || ListRoot (dattyp[1])))
+        //if ((ListRoot (dattyp[0]) || ListRoot (dattyp[1])))
+        if ((thissz[0]) || thissz[1])
         {
             strcpy (pbuf->mnem, "vsect");
 
@@ -591,10 +592,10 @@ ROFDataPrint ()
             {
                 dta = ListRoot (dattyp[isinit]);
 
+                sprintf (mytmp, dptell[isinit], dattyp[isinit]);
+
                 if (dta)
                 {
-                    sprintf (mytmp, dptell[isinit], dattyp[isinit]);
-
                     /* for PrintNonCmd(), send isinit so that a pre-blank line
                      * is not printed, since it is provided by PrinLine above
                      */
@@ -630,6 +631,17 @@ ROFDataPrint ()
                     else
                     {
                         ListInitROF (dta, thissz[isinit], vs, dattyp[isinit]);
+                    }
+                }           /* end "if (dta)" */
+                else        /* else no labels.. check to see */
+                {           /* if any "hidden" variables */
+                    if (thissz[isinit])
+                    {
+                        PrintNonCmd (mytmp, isinit, 1);
+                        strcpy (pbuf->mnem, "rmb");
+                        sprintf (pbuf->operand, "%d", thissz[isinit]);
+                        PrintLine (realcmd, pbuf, dattyp[isinit], 0,
+                                                    0);
                     }
                 }
             }
