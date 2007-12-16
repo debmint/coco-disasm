@@ -496,9 +496,10 @@ addlbl (int loc, char C)
         exit (errno);
     }
 
-    strncpy (me->sname, &C, 1);
+    sprintf (me->sname, "%c%04x", C, loc & 0xffff);
+    /*strncpy (me->sname, &C, 1);
     sprintf (tmplbl, "%04x", loc & 0xffff);
-    strncat (me->sname, tmplbl, 4);
+    strncat (me->sname, tmplbl, 4);*/
     
     me->myaddr = loc;
 

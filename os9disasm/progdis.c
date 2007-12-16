@@ -450,7 +450,42 @@ regput (int pbyte, char *op1)
         {
             sprintf (pbuf->opcod, opfmt[bofst], pbuf->opcod,
                                                 ofst & bytmsk[bofst]);
-            if (Pass2)
+            if (myref->Extrn)
+            {
+                if (Pass2)
+                {
+                    strcpy (op1, myref->name);
+                }
+            }
+            else
+            {
+                if (ClasHere (LAdds[AMode], CmdEnt))
+                {
+                    LblCalc (op1, ofst, AMode);
+                }
+                else
+                {
+                    if (Pass2)
+                    {
+                        nl = FindLbl (ListRoot (rof_class (myref->Type)), ofst);
+
+                        if (nl)
+                        {
+                            strcpy (op1, nl->sname);
+                        }
+                    }
+                    else
+                    {
+                        addlbl (ofst, rof_class (myref->Type));
+                    }
+                }
+
+            }
+
+            /* I believe the above logic is the same as the commented-
+             * out logic below
+             */
+        /*    if (Pass2)
             {
                 if (myref->Extrn)
                 {
@@ -458,54 +493,65 @@ regput (int pbyte, char *op1)
                 }
                 else
                 {
-                    nl = FindLbl (ListRoot (rof_class (myref->Type)), ofst);
+                    LblCalc (op1, ofst, AMode);
+        //            nl = FindLbl (ListRoot (rof_class (myref->Type)), ofst);
 
-                    if (nl)
-                    {
-                        strcpy (op1, nl->sname);
-                        //strcpy (op1, myref->name);
-                    }
+        //            if (nl)
+        //            {
+          //              strcpy (op1, nl->sname);
+           //         }
                 }
             }
             else
             {
                 if (!myref->Extrn)
                 {
-                    addlbl (ofst, rof_class (myref->Type));
+                    //addlbl (ofst, rof_class (myref->Type));
+                    LblCalc (op1, ofst, AMode);
                 }
-            }
+            }*/
 
             return;
         }
     }
  
+    *op1 = '\0';
+
     if (pbyte & 1)
     {
         if ((ofst < 0x80) && (ofst >= -128))
         {
             strcpy (op1, ">");
         }
-        else
-        {
-            *op1 = '\0';
-        }
 
         sprintf (tmp, "%04x", ofst & 0xffff);
     }
-    else
-    {
+    else        /* If 8-bit, always specify short mode for pcr indexing */
+    {           /* Some assemblers don't automatically do 8-bit mode    */
+                /* for PCR indexing                                     */
+
+        if (pbyte & 4)              /* PCR indexed */
+        {
+            strcpy (op1, "<");
+        }
+
         sprintf (tmp, "%02x", ofst & 0xff);
     }
 
     strcat (pbuf->opcod, tmp);
 
-/*    if (IsROF)
+    /* Hmmm...  I think the program _seemed to work without this *
+     * "if", but not after the above change..  However, by the   *
+     * time we get here, I think all references are exhausted    *
+     * and all that's left is strictly a numeric value for ROF's */
+
+/*    if (IsROF && (AMode != AM_REL))
     {
-        sprintf (op1, "%s%04x", op1, ofst);
+        sprintf (op1, "%s%d", op1, ofst);
     }
     else {*/
         LblCalc (op1, ofst, AMode);
-    /*}*/
+/*    }*/
 }
 
 static int
@@ -539,7 +585,6 @@ TxIdx ()
 
             if (!(myval = rof_lblref (&destval))) {
                 destval = o9_fgetword (progpath);
-
             }
 
             if (Pass2)
@@ -608,7 +653,13 @@ TxIdx ()
                 sbit -= 0x10;   /* sbit is now a signed integer */
             }
             
-            if (IsROF)
+            /* The logic for the below:  rma, at least, will not assemble *
+             * any label reference into 5-bit mode.  Probably it would    *
+             * suffice to simply say "if (IsROF)", but we'll leave the    *
+             * option open for the off-chance that an offset assignment   *
+             * would work somewhere                                       */
+
+            if (IsROF && !(ClasHere (LAdds[AMode], CmdEnt)))
             {       /* Don't think that 5-bit mode will occur for labels */
                 sprintf (pbuf->operand, "%s%d,%c", pbuf->operand, sbit, regNam);
             }

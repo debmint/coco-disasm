@@ -546,6 +546,39 @@ rof_find_asc (struct asc_data *tree, int entry)
 }
 
 /* ******************************************************** *
+ * rof_datasize() - returns the end of rof data area       *
+ * Passed: Label Class letter to search                     *
+ * Returns: size of this data area                          *
+ *          If not a data area, returns 0                   *
+ * ******************************************************** */
+
+int
+rof_datasize (char class)
+{
+    int dsize;
+
+    switch (class)
+    {
+        case 'D':
+            dsize = rofptr->udpsz;
+            break;
+        case 'H':
+            dsize = rofptr->idpsz;
+            break;
+        case 'B':
+            dsize = rofptr->udatsz;
+            break;
+        case 'G':
+            dsize = rofptr->idatsz;
+            break;
+        default:
+            dsize = 0;
+    }
+
+    return dsize;
+}
+
+/* ******************************************************** *
  * DataDoBlock - Process a block composed of an initialized *
  *               reference from a data area                 *
  * Passed: struct rof_extrn *mylist - pointer to tree       *

@@ -617,15 +617,13 @@ ROFDataPrint ()
                                                   srch->myaddr);
                     }
 
-                    /* Note: We'll need to do something different for
-                     * init data - but try to get it to work for now */
-
                     /* For max value, send a large value so ListData
                      * will print all for class
                      */
 
                     if (!isinit)
                     {
+                        ModData = thissz[isinit];
                         ListData (dta, thissz[isinit]);
                     }
                     else
@@ -729,18 +727,21 @@ ListData (struct nlist *me, int upadr)
         ListData (me->LNext, me->myaddr);
     }
 
+    /* Don't print non-data elements here */
+
+    if (me->myaddr > ModData)
+    {
+        return;
+    }
+
     /* Now we've come back, print this entry */
+    
     strcpy (pbf->lbnm, me->sname);
 
     if (IsROF && me->global)
     {
         strcat (pbf->lbnm, ":");
     }
-
-    if (me->myaddr != ModData)
-        strcpy (pbf->mnem, "rmb");
-    else
-        strcpy (pbf->mnem, "equ");
 
     if (me->RNext)
     {
@@ -757,21 +758,38 @@ ListData (struct nlist *me, int upadr)
     }
     
     /* Don't print any class 'D' variables which are not in Data area */
+    /* Note, Don't think we'll get this far, we have a return up above,
+     * but keep this one till we know it works
+    
     if ((OSType == OS_9) && (me->myaddr > ModData))
     {
         return;
-    }
+    }*/
     
     if (me->myaddr != ModData)
+    {
+        strcpy (pbf->mnem, "rmb");
         sprintf (pbf->operand, "%d", datasize);
+    }
     else
-        strcpy (pbf->operand, ".");
+    {
+        if (IsROF)
+        {
+            strcpy (pbf->mnem, "rmb");
+            sprintf (pbf->operand, "%d", datasize);
+        }
+        else
+        {
+            strcpy (pbf->mnem, "equ");
+            strcpy (pbf->operand, ".");
+        }
+    }
 
     CmdEnt = me->myaddr;
     PrevEnt = CmdEnt;
     PrintLine (realcmd, pbf, 'D', me->myaddr, (me->myaddr + datasize));
 
-    if (me->RNext)
+    if (me->RNext && (me->myaddr < ModData))
     {
         ListData (me->RNext, upadr);
     }
@@ -801,6 +819,8 @@ WrtEquates (int stdflg)
 
     while ((NowClass = *(curnt++)) != ';')
     {
+        int minval;
+
         flg = stdflg;
         strcpy (ClsHd, "%5d %21s");
         
@@ -819,18 +839,18 @@ WrtEquates (int stdflg)
                  * What we're doing is positioning me to
                  * last real data element*/
                 
-                if (!(me = FindLbl (me, ModData)))
+               /* if (!(me = FindLbl (me, ModData)))
                 {
                     continue;
-                }
+                }*/
             }
 
             /* Don't write vsect data for ROF's */
 
-            if ((IsROF) && index ("BDGH", NowClass))
+/*            if ((IsROF) && stdflg && index ("BDGH", NowClass))
             {
                 continue;
-            }
+            }*/
             
             switch (NowClass)
             {
@@ -850,7 +870,27 @@ WrtEquates (int stdflg)
             }
 
             HadWrote = 0;       /* flag header not written */
-            TellLabels (me, flg, NowClass);
+
+            /* Determine minimum value for printing */
+
+            minval = 0;     /* Default to "print all" */
+
+            if (OSType == OS_9)
+            {
+                if (IsROF)
+                {
+                    minval = rof_datasize (NowClass);
+                }
+                else
+                {
+                    if (NowClass == 'D')
+                    {
+                        minval = ModData;
+                    }
+                }
+            }
+
+            TellLabels (me, flg, NowClass, minval);
         }
     }
 
@@ -860,7 +900,7 @@ WrtEquates (int stdflg)
 /* TellLabels(me) - Print out the labels for class in "me" tree */
 
 void
-TellLabels (struct nlist *me, int flg, char class)
+TellLabels (struct nlist *me, int flg, char class, int minval)
 {
     struct printbuf PBF, *pb = &PBF;
 
@@ -868,14 +908,15 @@ TellLabels (struct nlist *me, int flg, char class)
 
     if (me->LNext)
     {
-        TellLabels (me->LNext, flg, class);
+        TellLabels (me->LNext, flg, class, minval);
     }
 
     if ((flg < 0) || (flg == me->stdnam))
     {
         /* Don't print real OS9 Data variables here */
 
-        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr <= ModData)))
+        if (me->myaddr > minval)
+/*        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr <= ModData)))*/
         {
             if (!HadWrote)
             {
@@ -900,6 +941,6 @@ TellLabels (struct nlist *me, int flg, char class)
 
     if (me->RNext)
     {
-        TellLabels (me->RNext, flg,class);
+        TellLabels (me->RNext, flg, class, minval);
     }
 }
