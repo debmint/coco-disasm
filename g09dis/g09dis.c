@@ -2,7 +2,7 @@
  * g09dis.c - GTK frontend for os9disasm. *
  * ************************************** */
 
-/* Id:$ */
+/* $Id$ */
 
 #define MAIN
 #define WWIDTH 750

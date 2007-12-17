@@ -3,7 +3,7 @@
  * This version is based upon GtkActionEntry and GUIManager *
  * ******************************************************** */
 
-/* Id:$ */
+/* $Id$ */
 
 #include <stdlib.h>
 #include <string.h>
