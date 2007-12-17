@@ -189,33 +189,36 @@
       '(' [ '*' ] [ ('+'| '-' ) &lt;class&gt; &lt;value&gt; ] ')'
     </screen>
     <para>The offset specification, if used, starts with a left parenthesis.
-      If a program counter offset is to be used, an asterisk must come next. If a
-      constant offset is to be used, then a plus sign or a minus sign must
+      If a program counter offset is to be used, an asterisk must come next. If
+      a constant offset is to be used, then a plus sign or a minus sign must
       follow, indicating that the operand is disassembled as
-      <command>LABEL+VALUE</command> or <command>LABEL-VALUE</command>. The label
-      class to be used in generating the offset value comes next. Remember that
-      this is not necessarily the same as the label class used in generating the
-      actual value. The final part for a constant offset is the actual value.
-      This should be a hexadecimal number, even if the decimal label class is
-      specified. A right parenthesis ends the entire optional offset.
+      <command>LABEL+VALUE</command> or <command>LABEL-VALUE</command>. The
+      label class to be used in generating the offset value comes next.
+      Remember that this is not necessarily the same as the label class used in
+      generating the actual value. The final part for a constant offset is the
+      actual value.  This should be a hexadecimal number, even if the decimal
+      label class is specified. A right parenthesis ends the entire optional
+      offset.
     </para>
     <para>The &lt;<literal>range</literal>&gt; specifies the range of
       addresses in which the specification is to take effect. This can take one
       of three forms. First, no range may be specified, in which case, the
-      specification is to be applied globally within the program. Second,a single
-      hexadecimal address indicates that the specification is to be applied to a
-      single instruction only. In this case, the address should be that of the
-      first byte of the instruction.  Finally, two hexadecimal addresses
-      separated by a minus sign (<literal>&lt;addr&gt;-&lt;addr&gt;</literal>)
-      indicates that the specification is to be applied to all instructions
-      within the indicated address range which have the proper addressing mode.
-      </para> <para>Below are some examples of label addressing mode
-      specification lines, along with example disassembed lines for each
-      specification:
+      specification is to be applied globally within the program. Second,a
+      single hexadecimal address indicates that the specification is to be
+      applied to a single instruction only. In this case, the address should be
+      that of the first byte of the instruction.  Finally, two hexadecimal
+      addresses separated by a minus sign
+      (<literal>&lt;addr&gt;-&lt;addr&gt;</literal>) indicates that the
+      specification is to be applied to all instructions within the indicated
+      address range which have the proper addressing mode.  </para> <para>Below
+      are some examples of label addressing mode specification lines, along
+      with example disassembed lines for each specification:
     </para>
     <note>
-      <para>Spacing is not critical in any of these, although at least one space
-        (or tab) is required between each field in a single command.  In the
+      <para>Spacing is not critical in any of these.  It's possible to jumble
+        together a complete command with no spaces at all, although it might
+        make the command more readable to space them out.  Of course, a single
+        numeric value may not have any spaces between the characters.  In the
         case of the class and offset, you can merge them together or separate
         them.  Also note that all addresses <emphasis>MUST</emphasis> be in
         hexadecimal.
@@ -274,8 +277,8 @@
     </informaltable>
     <para>The default label class for each addressing mode depends on the
       object code format chosen. For the OS/9 and Motorola formats (options
-      <computeroutput>MO</computeroutput> or <computeroutput>MM</computeroutput>)
-      these are
+      <computeroutput>MO</computeroutput> or
+      <computeroutput>MM</computeroutput>) these are
     </para>
     <para><simplelist type="horiz">
       <member><command>&gt; #1 @ ; D @ ; #X @ ; #Y @ ; #U @ ; #S X
@@ -285,9 +288,9 @@
     </simplelist></para>
     <para>Note that the <computeroutput>U</computeroutput> indexed and direct
       page addressing modes are assigned to the same label class. This reflects
-      the standard usage of the <computeroutput>U</computeroutput> register under
-      the OS/9 operating system, in which <computeroutput>U</computeroutput>
-      points to the start of the data area.
+      the standard usage of the <computeroutput>U</computeroutput> register
+      under the OS/9 operating system, in which
+      <computeroutput>U</computeroutput> points to the start of the data area.
     </para>
     <note>
       <para>For <literal>OS9</literal> programs compiled by the C compiler,
@@ -296,23 +299,23 @@
      <screen><command>&gt; Y D</command>,</screen>
      <para>and do it early in the command file.  This will set
        <literal>Y</literal> addressing class to <literal>D</literal> globally.
-       The addressing mode of <literal>Y </literal> references can still be set
-       to something else for isolated instances in the program.  It is desirable
-       to set <command>Y</command> addressing class to this because the C
-       compiler uses the <command>Y</command> register for the data area rather
-       than the <command>U</command> register.  It is good in this case, also,
-       to globally change the <command>U</command> addressing mode to something
-       else, since it's obvious that the <command>U</command> register will not
-       be used for data refs.
+       The addressing mode of <literal>Y </literal> references can still be
+       set to something else for isolated instances in the program.  It is
+       desirable to set <command>Y</command> addressing class to this because
+       the C compiler uses the <command>Y</command> register for the data area
+       rather than the <command>U</command> register.  It is good in this case,
+       also, to globally change the <command>U</command> addressing mode to
+       something else, since it's obvious that the <command>U</command>
+       register will not be used for data refs.
      </para>
     </note>
     <para>Programs assembled under <computeroutput>CoCo DOS</computeroutput> or
       <computeroutput>FLEX</computeroutput> are not usually written to be
-      position independent, and are written to run at a specific address, so the
-      default label classes for the <computeroutput>CoCo DOS</computeroutput> and
-      <computeroutput>Flex</computeroutput> formats (options
-      <computeroutput>MC</computeroutput> or
-    <computeroutput>MF</computeroutput>) are
+      position independent, and are written to run at a specific address, so
+      the default label classes for the <computeroutput>CoCo
+      DOS</computeroutput> and <computeroutput>Flex</computeroutput> formats
+      (options <computeroutput>MC</computeroutput> or
+      <computeroutput>MF</computeroutput>) are
     </para>
     <para><simplelist type="horiz">
     <member><command>&gt; #1 @ ; #D @ ; #X L ; #Y L ; #U L ; #S L
@@ -321,19 +324,19 @@
     </command></member>
     </simplelist></para>
     <para>&odis; uses the global label class for the relative addressing mode
-      when generating symbols which are placed in the label field of disassembled
-      program code. By default, this is label class
+      when generating symbols which are placed in the label field of
+      disassembled program code. By default, this is label class
       <computeroutput>L</computeroutput>. To change the label class used for
       these internal program labels, a label addressing mode line specifying a
       global range label assignment to the relative addressing mode should be
       used. For instance, the line '<computeroutput>&gt; R S</computeroutput>'
       would force &odis; to use label class <computeroutput>S</computeroutput>
-      labels as internal program labels. For this change to occur, though, there
-      must be no range specification in the line (global range). It is also
-      possible, if somewhat useless, to turn off the generation of internal
-      program labels by globally assigning a data label class to the relative
-      addressing mode globally, e.g.  '<computeroutput>&gt; R
-      $</computeroutput>'.
+      labels as internal program labels. For this change to occur, though,
+      there must be no range specification in the line (global range). It is
+      also possible, if somewhat useless, to turn off the generation of
+      internal program labels by globally assigning a data label class to the
+      relative addressing mode globally, e.g.
+      '<computeroutput>&gt; R $</computeroutput>'.
     </para>
     <para>Finally, if in OS/9 object mode (option
       <computeroutput>MO</computeroutput>), and if a data area is to be
@@ -346,6 +349,20 @@
       manner as that used to modify the default mode for internal program
       labels.
     </para>
+    <section id="5-bitrof"><title>5-bit indexed mode with ROF files </title>
+      <para>When disassembling ROF files, five-bit indexed mode disassembles
+        as class <computeroutput>&amp;</computeroutput> mode, unless specified
+        otherwise.  This should be the case, as <command>rma</command> will
+        not assemble refrences to anything in this mode.  This is the correct
+        behavior, since it's not known what value the data area or program
+        location will have when linked.  You can, however, always specify
+        any label class or offsets for that location.
+      </para>
+      <para>For more information regarding <computeroutput>label classes
+        </computeroutput> see <xref linkend="lclassdefined"/>, and
+        <xref linkend="offsets"/> for info on offsets.
+      </para>
+    </section>
   </section>
   <section id="dataaddr">
     <title>Data Area Boundary Specification Command Line</title>
@@ -448,8 +465,8 @@
     </para>
     <note>
       <para>Spacing, again, here, is not critical.  Just be sure at least one
-        whitespace follows a numeric field (ranges don't matter). Colons can
-        have have spaces or not.
+        whitespace follows a numeric field (ranges don't matter). Semicolons
+        can have have spaces or not.
       </para>
       <para>
         <command>Be sure to express all values in hexadecimal!</command>
@@ -527,18 +544,18 @@
     <para>Some points become clear when examining such a line with a repeat
      count. First, if a repeat count is used, then the ranges of all individual
      specifications within the line may not use any absolute addresses. The
-     starting address may use only the null form, and the ending address may only
-     use the null form or the '<computeroutput>/length</computeroutput>' form.
-     Second, some method is required to specify the actual address at which the
-     specifications are to be applied. This is where the
-     <computeroutput>C</computeroutput>, or <literal>Code</literal>, 'data' type
-     is useful. The table address may be supplied by preceding the table
+     starting address may use only the null form, and the ending address may
+     only use the null form or the '<computeroutput>/length</computeroutput>'
+     form.  Second, some method is required to specify the actual address at
+     which the specifications are to be applied. This is where the
+     <computeroutput>C</computeroutput>, or <literal>Code</literal>, 'data'
+     type is useful. The table address may be supplied by preceding the table
      specification line with a line declaring the byte just before the table as
      code. The address can also be supplied by splitting up the specifications
      into two lines, the first of which declares the first entry at a certain
      address, the second of which declares the remainder of the table. Thus, if
-     the table under consideration starts at address $1000, the specification may
-     take the form:
+     the table under consideration starts at address $1000, the specification
+     may take the form:
     </para>
     <para><computeroutput>
      C 0FFF      25 S &amp; ; A /3 ; L L (*)
@@ -738,6 +755,14 @@
         these label files over and study them before defining label classes,
         keeping in mind which of these files you will be using.
       </simpara>
+      <formalpara><title>Usage of the ROF Data Classes</title>
+        Note that ROF disassembly can use up to four Label classes for the
+        data areas.  It's somewhat needful that the init/uninit/ areas in
+        each vsect be kept separate, since the ROF offsets begin at zero for
+        each.  However, in many cases, especially in utility and library
+        ROF's, not all areas are used.  Any classes not used by a straight
+        disassembly can be used for other usages.
+      </formalpara>
     <note><para>The following paragraph is not applicable at this time.
     </para></note>
     <para>Other files include <filename>MiniFlexlbl</filename> is the standard
@@ -790,140 +815,160 @@
         several others.  The name is <filename>miscosolbl</filename>.
       </para>
     </formalpara>
-  <section><title>Overriding Default Label Definitions</title>
-    <para>If you include these default files, but wish to give any of these 
-      values a different name, you can simply redefine them in a later label
-      definition.  The default label files are scanned first, then the
-      user-specified label files are scanned in the order in which they
-      are specified, beginning with the files named on the command line.  No
-      check is made when inserting a label def as to whether it's already
-      been defined or not - well, actually, &odis; has already defined this
-      label with its own definition (usually either class L, D, or X before
-      the label files are read.  Therefore, if a label is defined, and later
-      redefined, then this later definition is applied.
+    <section id="changelbl"><title>Overriding Default Label Definitions</title>
+      <para>If you include these default files, but wish to give any of these 
+        values a different name, you can simply redefine them in a later label
+        definition.  The default label files are scanned first, then the
+        user-specified label files are scanned in the order in which they
+        are specified, beginning with the files named on the command line.  No
+        check is made when inserting a label def as to whether it's already
+        been defined or not - well, actually, &odis; has already defined this
+        label with its own definition (usually either class L, D, or X before
+        the label files are read.  Therefore, if a label is defined, and later
+        redefined, then this later definition is applied.
+      </para>
+      <simpara>This will work if you create your own custom label files.  You
+        can override any of the "standard" label names in your custom file or
+        override your own custom definitions in subsequent files.
+      </simpara>
+    </section>
+  </section>
+  <section><title>Disassembly Particulars</title>
+    <para>&odis; is a two-pass disassembler. On the first pass, the object code
+      is searched for all label references, and they are classifled. As
+      detailed under other sections, the production of labels is governed by
+      the use of label classes assigned to addressing modes. With this ability,
+      it is possible to generate every label in the program. For instance,
+      there are times when immediate loads of the <literal>X register</literal>
+      should be disassembled as data, and times when they should be
+      disassembled as labels.  Proper adjustment of label classes to the
+      <literal>immediate X addressing mode</literal> will separate the data
+      loads from the true label loads.
     </para>
-    <simpara>This will work if you create your own custom label files.  You can
-      override any of the "standard" label names in your custom file or
-      override your own custom definitions in subsequent files.
+    <simpara>After the first pass is completed and all labels are identified
+      and clasified, all label files are read and values are assigned. One
+      caveat is that no check is made to determine if a label has already been
+      assigned a standard label name. If a name has been given to a certain
+      label in a class, if this is redefined later in the same or a subsequent
+      label file, then that name is replaced by the latter.
     </simpara>
-  </section>
- </section>
- <section><title>Disassembly Particulars</title>
-  <para>&odis; is a two-pass disassembler. On the first pass, the object
-    code is searched for all label references, and they are classifled. As
-    detailed under other sections, the production of labels is governed by the
-    use of label classes assigned to addressing modes. With this ability, it is
-    possible to generate every label in the program. For instance, there are
-    times when immediate loads of the <literal>X register</literal> should be
-    disassembled as data, and times when they should be disassembled as labels.
-    Proper adjustment of label classes to the <literal>immediate X addressing
-    mode</literal> will separate the data loads from the true label loads.
-  </para>
-  <simpara>After the first pass is completed and all labels are identified and
-    clasified, all label files are read and values are assigned. One caveat is
-    that no check is made to determine if a label has already been assigned a
-    standard label name. If a name has been given to a certain label in a class,
-    if this is refined later in the same or a subsequent label file, then that
-    name is replaced by the latter.
-  </simpara>
-  <simpara>The second pass creates the actual disassembly code, both the disk
-    file and the output listing.
-  </simpara>
-  <para>The code produced by &odis; should always reassemble into code which
-    is identical with the original source file<footnote><simpara>Once in a
-    while, it won't come out exactly the same.  On occasion, a given assembler
-    won't generate exactly the same mode, although, unless something is wrong
-    with one of the assemblers, the code will do the same
-    thing.</simpara></footnote> Some addressing modes, though, can generate
-    either 8 bit references or 16 bit references, especially on the 6809. To
-    ensure that such references will assemble to code with the same reference
-    bit length, &odis; will generate forced addressing when required to produce
-    the code being disassembled.  Some assemblers don't always generate the
-    same result, however. This can be done only for the 6809, and is compatible
-    with the forced addressing method expected by many assemblers.
-  </para>
-  <para>The disassembly process depends, to some extent, on the object code
-    mode which is selected. When disassembling OS/9 code, &odis; expects the
-    file to begin with the nine byte long module header. Both the header ID
-    code or $87CD, and the header parity, must be present. Also, &odis; expects
-    the file to be at least as long as indicated by the length entry in the
-    header.  &odis; will generate both the <computeroutput>end</computeroutput>
-    and the <computeroutput>emod</computeroutput> statements for an OS/9
-    module. The module length and module name pointer variables in the header
-    will be disassembled as labels having the class assigned globally to the
-    relative addressing mode, which defaults to class L. The module type and
-    revision bytes will be disassembled as two digit hexadecimal numbers.
-  </para>
-  <para>For ROF files, &odis; checks that the first bytes are the sync bytes
-    ($62cd2387).  It generates <computeroutput>psect</computeroutput>,
-    <computeroutput>vsect</computeroutput>, and all <computeroutput>ends
-    </computeroutput> statements.
-  </para>
-  <para>&odis; will also check the top four bits of the type byte to
-    determine the module type, and thus determine whether the module header
-    should include the module entry point and the data area requirements. If
-    the module is type 1, 2, $C, $D , or $E, then &odis; will read the next
-    four bytes as part of the module header. The first two bytes will be
-    disassembled as a label having the same class as that used for the length
-    and name pointer words. The next two bytes are assumed to be the data area
-    requirements. If this is a nonzero value, it will be disassembled as a
-    label having the global direct page label class, which defaults to class
-    <computeroutput>D</computeroutput>. Also, if this is nonzero, &odis; will
-    generate the data area variables using <computeroutput>RMB</computeroutput>
-    statements instead of <computeroutput>EQU</computeroutput> statements. Any
-    variables having the same class as the data area size, and a value less
-    than that of the size, will be included in these
-    <computeroutput>RMB</computeroutput> definitions. &odis; will generate the
-    <computeroutput>EMOD</computeroutput> statement in its proper position. The
-    three byte CRC will not be checked, but will just be passed over. The
-    object code must not end before the <computeroutput>EMOD</computeroutput>
-    checksum, but can be longer if desired. &odis; will disassemble only a
-    single module per object file. Any code following the
-    <computeroutput>EMOD</computeroutput> is assumed to be non-module code.
-  </para>
-  <section><title>Particulars about RS Dos mode</title>
-    <para>There are no especially outstanding quirks regarding the RS Dos
-      mode.  You mainly need to go through and add several entries in the
-      <literal>command file</literal> to get the addressing modes the way
-      you like.  Many will need to be given the <literal>direct</literal>
-      class.  Of course, you'll need to be able to acces the
-      <command>cocolbl</command> file to get acceptable modes.
+    <simpara>The second pass creates the actual disassembly code, both the disk
+      file (if applicable) and the output listing.
+    </simpara>
+    <para>The code produced by &odis; should always reassemble into code which
+      is identical with the original source file
+      <footnote>
+        <simpara>Once in a while, it won't come out exactly the same.  On
+          occasion, a given assembler won't generate exactly the same mode,
+          although, unless something is wrong with one of the assemblers, the
+          code will do the same thing.
+        </simpara>
+      </footnote>
     </para>
-    <para>There is one quirk that needs to be noted.  The assemblers -
-      <command>edtasm</command>, at least - have a tendency to break up the
-      file into smaller load blocks.  Of course there will be a break where
-      a data segment appears in the midst of the program.
-    </para>
-    <para>In addition, I've noted where there are also breaks at random
-      places, even in the middle of a string.  If you find that after declaring
-      data boundaries, the disassembly stops short of the end and doesn't
-      include all the files, check to see that you haven't declared a boundary
-      overlapping a break.  The code could be fixed to allow for this, but it
-      may incur some extensive modifying.  This may be addressed later.  To
-      help in finding all the block addresses, A notice of the Load Address
-      and length is sent to <literal>stderr</literal> during the disassembly
-      process.  You can view this on the console, or redirect <literal>
-      stderr</literal> to a file for a permanent record.  Of course this
-      file will also contain any other error messages you get (hopefully
-      none of these>
-    </para>
-    <para>There is one quirk in the disassembly.  The source will build, but
-      it's a bit nontypical to normal programming.  If a program has an inline
-      data area, the load block ends and another begins.  Also, the data
-      area is not included in the program if a value is not assigned to
-      it.  Therefore, &odis; will not have any data to process to get the
-      proper <literal>fcb</literal>'s.  These addresses will be disassembled
-      in the following manner:
-    </para>
-    <para>
-      <programlisting>LABEL fcb *=&lt;number&gt;</programlisting>
-    </para>
-    <note><para>These will be generated <emphasis>after</emphasis> the
-      <literal>org</literal> statement.</para>
+    <formalpara><title>Forcing the addressing mode</title>
+      Some addressing modes, though, can generate either 8 bit references or 16
+      bit references, especially on the 6809. To ensure that such references
+      will assemble to code with the same reference bit length, &odis; will
+      generate forced addressing when required to produce the code being
+      disassembled.  Some assemblers don't always generate the same result,
+      however. This can be done only for the 6809, and is compatible with the
+      forced addressing method expected by many assemblers.
+    </formalpara>
+    <note>
+      <simpara>Actually, &odis; generates forced mode on all 8-bit
+        <computeroutput>pc relative</computeroutput> commands.
+      </simpara>
     </note>
-    <para>This is another thing that might be worked around, but for now,
-      hopefully this will suffice.
+    <para>The disassembly process depends, to some extent, on the object code
+      mode which is selected. When disassembling OS/9 code, &odis; automatically
+      tests the first two or four bytes, depending upon which type module it
+      is, to detect which type file it is, and to verify that the module is,
+      in fact, a valid module.  &odis; expects the
+      file to begin with a module header, the length depending upon the module
+      or ROF type.  &odis; will automatically detect whether the file is a
+      program module or an ROF file.
     </para>
+    <para>An OS9 program module begins with the 2-byte sync bytes - $87CD.
+      Also, &odis; expects the file to be at least as long as indicated by the
+      length entry in the header.  &odis; will generate both the
+      <computeroutput>end</computeroutput> and the
+      <computeroutput>emod</computeroutput> statements for an OS/9 module. The
+      module length and module name pointer variables in the header will be
+      disassembled as labels having the class assigned globally to the relative
+      addressing mode, which defaults to class L. The module type and revision
+      bytes will be disassembled as two digit hexadecimal numbers.
+    </para>
+    <para>For ROF files, &odis; checks that the first bytes are the sync bytes
+      ($62cd2387).  It generates <computeroutput>psect</computeroutput>,
+      <computeroutput>vsect</computeroutput>, and all <computeroutput>ends
+      </computeroutput> statements.
+    </para>
+    <para>&odis; will also check the top four bits of the type byte of a program
+      module to determine the module type, and thus determine whether the
+      module header should include the module entry point and the data area
+      requirements. If the module is type 1, 2, $C, $D , or $E, then &odis;
+      will read the next four bytes as part of the module header. The first two
+      bytes will be disassembled as a label having the same class as that used
+      for the length and name pointer words. The next two bytes are assumed to
+      be the data area requirements. If this is a nonzero value, it will be
+      disassembled as a label having the global direct page label class, which
+      defaults to class <computeroutput>D</computeroutput>. Also, if this is
+      nonzero, &odis; will generate the data area variables using
+      <computeroutput>RMB</computeroutput> statements instead of
+      <computeroutput>EQU</computeroutput> statements. Any variables having the
+      same class as the data area size, and a value less than that of the size,
+      will be included in these <computeroutput>RMB</computeroutput>
+      definitions.  &odis; will generate the
+      <computeroutput>EMOD</computeroutput> statement in its proper position.
+      The three byte CRC will not be checked, but will just be passed over. The
+      object code must not end before the <computeroutput>EMOD</computeroutput>
+      checksum, but can be longer if desired. &odis; will disassemble only a
+      single module per object file. Any code following the
+      <computeroutput>EMOD</computeroutput> is assumed to be non-module code.
+    </para>
+    <section><title>Particulars about RS Dos mode</title>
+      <para>There are no especially outstanding quirks regarding the RS Dos
+        mode.  You mainly need to go through and add several entries in the
+        <literal>command file</literal> to get the addressing modes the way
+        you like.  Many will need to be given the <literal>direct</literal>
+        class.  Of course, you'll need to be able to acces the
+        <command>cocolbl</command> file to get acceptable modes.
+      </para>
+      <para>There is one quirk that needs to be noted.  The assemblers -
+        <command>edtasm</command>, at least - have a tendency to break up the
+        file into smaller load blocks.  Of course there will be a break where
+        a data segment appears in the midst of the program.
+      </para>
+      <para>In addition, I've noted where there are also breaks at random
+        places, even in the middle of a string.  If you find that after declaring
+        data boundaries, the disassembly stops short of the end and doesn't
+        include all the files, check to see that you haven't declared a boundary
+        overlapping a break.  The code could be fixed to allow for this, but it
+        may incur some extensive modifying.  This may be addressed later.  To
+        help in finding all the block addresses, A notice of the Load Address
+        and length is sent to <literal>stderr</literal> during the disassembly
+        process.  You can view this on the console, or redirect <literal>
+        stderr</literal> to a file for a permanent record.  Of course this
+        file will also contain any other error messages you get (hopefully
+        none of these.
+      </para>
+      <para>There is one quirk in the disassembly.  The source will build, but
+        it's a bit nontypical to normal programming.  If a program has an inline
+        data area, the load block ends and another begins.  Also, the data
+        area is not included in the program if a value is not assigned to
+        it.  Therefore, &odis; will not have any data to process to get the
+        proper <literal>fcb</literal>'s.  These addresses will be disassembled
+        in the following manner:
+      </para>
+      <para>
+        <programlisting>LABEL fcb *=&lt;number&gt;</programlisting>
+      </para>
+      <note><para>These will be generated <emphasis>after</emphasis> the
+        <literal>org</literal> statement.</para>
+      </note>
+      <para>This is another thing that might be worked around, but for now,
+        hopefully this will suffice.
+      </para>
+    </section>
   </section>
- </section>
 </section>

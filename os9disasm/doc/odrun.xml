@@ -70,11 +70,11 @@
                 default)
               </entry>
             </row>
-            <row>
+            <!--<row>
               <entry><command>r</command></entry>
               <entry>Disassemble a <computeroutput>ROF</computeroutput> file.
               </entry>
-            </row>
+            </row>-->
             <row>
               <entry><command>ls</command></entry>
               <entry>Generate short (6-char) labels (Default is 8 chars)</entry>
