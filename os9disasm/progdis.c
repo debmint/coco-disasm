@@ -101,15 +101,18 @@ MovBytes (struct databndaries *db)
             
             strcat (pbuf->operand, tmps);
             
-            if (strlen (pbuf->operand) > 22)
+            if ((strlen (pbuf->operand) > 22) ||
+                    (FindLbl (ListRoot ('L'), Pc + PBytSiz)))
             {
                 strcpy (pbuf->mnem, PBytSiz == 1 ? "fcb" : "fdb");
                 PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc + PBytSiz);
                 CmdEnt = Pc + PBytSiz;
             }
         }
+
         Pc += PBytSiz;
     }
+    
     if (strlen (pbuf->operand))
     {
         strcpy (pbuf->mnem, PBytSiz == 1 ? "fcb" : "fdb");

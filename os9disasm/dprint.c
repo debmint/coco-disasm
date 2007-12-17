@@ -871,7 +871,9 @@ WrtEquates (int stdflg)
 
             HadWrote = 0;       /* flag header not written */
 
-            /* Determine minimum value for printing */
+            /* Determine minimum value for printing *
+             * minval will be the first value to    *
+             * print                                */
 
             minval = 0;     /* Default to "print all" */
 
@@ -879,13 +881,19 @@ WrtEquates (int stdflg)
             {
                 if (IsROF)
                 {
-                    minval = rof_datasize (NowClass);
+                    minval = rof_datasize (NowClass) + 1;
                 }
                 else
                 {
                     if (NowClass == 'D')
                     {
-                        minval = ModData;
+                        minval = ModData + 1;
+                    }
+                    else {
+                        if (NowClass == 'L')
+                        {
+                            minval = ModSiz + 1;
+                        }
                     }
                 }
             }
@@ -915,7 +923,7 @@ TellLabels (struct nlist *me, int flg, char class, int minval)
     {
         /* Don't print real OS9 Data variables here */
 
-        if (me->myaddr > minval)
+        if (me->myaddr >= minval)
 /*        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr <= ModData)))*/
         {
             if (!HadWrote)
@@ -933,7 +941,16 @@ TellLabels (struct nlist *me, int flg, char class, int minval)
     
             strcpy (pb->lbnm, me->sname);
             strcpy (pb->mnem, "equ");
-            sprintf (pb->operand, "$%04x", me->myaddr);
+
+            if (index ("!^", class))
+            {
+                sprintf (pb->operand, "$%02x", me->myaddr);
+            }
+            else
+            {
+                sprintf (pb->operand, "$%04x", me->myaddr);
+            }
+
             CmdEnt = PrevEnt = me->myaddr;
             PrintLine (realcmd, pb, class, me->myaddr, me->myaddr + 1);
         }

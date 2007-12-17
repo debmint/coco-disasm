@@ -280,11 +280,42 @@ pass1 ()
 
     switch (OSType)
     {
+        int firstword;
+
         case OS_Coco:
             rsdoshdr ();
             break;
         default:   /* default is OS_9 */
             UseFCC = 1;
+
+            firstword = o9_fgetword (progpath);
+
+            if (firstword == 0x62cd)
+            {
+                firstword = firstword << 16 | o9_fgetword (progpath);
+
+                if ( firstword == 0x62cd2387)
+                {
+                    IsROF = 1;
+                }
+                else
+                {
+                    fprintf (stderr, "Not an ROF Header - starts with %08x\n",
+                                     firstword);
+                    exit (1);
+                }
+            }
+            else
+            {
+                if (firstword != 0x87cd)
+                {
+                    fprintf (stderr, "Not a valid header - starts with %04x\n",
+                                     firstword);
+                    exit (1);
+                }
+            }
+
+            rewind (progpath);
 
             if (IsROF)
             {
