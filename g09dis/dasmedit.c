@@ -203,7 +203,7 @@ GtkWidget *
 build_dialog_cancel_save (gchar *title)
 {
     GtkWidget *dlg;
-    dlg = gtk_dialog_new_with_buttons("Addressing Mode specification",
+    dlg = gtk_dialog_new_with_buttons(title,
                                       GTK_WINDOW(window),
                                       /*GTK_DIALOG_MODAL |*/
                                       GTK_DIALOG_DESTROY_WITH_PARENT,

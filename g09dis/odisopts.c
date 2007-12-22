@@ -255,8 +255,8 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
                                      GTK_WINDOW (window),
                                      GTK_DIALOG_MODAL |
                                      GTK_DIALOG_DESTROY_WITH_PARENT,
-                                     GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
                                      GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+                                     GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
                                      NULL);
     gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
 
