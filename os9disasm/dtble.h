@@ -58,8 +58,8 @@ struct lkuptbl Pre10[] = {
 	{0x21,     AM_REL,     "lbrn ",     M_09,    2},
 	{0x22,     AM_REL,     "lbhi ",     M_09,    2},
 	{0x23,     AM_REL,     "lbls ",     M_09,    2},
-	{0x24,     AM_REL,     "lbcc ",     M_09,    2},	/* also LBHS */
-	{0x25,     AM_REL,     "lbcs ",     M_09,    2},	/* also LBLO */
+	{0x24,     AM_REL,     "lbhs ",     M_09,    2},	/* also LBCC */
+	{0x25,     AM_REL,     "lblo ",     M_09,    2},	/* also LBCS */
 	{0x26,     AM_REL,     "lbne ",     M_09,    2},
 	{0x27,     AM_REL,     "lbeq ",     M_09,    2},
 	{0x28,     AM_REL,     "lbvc ",     M_09,    2},
@@ -90,8 +90,8 @@ struct lkuptbl Pre10[] = {
 	{0x43,     AM_INH,     "comd ",     M_03,    0},
 	{0x44,     AM_INH,     "lsrd ",     M_03,    0},
 	{0x46,     AM_INH,     "rord ",     M_03,    0},
-	{0x47,     AM_INH,     "lsrd ",     M_03,    0},
-	{0x48,     AM_INH,     "lsld ",     M_03,    0},
+	{0x47,     AM_INH,     "asrd ",     M_03,    0},
+	{0x48,     AM_INH,     "asld ",     M_03,    0},
 	{0x49,     AM_INH,     "rold ",     M_03,    0},
 	{0x4a,     AM_INH,     "decd ",     M_03,    0},
 	{0x4c,     AM_INH,     "incd ",     M_03,    0},
@@ -317,8 +317,8 @@ struct lkuptbl Byte1[] = {
 	{0x05,     AM_DRCT,    "eim  ",     M_03,    1},
 	
 	{0x06,     AM_DRCT,    "ror  ",     M_09,    1},
-	{0x07,     AM_DRCT,    "lsr  ",     M_09,    1},    /* or ASR */
-	{0x08,     AM_DRCT,    "lsl  ",     M_09,    1},	/* or ASL */
+	{0x07,     AM_DRCT,    "asr  ",     M_09,    1},
+	{0x08,     AM_DRCT,    "asl  ",     M_09,    1},	/* or LSL */
 	{0x09,     AM_DRCT,    "rol  ",     M_09,    1},
 	{0x0a,     AM_DRCT,    "dec  ",     M_09,    1},
 
@@ -377,7 +377,7 @@ struct lkuptbl Byte1[] = {
 	{0x43,     AM_INH,      "coma ",     M_09,    0},
 	{0x44,     AM_INH,      "lsra ",     M_09,    0},
 	{0x46,     AM_INH,      "rora ",     M_09,    0},
-	{0x47,     AM_INH,      "asra ",     M_09,    0},   /* also LSRA */
+	{0x47,     AM_INH,      "asra ",     M_09,    0},
 	{0x48,     AM_INH,      "asla ",     M_09,    0},	/* also LSLA */
 	{0x49,     AM_INH,      "rola ",     M_09,    0},
 	{0x4a,     AM_INH,      "deca ",     M_09,    0},
@@ -388,8 +388,8 @@ struct lkuptbl Byte1[] = {
 	{0x53,     AM_INH,      "comb ",     M_09,    0},
 	{0x54,     AM_INH,      "lsrb ",     M_09,    0},
 	{0x56,     AM_INH,      "rorb ",     M_09,    0},
-	{0x57,     AM_INH,      "asrb ",     M_09,    0},   /* also LSRB */
-	{0x58,     AM_INH,      "aslb ",     M_09,    0},	/* also LSLB */
+	{0x57,     AM_INH,      "asrb ",     M_09,    0},
+	{0x58,     AM_INH,      "lslb ",     M_09,    0},	/* also LSLB */
 	{0x59,     AM_INH,      "rolb ",     M_09,    0},
 	{0x5a,     AM_INH,      "decb ",     M_09,    0},
 	{0x5c,     AM_INH,      "incb ",     M_09,    0},
@@ -407,8 +407,8 @@ struct lkuptbl Byte1[] = {
 	{0x65,     AM_XIDX,     "eim  ",     M_03,    1},
 	
 	{0x66,     AM_XIDX,     "ror  ",     M_09,    1},
-	{0x67,     AM_XIDX,     "lsr  ",     M_09,    1},   /* or ASR */
-	{0x68,     AM_XIDX,     "lsl  ",     M_09,    1},	/* or ASL */
+	{0x67,     AM_XIDX,     "asr  ",     M_09,    1},
+	{0x68,     AM_XIDX,     "asl  ",     M_09,    1},	/* or LSL */
 	{0x69,     AM_XIDX,     "rol  ",     M_09,    1},
 	{0x6a,     AM_XIDX,     "dec  ",     M_09,    1},
 
@@ -430,8 +430,8 @@ struct lkuptbl Byte1[] = {
 	{0x75,     AM_EXT,      "eim  ",     M_03,    2},
 	
 	{0x76,     AM_EXT,      "ror  ",     M_09,    2},
-	{0x77,     AM_EXT,      "lsr  ",     M_09,    2},   /* or ASR */
-	{0x78,     AM_EXT,      "lsl  ",     M_09,    2},	/* or ASL */
+	{0x77,     AM_EXT,      "asr  ",     M_09,    2},
+	{0x78,     AM_EXT,      "asl  ",     M_09,    2},	/* or LSL */
 	{0x79,     AM_EXT,      "rol  ",     M_09,    2},
 	{0x7a,     AM_EXT,      "dec  ",     M_09,    2},
 
