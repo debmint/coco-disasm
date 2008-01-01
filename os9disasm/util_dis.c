@@ -50,11 +50,28 @@ o9_int (char *o9num)
     return ((msb << 8) + lsb);
 }
 
+/* ********************************************** *
+ * skipblank() passes over any space, tab, or any *
+ *             newline character in the string    *
+ * Passed: p pointer to begin of string to parse  *
+ * Returns: pointer to first character of "valid" *
+ *          data, or null if end of data          *
+ * ********************************************** */
+
 char *
 skipblank (char *p)
 {
-    while ((*p == ' ') || (*p == '\t'))
+    /* We did just pass over spaces or tabs, but we need to 
+     * also be sure we are past all return characters
+     * ( especially the extra character MS-Dos uses
+     */
+
+    //while ((*p == ' ') || (*p == '\t'))
+    while ((*p) && (index (" \t\r\f\n", *p)))
+    {
         ++p;
+    }
+
     if (*p == '\n')
         *p = 0;
     return p;
@@ -116,4 +133,41 @@ PBFcat (char *dst, char *fmt, unsigned char *src, int sz)
         str = strcpy (dest, src);
         return (str += strlen(str));
     }
+#endif
+
+/* MinGw doesn't seem to have functions index() or isblank */
+
+#ifndef HAVE_INDEX
+char *
+index (char *s, int c)
+{
+    while (*s)
+    {
+        if ( *s == c)
+        {
+            return s;
+        }
+        else
+        {
+            ++s;
+        }
+    }
+
+    return NULL;
+}
+#endif
+
+#ifndef HAVE_ISBLANK
+int
+isblank (int c)
+{
+    if ((c == ' ') || ( c == '\t'))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
 #endif
