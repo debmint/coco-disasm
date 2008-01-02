@@ -30,7 +30,6 @@ do_cmd_file ()
 {
     FILE *cmdfp;
     char miscbuf[240];
-    char *mbf = miscbuf;
 
     NxtBnd = 0;                 /* init Next boundary pointer */
     
@@ -43,17 +42,23 @@ do_cmd_file ()
 
     while (fgets (miscbuf, sizeof (miscbuf), cmdfp))
     {
-        char *th;
+        char *th,
+             *mbf;
         ++LinNum;
        
-        /* Convert newline to null */
+        mbf = skipblank (miscbuf);
+        
+        /* Convert newlines and carriage returns to null */
 
-        if ((th = (char *) strchr (miscbuf, '\n')))
+        if ((th = (char *) strchr (mbf, '\n')))
         {
             *th = '\0';
         }
-        
-        mbf = skipblank (miscbuf);
+
+	if ((th = strchr (mbf, '\r')))
+	{
+            *th = '\0';
+	}
         
         if (!strlen (mbf))      /* blank line? */
         {
