@@ -881,7 +881,18 @@ WrtEquates (int stdflg)
             {
                 if (IsROF)
                 {
-                    minval = rof_datasize (NowClass) + 1;
+                    minval = rof_datasize (NowClass);
+
+                    /* If this class has any data, we want to exclude
+                     * printing the last entry.
+                     * Otherwise, if no real entries, we want to print
+                     * element "0"
+                     */
+
+                    if (minval)
+                    {
+                        ++minval;
+                    }
                 }
                 else
                 {
