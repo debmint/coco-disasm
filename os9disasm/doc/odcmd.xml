@@ -16,15 +16,15 @@
   </para>
   <variablelist>
     <varlistentry>
-      <term><computeroutput>Command Line Comments</computeroutput></term>
+      <term><command>Command Line Comments</command></term>
       <listitem>
         <para>A comment line can be inserted by beginning it with an asterisk
           (*).  These lines will be ignored by &odis; when processing.
         </para>
       </listitem>
     </varlistentry>
-    <varlistentry>
-      <term><computeroutput>Assembler Comment Lines</computeroutput></term>
+    <varlistentry id="asmcomments">
+      <term><command>Assembler Comment Lines</command></term>
       <listitem>
         <para>Comments can be inserted into the Listing output and the source
           output by beginning the line with a double quote (").  This must
@@ -68,7 +68,7 @@
       </listitem>
     </varlistentry>
     <varlistentry>
-      <term><computeroutput>Option Command Lines</computeroutput></term>
+      <term><command>Option Command Lines</command></term>
        <listitem>
          <para>An option line is a line with a plus (+) sign in column one,
            followed by a list of option parameters. These options are the sames
@@ -86,9 +86,9 @@
       </listitem>
     </varlistentry>
     <varlistentry>
-      <term><computeroutput>
+      <term><command>
         Label Addressing Mode Specification Command Line
-      </computeroutput></term>
+      </command></term>
       <listitem>
         <para>This defines the addressing mode by which this address or
           address range are specified.  See <xref linkend="laddrmod"/> for
@@ -97,8 +97,8 @@
       </listitem>
     </varlistentry>
     <varlistentry>
-      <term><computeroutput>Data Area Boundary Specification Command Line
-      </computeroutput></term>
+      <term><command>Data Area Boundary Specification Command Line
+      </command></term>
       <listitem>
         <para>Definitions for areas that are data, and not code.  Please refer
           to <xref linkend="dataaddr"/> for more details on this.
@@ -180,10 +180,10 @@
     </informaltable>
     <para>The &lt;class&gt; is the label class to be used in generating the
       operand. This is one of '<command>A</command>' to '<command>Z</command>',
-      '<command>$</command>', '<command>&amp;</command>', '<command>@</command>',
-      '<command>^</command>', or '<command>!</command>' The &lt;offset&gt; is
-      optional, used only if the operand is to be generated using one of the
-      offset forms. The offset has the format:
+      '<command>$</command>', '<command>&amp;</command>',
+      '<command>@</command>', '<command>^</command>', or '<command>!</command>'
+      The &lt;offset&gt; is optional, used only if the operand is to be
+      generated using one of the offset forms. The offset has the format:
     </para>
     <screen>
       '(' [ '*' ] [ ('+'| '-' ) &lt;class&gt; &lt;value&gt; ] ')'

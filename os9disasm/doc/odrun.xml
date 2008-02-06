@@ -310,7 +310,7 @@
       the concepts of label classes, standard labels, offsets, and data areas
       be understood.
     </para>
-    <section>
+    <section id="lblclass">
       <title>Label Class</title>
         <para>One of the more important jobs in disassembling a program is the
           proper generation of labels. &odis; creates label name from an
