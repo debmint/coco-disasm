@@ -85,7 +85,18 @@ do_cmd_file ()
         {
             if (asmcomment (++mbf, cmdfp) == -1)
             {
-                fprintf(stderr, "Drror processing cmd line #%d\n", LinNum);
+                fprintf(stderr, "Error processing cmd line #%d\n", LinNum);
+                exit (1);
+            }
+
+            continue;
+        }
+
+        if (*mbf == '\'')   /* Append comment to end of line */
+        {
+            if (apndcmnt ( ++mbf) == -1)
+            {
+                fprintf (stderr, "Error processing cmd line #%d\n",LinNum);
                 exit (1);
             }
 
@@ -118,6 +129,172 @@ do_cmd_file ()
     }
 }
 
+/* ************************************************************************ *
+ * apndcmnt() - Add comments to the end of the assembler command line       *
+ * Format for this entry:                                                   *
+ *      ' <Label Class> <hex addr> text                                     *
+ *      ---                                                                 *
+ * No delimiter is used, all text to the end of the line is included        *
+ * ************************************************************************ */
+
+apndcmnt (char *lpos)
+{
+    char lblclass;
+    int myadr,
+        make_cmnt = 1;
+    struct apndcmnt *mycmnt,
+                    **me_ptr;
+    char *cline;
+            
+
+    if (!(lpos = cmntsetup (lpos, &lblclass, &myadr)))
+    {
+        return -1;
+    }
+    
+    mycmnt = CmntApnd[strpos (lblorder, lblclass)];
+    me_ptr = &(CmntApnd[strpos (lblorder, lblclass)]);
+
+    if (mycmnt)
+    {
+        while (1)
+        {
+            if (myadr < mycmnt->adrs)
+            {
+                me_ptr = &(mycmnt->apLeft);
+
+                if (mycmnt->apLeft)
+                {
+                    mycmnt = mycmnt->apLeft;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                if (myadr > mycmnt->adrs)
+                {
+                    me_ptr = &(mycmnt->apRight);
+
+                    if (mycmnt->apRight)
+                    {
+                        mycmnt = mycmnt->apRight;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else                /* Else we've encountered an   */
+                {                   /* existing entry for this adr */
+                    make_cmnt = 0;  /* Flag not to calloc()        */
+                    break;
+                }
+            }
+        }
+    }
+
+    if (make_cmnt)
+    {
+        mycmnt = calloc (1,sizeof (struct apndcmnt));
+    }
+
+    if (!mycmnt)
+    {
+        fprintf (stderr, "Cannot allocate memory for append comment\n");
+        exit (1);
+    }
+
+    mycmnt->adrs = myadr;
+
+ /*   if (me_ptr)
+    {*/
+        *me_ptr = mycmnt;
+/*    }
+    else
+    {
+        CmntApnd[strpos (lblorder, lblclass)] = mycmnt;
+    }*/
+
+    /* Get rid of newlines */
+
+    if (cline = strchr (lpos, '\n'))
+    {
+        *cline = '\0';
+    }
+
+    if (cline = strchr (lpos, '\r'))
+    {
+        *cline = '\0';
+    }
+
+    mycmnt->CmPtr = malloc (strlen (lpos) + 1);
+
+    if (mycmnt->CmPtr)
+    {
+        strcpy (mycmnt->CmPtr, lpos);
+    }
+    else
+    {
+        fprintf (stderr,
+                "Cannot allocat memory for append comment string\n");
+        exit (1);
+    }
+
+    return 1;
+}
+
+/* ***************************************************** *
+ * cmntsetup() - Get Label class and address for comment *
+ * Passed: the command line string                       *
+ *         ptr to Class variable                         *
+ *         ptr to Address variable                       *
+ * Returns current position in command line string       *
+ *         positioned on the first char of the comment   *
+ *         (either the delim for self-standing comments  *
+ *          or the comment string for appends)           *
+ * ***************************************************** */
+
+char *
+cmntsetup (char *cpos, char *clas, int *adrs)
+{
+    cpos = skipblank (cpos);
+
+    *clas = *(cpos++);       /* first element is Label Class */
+
+    if (isalpha (*clas) && islower (*clas))
+    {
+        *clas = toupper(*clas);
+    }
+    
+    if (!strchr(lblorder,*clas))
+    {
+        fprintf (stderr, "Illegal label class for comment, Line %d\n", LinNum);
+        return (char *)0;
+    }
+    
+    cpos = skipblank (cpos);    /* cpos now points to address */
+    
+    if (sscanf (cpos,"%x", adrs) != 1)
+    {
+        fprintf (stderr,"Error in getting address of comment : Line #%d\n",
+                 LinNum);
+        exit (1);
+    }
+    
+    /* Now move up past address */
+
+    while (!(isblank(*cpos)))
+    {
+        ++cpos;
+    }
+
+    /* Now cpos is begin of (first) line of text */
+    return (cpos = skipblank (cpos));
+}
+
 /* *********************************************** *
  * newcomment() adds new commenttree address       *
  * Passed: address for comment,                    *
@@ -141,8 +318,9 @@ newcomment (int addrs, struct commenttree *parent)
 
 /* ************************************************************************ *
  * asmcomment() Add comments to be placed into the assembler source/listing *
+ *          on separate lines                                               *
  * Format for this entry:                                                   *
- *      " addr Dtext                                                        *
+ *      " <Label class> addr <delim>Dtext<delim>                            *
  *      ---                                                                 *
  *      textD\n                                                             *
  * D represents any delimiter, following lines will be added until a line   *
@@ -154,7 +332,7 @@ newcomment (int addrs, struct commenttree *parent)
 int
 asmcomment (char *lpos, FILE *cmdfile)
 {
-    unsigned int adr = 0;
+    int adr = 0;
     register char *txt;
     char delim;
     int lastline;
@@ -162,39 +340,11 @@ asmcomment (char *lpos, FILE *cmdfile)
     register struct commenttree *me;
     struct cmntline *prevline = 0;
     char lblclass;
-    
-    lpos = skipblank (lpos);
-
-    lblclass = *(lpos++);       /* first element is Label Class */
-
-    if (isalpha (lblclass) && islower (lblclass))
+ 
+    if (!(lpos = cmntsetup (lpos, &lblclass, &adr)))
     {
-        lblclass = toupper(lblclass);
-    }
-    
-    if (!strchr(lblorder,lblclass))
-    {
-        fprintf (stderr, "Illegal label class for comment, Line %d\n", LinNum);
         return -1;
     }
-    
-    lpos = skipblank (lpos);    /* lpos now points to address */
-    
-    if (sscanf(lpos,"%x",&adr) != 1)
-    {
-        fprintf (stderr,"Error in getting address of comment : Line #%d\n",
-                 LinNum);
-        exit(1);
-    }
-    
-    /* Now find begin of text */
-
-    while (!(isblank(*lpos)))
-    {
-        ++lpos;
-    }
-
-    lpos = skipblank (lpos);     /* Now lpos is begin of (first) line of text */
     
     switch (*lpos)
     {
@@ -264,6 +414,7 @@ asmcomment (char *lpos, FILE *cmdfile)
 
                     /* Here, we need to find the last comment */
                     prevline = me->commts;
+
                     while (prevline->nextline) {
                         prevline = prevline->nextline;
                     }

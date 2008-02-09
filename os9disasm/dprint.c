@@ -25,8 +25,8 @@ extern char *CmdBuf;
 extern struct printbuf *pbuf;
 extern struct rof_hdr *rofptr;
 
-char *pseudcmd = "%5d  %04X %-14s %-10s %-6s %s\n";
-char *realcmd = "%5d  %04X %-04s %-9s %-10s %-6s %s\n";
+char *pseudcmd = "%5d  %04X %-14s %-10s %-6s %s %s\n";
+char *realcmd = "%5d  %04X %-04s %-9s %-10s %-6s %s %s\n";
 char *blankcmd = "%5d";
 
 int PgNum = 0;
@@ -68,7 +68,8 @@ OutputLine (char *pfmt, struct printbuf *pb)
     PrintFormatted (pfmt, pb);
 
     if (WrtSrc)
-        fprintf (outpath, "%s %s %s\n", pb->lbnm, pb->mnem, pb->operand);
+        fprintf (outpath, "%s %s %s %s\n", pb->lbnm, pb->mnem,
+                                          pb->operand, pb->comment);
 }
 
     /* Straighten/clean up - prepare for next line  */
@@ -125,6 +126,64 @@ PrintNonCmd (char *str, int preblank, int postblank)
 }
 
 /* *********************************************** *
+ * get_comment() - Checks for append comment for   *
+ *      current command line.                      *
+ * Passed: class,                                  *
+ *         entry address for command               *
+ * Returns: ptr to comment string if present       *
+ *          ptr to empty string if none            *
+ * *********************************************** */
+
+char *
+get_apcomment(char clas, int addr)
+{
+    struct apndcmnt *mytree = CmntApnd[strpos (lblorder, clas)];
+
+    if (!clas)
+    {
+        return ("");
+    }
+
+    if (mytree)
+    {
+        while (1)
+        {
+            if (addr < mytree->adrs)
+            {
+                if (mytree->apLeft)
+                {
+                    mytree = mytree->apLeft;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                if (addr > mytree->adrs)
+                {
+                    if (mytree->apRight)
+                    {
+                        mytree = mytree->apRight;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    return mytree->CmPtr;
+                }
+            }
+        }
+    }
+
+    return ("");
+}
+
+/* *********************************************** *
  * PrintLine () - The generic, global printline    *
  *    function.  It checks for unlisted boundaries *
  *    prints the line, and then does cleanup       *
@@ -136,6 +195,7 @@ PrintLine (char *pfmt, struct printbuf *pb, char class, int cmdlow, int cmdhi)
     NonBoundsLbl (class);            /*Check for non-boundary labels */
 
     PrintComment (class, cmdlow, cmdhi);
+    pb->comment = get_apcomment(class, cmdlow);
     OutputLine (pfmt, pb);
 
     PrintCleanup (pb);
@@ -187,12 +247,12 @@ PrintFormatted (char *pfmt, struct printbuf *pb)
     if (pfmt == pseudcmd)
     {
         printf (pfmt, LinNum, CmdEnt, pb->instr, pb->lbnm,
-                pb->mnem, pb->operand);
+                pb->mnem, pb->operand, pb->comment);
     }
     else
     {
         printf (pfmt, LinNum, CmdEnt, pb->instr, pb->opcod, pb->lbnm,
-                pb->mnem, pb->operand);
+                pb->mnem, pb->operand, pb->comment);
     }
 }
 

@@ -172,6 +172,7 @@ GLOBAL struct databndaries *LAdds[33];
 GLOBAL struct databndaries *dbounds;
     /* Comments tree */
 GLOBAL struct commenttree *Comments[33];
+GLOBAL struct apndcmnt *CmntApnd[33];
 
 	/* ascii names for control characters */
 GLOBAL const char *CtrlCod[]

@@ -95,12 +95,26 @@ struct printbuf {
 	     opcod[20],
 	     lbnm[10],
 	     mnem[6],
-	     operand[50];
+	     operand[50],
+         *comment;
 };
 
-/* ****************** *
- * Comment structures *
- * ****************** */
+/* ************************************ *
+ * xtndcmnt structures                  *
+ * These are comments that are appended *
+ * to the end of the assembly line      *
+ * ************************************ */
+
+struct apndcmnt {
+    int adrs;
+    struct apndcmnt *apLeft;
+    struct apndcmnt *apRight;
+    char *CmPtr;
+};
+
+/* ************************************ *
+ * Stand-alone Comment structures       *
+ * ************************************ */
 
 /* Single line of a comment */
 struct cmntline {
