@@ -435,7 +435,7 @@ char *opfmt[] = {"%s%02x", "%s%04x"};
 int bytmsk[] = {0xff, 0xffff};
 
 static void
-regput (int pbyte, char *op1)
+regput (int pbyte, char *op1, int pcrel)
 {
     int ofst;
     char tmp[10];
@@ -458,6 +458,21 @@ regput (int pbyte, char *op1)
                 if (Pass2)
                 {
                     strcpy (op1, myref->name);
+
+                    /* PCR mode is stored relative to the address
+                     * ofst is already a signed number, so all we
+                     * need to do here is add in the Pc address
+                     */
+
+                    if (pcrel)
+                    {
+                        ofst += Pc;
+                    }
+
+                    if (ofst != 0)
+                    {
+                        sprintf (&(op1[strlen(op1)]), "%+d", ofst);
+                    }
                 }
             }
             else
@@ -715,7 +730,7 @@ TxIdx ()
                 break;
             case 0x08:                      /*  n,R */
             case 0x09:                      /* nn,R */
-                regput (postbyte, oper1);
+                regput (postbyte, oper1, 0);
                 sprintf (oper1, "%s,%c", oper1, regNam);
                 break;
             case 0x0c:                      /*  n,PC (8-bit) */
@@ -723,7 +738,7 @@ TxIdx ()
                 AMode = AM_REL;
                 /* below is a temporary fix */
                 myclass = DEFAULTCLASS;
-                regput (postbyte, oper1);
+                regput (postbyte, oper1, 1);
 
                 sprintf (oper1, "%s,%s", oper1, "pcr");
                 break;
@@ -1070,13 +1085,48 @@ GetCmd ()
                             sprintf (pbuf->operand, "%s%s", pbuf->operand,
                                                             myref->name);
                         }
-                        else
+                        else        /* Will this ever happen??? */
                         {
                             sprintf (pbuf->operand, "%s%c%04x", pbuf->operand,
                                     C, offset);
                         }
                     }
+
+                    /* We need now to take into account the fact that a
+                     * variable could have been referenced with an offset
+                     */
+
+                    /* Relative addressing mode is stored differently from
+                     * all the rest.  The base is assumbed to be 0, and
+                     * stored as offset from begin of next instruction
+                     */
+
+                    if (AMode == AM_REL)
+                    {
+                        offset += Pc;
+
+                        /* Restore back to 8 or 16 bit status because
+                         * the add may have wrapped past 0
+                         * We need to do this because of next action
+                         */
+
+                        offset &= (tbl->adbyt == 1) ? 0xff : 0xffff;
+                    }
+
+                    if (offset)
+                    {
+                        int bytpt = tbl->adbyt >> 1;
+                        unsigned int signval[] = {0x80, 0x8000};
+                        int signmsk[] = {0xff, 0xffff};
+
+                        if (offset >= signval[bytpt])
+                        {
+                            offset |= ((-1) ^ (signmsk[bytpt]));
+                        }
                     
+                        sprintf (&(pbuf->operand[strlen(pbuf->operand)]),
+                                    "%+d", offset);
+                    }
                     //sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, offset);
                 }
                 else        /* else Pass 1 */
