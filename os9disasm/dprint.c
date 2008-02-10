@@ -654,52 +654,53 @@ ROFDataPrint ()
 
                 sprintf (mytmp, dptell[isinit], dattyp[isinit]);
 
-                if (dta)
+                if (isinit)
                 {
-                    /* for PrintNonCmd(), send isinit so that a pre-blank line
-                     * is not printed, since it is provided by PrinLine above
-                     */
-
-                    PrintNonCmd (mytmp, isinit, 1);
-                    srch = dta;
-
-                    while (srch->LNext)
+                    PrintNonCmd (mytmp, 0, 1);
+                    ListInitROF (dta, thissz[isinit], vs, dattyp[isinit]);
+                }
+                else
+                {
+                    if (dta)
                     {
-                        srch = srch->LNext;
-                    }
-
-                    if ((srch->myaddr))
-                    {                       /* i.e., if not D000 */
-                        strcpy (pbuf->mnem, "rmb");
-                        sprintf (pbuf->operand, "%d", srch->myaddr);
-                        CmdEnt = PrevEnt = 0;
-                        PrintLine (realcmd, pbuf, dattyp[isinit], 0,
-                                                  srch->myaddr);
-                    }
-
-                    /* For max value, send a large value so ListData
-                     * will print all for class
-                     */
-
-                    if (!isinit)
-                    {
+                        /* for PrintNonCmd(), send isinit so that a pre-blank
+                         * line is not printed, since it is provided by
+                         * PrinLine above */
+    
+                        PrintNonCmd (mytmp, isinit, 1);
+                        srch = dta;
+    
+                        while (srch->LNext)
+                        {
+                            srch = srch->LNext;
+                        }
+    
+                        if (srch->myaddr)
+                        {                       /* i.e., if not D000 */
+                            strcpy (pbuf->mnem, "rmb");
+                            sprintf (pbuf->operand, "%d", srch->myaddr);
+                            CmdEnt = PrevEnt = 0;
+                            PrintLine (realcmd, pbuf, dattyp[isinit], 0,
+                                                      srch->myaddr);
+                        }
+    
+                        /* For max value, send a large value so ListData
+                         * will print all for class
+                         */
+    
                         ModData = thissz[isinit];
                         ListData (dta, thissz[isinit]);
-                    }
-                    else
-                    {
-                        ListInitROF (dta, thissz[isinit], vs, dattyp[isinit]);
-                    }
-                }           /* end "if (dta)" */
-                else        /* else no labels.. check to see */
-                {           /* if any "hidden" variables */
-                    if (thissz[isinit])
-                    {
-                        PrintNonCmd (mytmp, isinit, 1);
-                        strcpy (pbuf->mnem, "rmb");
-                        sprintf (pbuf->operand, "%d", thissz[isinit]);
-                        PrintLine (realcmd, pbuf, dattyp[isinit], 0,
-                                                    0);
+                    }           /* end "if (dta)" */
+                    else        /* else no labels.. check to see */
+                    {           /* if any "hidden" variables */
+                        if (thissz[isinit])
+                        {
+                            PrintNonCmd (mytmp, isinit, 1);
+                            strcpy (pbuf->mnem, "rmb");
+                            sprintf (pbuf->operand, "%d", thissz[isinit]);
+                            PrintLine (realcmd, pbuf, dattyp[isinit], 0,
+                                                        0);
+                        }
                     }
                 }
             }
