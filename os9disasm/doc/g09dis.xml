@@ -106,7 +106,7 @@
       </para>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/listmnu.png"/>
+          <imagedata fileref="images/listmnu.png" align="center"/>
         </imageobject>
         <caption><para>The <command>List Menu</command></para>
         </caption>
@@ -128,23 +128,26 @@
         </para>
         <mediaobject>
           <imageobject>
-            <imagedata fileref="images/renamlbl.png"/>
+            <imagedata fileref="images/renamlbl.png" align="center"/>
           </imageobject>
           <caption><para>The <command>Rename Label window</command></para>
           </caption>
         </mediaobject>
         <para>Here we see three input boxes.  The <command>Label Name
-          </command> box allows to give the Label a meaningful name.  The
-          <command>Label Address</command> box is the Address (in
+          </command> box allows to give the Label a meaningful name.
+        </para>
+        <para>The <command>Label Address</command> box is the Address (in
           hexadecimal).  Note that this address <emphasis>MUST</emphasis>
           be given in hexadecimal.  The <command>Addressing Mode</command>
           is the Addressing mode under which this address will be given
-          this name.  If you are changing a Label Name for a line under
-          which you clicked, the Address should not be changed and in most
-          cases, the <command>Addressing Mode</command> should be correct.
-          Note, however, that by changing the <command>Label
-          Address</command>, a label could be added for a different
-          address.  A new label can also be added by right clicking in the
+          this name.
+        </para>
+        <para>If you are changing a Label Name for a line under which you
+          clicked, the Address should not be changed and in most cases, the
+          <command>Addressing Mode</command> should be correct.  However, you
+          can set up the label for <command>any</command> address and any mode
+          by clicking on <command>any</command> line and altering the address
+          and/or mode.  A new label can also be added by right clicking in the
           <command>Label File</command> window and clicking on
           "<command>Insert After</command>".
         </para>
@@ -156,7 +159,7 @@
         </para>
         <mediaobject>
           <imageobject>
-            <imagedata fileref="images/defbnds.png"/>
+            <imagedata fileref="images/defbnds.png" align="center"/>
           </imageobject>
           <caption><para>The <command>Define Bounds Window</command></para>
           </caption>
@@ -181,31 +184,6 @@
           link should give more details if needed.  Again, as with "Rename
           Label", you can change this address to any other you wish.
         </para>
-        <formalpara><title>The Offset from Address</title>
-          <para>This allows you to specify an offset from the destination
-            address.  Please refer to the description of offset addressing
-            below <xref linkend="laddrmod"/> for details on offset addressing.
-          </para>
-        </formalpara>
-        <para>The Offset entry utilizes a drop-down menu along with an entry
-          box.  You can type in an offset or click the arrow to select a
-          previously-selected item.  On startup, the list is empty, except
-          for a single entry "NONE".  If this is selected, or an empty line
-          is there when you click "OK", then no offset is inserted in the
-          command line.
-        </para>
-        <para>As the program progresses, a history of offsets is maintained.
-          Each time you enter a new offset, if it does not match exactly an
-          entry already present, then it is added to the list.  This is a
-          convenience feature whereby you aren't required to enter the same
-          offset repeatedly.  Note that a functionally identical entry, but
-          differing by a space will be added.  There is no harm in this except
-          that it adds a bit of "clutter" in repeated functionally identical
-          entries.
-        </para>
-        <note><para>There is no provision to save these entries.  All are lost
-          upon close of the program.
-        </para></note>
       </section>
       <section>
         <title>The <command>Set Addressing Mode</command> Window</title>
@@ -213,7 +191,7 @@
         </para>
         <mediaobject>
           <imageobject>
-            <imagedata fileref="images/setamode.png"/>
+            <imagedata fileref="images/setamode.png" align="center"/>
           </imageobject>
           <caption>
             <para>The <command>Set Addressing Mode</command> Window</para>
@@ -234,6 +212,31 @@
         <para>The Address box works identical to that of <command>Data
           Bounds</command> described for <xref linkend="definebnds"/>
         </para>
+        <formalpara><title>The Offset from Address</title>
+          <para>This allows you to specify an offset from the destination
+            address.  Please refer to the description of offset addressing
+            below <xref linkend="laddrmod"/> for details on offset addressing.
+          </para>
+        </formalpara>
+        <para>The Offset entry utilizes a drop-down menu along with an entry
+          box.  You can type in an offset or click the arrow to select a
+          previously-selected item.  On startup, the list is empty, except
+          for a single entry "NONE".  If this is selected, or an empty line
+          is there when you click "OK", then no offset is inserted in the
+          command line.
+        </para>
+        <para>As the editing session progresses, a history of offsets is
+          maintained.  Each time you enter a new offset, if it does not match
+          exactly an entry already present, then it is added to the list.  This
+          is a convenience feature whereby you aren't required to enter the
+          same offset repeatedly.  Note that a functionally identical entry,
+          but differing by a space will be added.  There is no harm in this
+          except that it adds a bit of "clutter" in repeated functionally
+          identical entries.
+        </para>
+        <note><para>There is no provision to save these entries.  All are lost
+          upon close of the editing session.
+        </para></note>
       </section>
     </section>
     <section><title>Embedding Label Classes in Files</title>

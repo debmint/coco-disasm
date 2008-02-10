@@ -323,7 +323,7 @@ PrintLbl (char *dest, char clas, int adr, struct nlist *dl)
 
     if (clas == '@')
     {
-        if ((adr < 9) || ((PBytSiz == 1) && adr > 244) ||
+        if ((adr <= 9) || ((PBytSiz == 1) && adr > 244) ||
             ((PBytSiz == 2) && adr > 65526))
             clas = '&';
         else
@@ -436,11 +436,14 @@ addlbl (int loc, char C)
 
     if (!index (lblorder, C))
     {                           /* Nonexistant label class      */
-        fprintf (stderr, "Illegal label Class - '\\%x'\n", C);
+        fprintf (stderr,
+                 "Illegal label Class '\\%x' for location %04x Pc = %04x\n",
+                C, loc, Pc);
         exit (1);
     }
 
     /* This may be a kludge - may need to fix later */
+    
     if (C == '^')
     {
         loc &= 0x7f;
@@ -493,9 +496,10 @@ addlbl (int loc, char C)
         exit (errno);
     }
 
-    strncpy (me->sname, &C, 1);
+    sprintf (me->sname, "%c%04x", C, loc & 0xffff);
+    /*strncpy (me->sname, &C, 1);
     sprintf (tmplbl, "%04x", loc & 0xffff);
-    strncat (me->sname, tmplbl, 4);
+    strncat (me->sname, tmplbl, 4);*/
     
     me->myaddr = loc;
 

@@ -3,7 +3,7 @@
 #                                                                          #
 ############################################################################
 #                                                                          #
-# $Id$                                          #
+# $Id: odis.h,v0.1 03/01/31  dlb                                           #
 #                                                                          #
 ############################################################################
 #                                                                          #
@@ -87,6 +87,7 @@ GLOBAL int UpCase
 = 0			/* default to off (lower case */
 #endif
 ;
+GLOBAL int IsROF;       /* ROF flag.  if true, we're doing a ROF */
 GLOBAL char *DfltLbls;	/* Ptr to default label class table	*/
 GLOBAL char OS9Dflt[]	/* Default addressing modes for diff. OS's */
 #ifdef MAIN
@@ -171,6 +172,7 @@ GLOBAL struct databndaries *LAdds[33];
 GLOBAL struct databndaries *dbounds;
     /* Comments tree */
 GLOBAL struct commenttree *Comments[33];
+GLOBAL struct apndcmnt *CmntApnd[33];
 
 	/* ascii names for control characters */
 GLOBAL const char *CtrlCod[]

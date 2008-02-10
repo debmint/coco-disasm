@@ -22,7 +22,7 @@
 #include "amodes.h"
 
 static int NoEnd;      /* Flag that no end on last bound                 */
-static int TypeGet;    /* Flag 1=getting Addressing mode 0=Data Boundary */
+static int GettingAmode;    /* Flag 1=getting Addressing mode 0=Data Boundary */
 static struct databndaries *prevbnd ;
 
 void
@@ -30,7 +30,6 @@ do_cmd_file ()
 {
     FILE *cmdfp;
     char miscbuf[240];
-    char *mbf = miscbuf;
 
     NxtBnd = 0;                 /* init Next boundary pointer */
     
@@ -43,17 +42,23 @@ do_cmd_file ()
 
     while (fgets (miscbuf, sizeof (miscbuf), cmdfp))
     {
-        char *th;
+        char *th,
+             *mbf;
         ++LinNum;
        
-        /* Convert newline to null */
+        mbf = skipblank (miscbuf);
+        
+        /* Convert newlines and carriage returns to null */
 
-        if ((th = (char *) strchr (miscbuf, '\n')))
+        if ((th = (char *) strchr (mbf, '\n')))
         {
             *th = '\0';
         }
-        
-        mbf = skipblank (miscbuf);
+
+	if ((th = strchr (mbf, '\r')))
+	{
+            *th = '\0';
+	}
         
         if (!strlen (mbf))      /* blank line? */
         {
@@ -80,7 +85,18 @@ do_cmd_file ()
         {
             if (asmcomment (++mbf, cmdfp) == -1)
             {
-                fprintf(stderr, "Drror processing cmd line #%d\n", LinNum);
+                fprintf(stderr, "Error processing cmd line #%d\n", LinNum);
+                exit (1);
+            }
+
+            continue;
+        }
+
+        if (*mbf == '\'')   /* Append comment to end of line */
+        {
+            if (apndcmnt ( ++mbf) == -1)
+            {
+                fprintf (stderr, "Error processing cmd line #%d\n",LinNum);
                 exit (1);
             }
 
@@ -90,6 +106,14 @@ do_cmd_file ()
         if (*mbf == '>')
         {
             cmdamode (skipblank (++mbf));
+            continue;
+        }
+
+        /* rof ascii data definition */
+
+        if (*mbf == '=')
+        {
+            rof_ascii (skipblank (++mbf));
             continue;
         }
         
@@ -103,6 +127,172 @@ do_cmd_file ()
             exit (1);
         }
     }
+}
+
+/* ************************************************************************ *
+ * apndcmnt() - Add comments to the end of the assembler command line       *
+ * Format for this entry:                                                   *
+ *      ' <Label Class> <hex addr> text                                     *
+ *      ---                                                                 *
+ * No delimiter is used, all text to the end of the line is included        *
+ * ************************************************************************ */
+
+apndcmnt (char *lpos)
+{
+    char lblclass;
+    int myadr,
+        make_cmnt = 1;
+    struct apndcmnt *mycmnt,
+                    **me_ptr;
+    char *cline;
+            
+
+    if (!(lpos = cmntsetup (lpos, &lblclass, &myadr)))
+    {
+        return -1;
+    }
+    
+    mycmnt = CmntApnd[strpos (lblorder, lblclass)];
+    me_ptr = &(CmntApnd[strpos (lblorder, lblclass)]);
+
+    if (mycmnt)
+    {
+        while (1)
+        {
+            if (myadr < mycmnt->adrs)
+            {
+                me_ptr = &(mycmnt->apLeft);
+
+                if (mycmnt->apLeft)
+                {
+                    mycmnt = mycmnt->apLeft;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                if (myadr > mycmnt->adrs)
+                {
+                    me_ptr = &(mycmnt->apRight);
+
+                    if (mycmnt->apRight)
+                    {
+                        mycmnt = mycmnt->apRight;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else                /* Else we've encountered an   */
+                {                   /* existing entry for this adr */
+                    make_cmnt = 0;  /* Flag not to calloc()        */
+                    break;
+                }
+            }
+        }
+    }
+
+    if (make_cmnt)
+    {
+        mycmnt = calloc (1,sizeof (struct apndcmnt));
+    }
+
+    if (!mycmnt)
+    {
+        fprintf (stderr, "Cannot allocate memory for append comment\n");
+        exit (1);
+    }
+
+    mycmnt->adrs = myadr;
+
+ /*   if (me_ptr)
+    {*/
+        *me_ptr = mycmnt;
+/*    }
+    else
+    {
+        CmntApnd[strpos (lblorder, lblclass)] = mycmnt;
+    }*/
+
+    /* Get rid of newlines */
+
+    if (cline = strchr (lpos, '\n'))
+    {
+        *cline = '\0';
+    }
+
+    if (cline = strchr (lpos, '\r'))
+    {
+        *cline = '\0';
+    }
+
+    mycmnt->CmPtr = malloc (strlen (lpos) + 1);
+
+    if (mycmnt->CmPtr)
+    {
+        strcpy (mycmnt->CmPtr, lpos);
+    }
+    else
+    {
+        fprintf (stderr,
+                "Cannot allocat memory for append comment string\n");
+        exit (1);
+    }
+
+    return 1;
+}
+
+/* ***************************************************** *
+ * cmntsetup() - Get Label class and address for comment *
+ * Passed: the command line string                       *
+ *         ptr to Class variable                         *
+ *         ptr to Address variable                       *
+ * Returns current position in command line string       *
+ *         positioned on the first char of the comment   *
+ *         (either the delim for self-standing comments  *
+ *          or the comment string for appends)           *
+ * ***************************************************** */
+
+char *
+cmntsetup (char *cpos, char *clas, int *adrs)
+{
+    cpos = skipblank (cpos);
+
+    *clas = *(cpos++);       /* first element is Label Class */
+
+    if (isalpha (*clas) && islower (*clas))
+    {
+        *clas = toupper(*clas);
+    }
+    
+    if (!strchr(lblorder,*clas))
+    {
+        fprintf (stderr, "Illegal label class for comment, Line %d\n", LinNum);
+        return (char *)0;
+    }
+    
+    cpos = skipblank (cpos);    /* cpos now points to address */
+    
+    if (sscanf (cpos,"%x", adrs) != 1)
+    {
+        fprintf (stderr,"Error in getting address of comment : Line #%d\n",
+                 LinNum);
+        exit (1);
+    }
+    
+    /* Now move up past address */
+
+    while (!(isblank(*cpos)))
+    {
+        ++cpos;
+    }
+
+    /* Now cpos is begin of (first) line of text */
+    return (cpos = skipblank (cpos));
 }
 
 /* *********************************************** *
@@ -128,8 +318,9 @@ newcomment (int addrs, struct commenttree *parent)
 
 /* ************************************************************************ *
  * asmcomment() Add comments to be placed into the assembler source/listing *
+ *          on separate lines                                               *
  * Format for this entry:                                                   *
- *      " addr Dtext                                                        *
+ *      " <Label class> addr <delim>Dtext<delim>                            *
  *      ---                                                                 *
  *      textD\n                                                             *
  * D represents any delimiter, following lines will be added until a line   *
@@ -141,7 +332,7 @@ newcomment (int addrs, struct commenttree *parent)
 int
 asmcomment (char *lpos, FILE *cmdfile)
 {
-    unsigned int adr = 0;
+    int adr = 0;
     register char *txt;
     char delim;
     int lastline;
@@ -149,39 +340,11 @@ asmcomment (char *lpos, FILE *cmdfile)
     register struct commenttree *me;
     struct cmntline *prevline = 0;
     char lblclass;
-    
-    lpos = skipblank (lpos);
-
-    lblclass = *(lpos++);       /* first element is Label Class */
-
-    if (isalpha (lblclass) && islower (lblclass))
+ 
+    if (!(lpos = cmntsetup (lpos, &lblclass, &adr)))
     {
-        lblclass = toupper(lblclass);
-    }
-    
-    if (!strchr(lblorder,lblclass))
-    {
-        fprintf (stderr, "Illegal label class for comment, Line %d\n", LinNum);
         return -1;
     }
-    
-    lpos = skipblank (lpos);    /* lpos now points to address */
-    
-    if (sscanf(lpos,"%x",&adr) != 1)
-    {
-        fprintf (stderr,"Error in getting address of comment : Line #%d\n",
-                 LinNum);
-        exit(1);
-    }
-    
-    /* Now find begin of text */
-
-    while (!(isblank(*lpos)))
-    {
-        ++lpos;
-    }
-
-    lpos = skipblank (lpos);     /* Now lpos is begin of (first) line of text */
     
     switch (*lpos)
     {
@@ -251,6 +414,7 @@ asmcomment (char *lpos, FILE *cmdfile)
 
                     /* Here, we need to find the last comment */
                     prevline = me->commts;
+
                     while (prevline->nextline) {
                         prevline = prevline->nextline;
                     }
@@ -397,12 +561,14 @@ cmdamode (char *pt)
 {
     char buf[80];
 
-    TypeGet = 1;
+    GettingAmode = 1;
     
     while ((pt = cmdsplit (buf, pt)))
     {
         DoMode (buf);
     }
+
+    GettingAmode = 0;
 }
 
 /* ********************************************* *
@@ -412,8 +578,8 @@ cmdamode (char *pt)
  *   (the addresses are passed by the caller     *
  * ********************************************* */
 
-static void
-getrange (char *pt, int *lo, int *hi, int usize)
+void
+getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
 {
     char tmpdat[50], *dpt, c;
 
@@ -422,8 +588,13 @@ getrange (char *pt, int *lo, int *hi, int usize)
     /* see if it's just a single byte/word */
     if (!(isxdigit (*(pt = skipblank (pt)))))
     {
-        if ((*pt == '-') || ((*pt == '/') && !TypeGet))
+        if ((*pt == '-') || ((*pt == '/')))
         {
+            if (GettingAmode)
+            {
+                nerrexit ("Open-ended ranges not permitted with Amodes");
+            }
+
             if (NoEnd)
             {
                 nerrexit ("No start address/no end address in prev line %d");
@@ -457,30 +628,32 @@ getrange (char *pt, int *lo, int *hi, int usize)
     switch (c = *(pt = skipblank (pt)))
     {
     case '/':
-        if (TypeGet == 1)
+        if (GettingAmode == 1)
         {
             nerrexit ("Cannot specify \"/\" in this mode!");
         }
 
-        switch (*(pt = skipblank (++pt)))
+        pt = skipblank (++pt);
+
+        switch (*pt)
         {
-        case ';':
-        case '\0':
-            if (NoEnd)
-            {  /* if a NoEnd from prev cmd, second bump won't be done */
+            case ';':
+            case '\0':
+                if (NoEnd)          /* if a NoEnd from prev cmd, */
+                {                   /* second bump won't be done */
+                    ++NoEnd;
+                }
+                
                 ++NoEnd;
-            }
-            
-            ++NoEnd;
-            *hi = *lo;
-            break;
-        default:
-            pt = movdigit (tmpdat, pt);
-            NxtBnd = *lo + atoi (tmpdat);
-            /*fprintf(stderr,"Next bdry \\%x\n",NxtBnd);*/
-            *hi = NxtBnd - 1;
-            break;
+                *hi = *lo;
+                break;
+            default:
+                pt = movdigit (tmpdat, pt);
+                NxtBnd = *lo + atoi (tmpdat);
+                *hi = NxtBnd - 1;
+                break;
         }
+
         break;
     case '-':
         switch (*(pt = skipblank (++pt)))
@@ -570,6 +743,7 @@ DoMode (char *lpos)
 
     lpos = skipblank (lpos);
     class = *(lpos++);
+    class = toupper (class);
     
     if (!index (lblorder, class))
     {
@@ -579,9 +753,12 @@ DoMode (char *lpos)
     /* Offset spec (if any) */
 
     /* check for default reset (no address) */
+    
     if (!(lpos = skipblank (lpos)) || !(*lpos) || (*lpos == ';'))
     {
-        DfltLbls[AMode - 1] = lblorder[class - 1];
+        /* Changed the following after change for addlbl() */
+        //DfltLbls[AMode - 1] = lblorder[class - 1];
+        DfltLbls[AMode - 1] = class;
         return 1;
     }
 
@@ -601,11 +778,14 @@ DoMode (char *lpos)
 
      /*  Hopefully, passing a hard-coded 1 will work always.
      */
-    getrange (lpos, &lo, &hi, 1);
+    getrange (lpos, &lo, &hi, 1, 0);
 
     /* Now insert new range into tree */
+    
     if (!(mptr = calloc (1, sizeof (struct databndaries))))
+    {
         nerrexit ("Cannot allocate memory for data definition");
+    }
 
     mptr->b_lo = lo;
     mptr->b_hi = hi;
@@ -621,6 +801,7 @@ DoMode (char *lpos)
     else
     {
         lp = LAdds[AMode];
+        
         while (1)
         {
             if (hi < lp->b_lo)
@@ -677,7 +858,7 @@ boundsline (char *mypos)
     /*char *stophere=&mypos[strlen(mypos)]; */
     register int count = 1;
 
-    TypeGet = 0;
+    GettingAmode = 0;
 
     if (isdigit (*mypos))
     {                           /*      Repeat count for line   */
@@ -781,37 +962,44 @@ setupbounds (char *lpos)
     int rglo, rghi;
     char c;
     struct ofsetree *otreept = 0;
+    char loc[20];
 
-    TypeGet = 0;
+    GettingAmode = 0;
     PBytSiz = 1;                /* Default to single byte */
 
     /* First character should be boundary type */
 
     switch (c = toupper (*(lpos = skipblank (lpos))))
     {
-    case 'L':
-        PBytSiz = 2;
-    case 'S':
-        lpos = skipblank (++lpos);
-        lclass = toupper (*lpos);
-        
-        if (!index (lblorder, lclass))
-        {
-            nerrexit ("Illegal Label Class");
-        }
-        
-        break;
-    case 'W':
-        PBytSiz = 2;
-    case 'B':
-        lclass = '$';
-        break;
-    case 'A':
-        lclass = '^';
-        break;
-    default:
-        fprintf(stderr, "%s\n", lpos);
-        nerrexit ("Illegal boundary name");
+        case 'C':
+            lpos = skipblank (++lpos);
+            lpos = movxnum (loc, lpos);
+            sscanf (loc, "%x", &NxtBnd);
+            ++NxtBnd;   /* Position to start of NEXT boundary */
+            return;     /* Nothing else to do for this option */
+        case 'L':
+            PBytSiz = 2;
+        case 'S':
+            lpos = skipblank (++lpos);
+            lclass = toupper (*lpos);
+            
+            if (!index (lblorder, lclass))
+            {
+                nerrexit ("Illegal Label Class");
+            }
+            
+            break;
+        case 'W':
+            PBytSiz = 2;
+        case 'B':
+            lclass = '$';
+            break;
+        case 'A':
+            lclass = '^';
+            break;
+        default:
+            fprintf(stderr, "%s\n", lpos);
+            nerrexit ("Illegal boundary name");
     }
 
     bdtyp = (int) strpos (BoundsNames, c);
@@ -826,7 +1014,7 @@ setupbounds (char *lpos)
         lpos = setoffset (++lpos, otreept);
     }
 
-    getrange (lpos, &rglo, &rghi, PBytSiz);
+    getrange (lpos, &rglo, &rghi, PBytSiz, 1);
     
     /* Now create the addition to the list */
     
@@ -861,7 +1049,8 @@ setupbounds (char *lpos)
             ++NoEnd;            /* flag for next pass */
             break;
         default:
-            fprintf(stderr,"NoEnd in prev cmd.. inserting \\x%x for prev hi\n", bdry->b_lo);
+            fprintf (stderr, "NoEnd in prev cmd.. ");
+            fprintf (stderr, "inserting \\x%x for prev hi\n", bdry->b_lo);
             fprintf(stderr,"...\n");
             prevbnd->b_hi = bdry->b_lo - 1;
             NoEnd -= 2;          /* undo one flagging */

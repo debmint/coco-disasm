@@ -1,4 +1,4 @@
-<section><title>Invoking and Running &odis;</title>
+<section id="odrun"><title>Invoking and Running &odis;</title>
   <section><title>Invoking &odis;</title>
     <para>
       &odis; is invoked by issuing the command in the following format: 
@@ -13,17 +13,19 @@
       </para>
       <formalpara><title>The formatted listing</title>
         <para>The formatted listing - something like you'd get with the
-          <command>l</command> option with most assemblers, goes to
+          <command>-l</command> option with most assemblers, goes to
           the standard output path.  If you invoke &odis; with no
           redirection ( "> something"), the output will go to the screen,
           or wherever normal output would go.  This holds true if the
           <command>-g</command> option is invoked.  The output for this
-          goes to the same place as the regular listing would go.
+          goes to the same place as the regular listing would go.  To
+          get no listing, redirect output to <command>/dev/null</command>
+          or whatever the "bit bucket" for your system is.
         </para>
       </formalpara>
       <formalpara><title>The assembly source file</title>
         <para>The assembly source file, the one that would be used to
-          generate the binary, is not produced unless the <command>o
+          generate the binary, is not produced unless the <command>-o
           </command>option is used.  This is because normally, several
           invocations of &odis; will probably be called before there will
           be any interest in the source file.
@@ -36,7 +38,7 @@
         </para>
       </formalpara>
     </section>
-    <section><title>Options Used by &odis;</title>
+    <section id="cmdoptions"><title>Options Used by &odis;</title>
       <para>&odis; uses the following options. Some of these options will
         be more fully explained later.  The options cannot be grouped, and must
         be preceded by a minus sign (-).
@@ -48,12 +50,19 @@
               <entry><command>c[=]&lt;command-file&gt;</command></entry>
               <entry>Use &lt;command-file&gt; for disassembly commands.  This
                 is the only option that cannot be specified in the command file
-                (which would be itself).
+                (which would be itself).  Only one <computeroutput>command
+                file</computeroutput> is accepted - the first one encountered.
+                Any subsequent <command>-c</command> options encountered are
+                ignored - with an error message to the <computeroutput>standard
+                error</computeroutput> path.
               </entry>
             </row>
             <row>
               <entry><command>s[=]&lt;label-file&gt;</command></entry>
-              <entry>Use &lt;label-file&gt; for label assignments</entry>
+              <entry>Use &lt;label-file&gt; for label assignments.  More than
+                one label file can be specified, and these will be read one
+                after the other, in order that they are entered.
+              </entry>
             </row>
             <row>
               <entry><command>o[=]&lt;asm-source-filename&gt;</command></entry>
@@ -61,6 +70,11 @@
                 default)
               </entry>
             </row>
+            <!--<row>
+              <entry><command>r</command></entry>
+              <entry>Disassemble a <computeroutput>ROF</computeroutput> file.
+              </entry>
+            </row>-->
             <row>
               <entry><command>ls</command></entry>
               <entry>Generate short (6-char) labels (Default is 8 chars)</entry>
@@ -75,7 +89,7 @@
             </row>
             <row>
               <entry><command>pd[=]&lt;pagedepth&gt;</command></entry>
-              <entry>Set page deptth for listing output (Default=80)</entry>
+              <entry>Set page depth for listing output (Default=80)</entry>
             </row>
             <row>
               <entry><command>d</command></entry>
@@ -115,7 +129,9 @@
       </informaltable>
       <para>Most of the above command options are self-explanatory. Briefly,
         you can (and ought to) use a single <filename>command file</filename>.
-        This file provides all the disassembly details. It defines the class by
+        This file provides all the disassembly details.  Any of the above
+        commands (except for the <command>c</command> can be embedded in
+        the <filename>command file</filename>.  It defines the class by
         which a label is defined at a given location, it defines data
         (non-code) regions in the program, and also can specify command-line
         options whereby you are not required to insert them on the command line
@@ -130,7 +146,7 @@
     </section>
     <section id="gmode"><title>Option "g" not good for general printouts</title>
       <para>
-        It should be noted that the option <literal>-g</literal> is not
+        It should be noted that the option <command>-g</command> is not
         really ideal for general printouts.  It uses tabs and there are
         disadvantages for this.
         <itemizedlist>
@@ -140,25 +156,33 @@
         </itemizedlist>
       </para>
       <para>The real purpose for this option is to output a listing that
-        can be interpreted by <literal>g09dis</literal>.  It was decided that
-        <literal>g09dis</literal> would use tabs to be the field delimiter
+        can be interpreted by <command>g09dis</command>.  It was decided that
+        <command>g09dis</command> would use tabs to be the field delimiter
         rather than trying to keep up with column widths in the listing
-        printout.  Therefore, <literal>g09dis</literal> <emphasis>
+        printout.  Therefore, <command>g09dis</command> <emphasis>
         must</emphasis> use this specially formatted file.  It cannot even load
         a standard space-formatted listing.
       </para>
-      <para><literal>G09dis</literal> can load files in one of two ways,
-        either by running &odis; separately with the <literal>-g</literal>
+      <para><command>G09dis</command> can load files in one of two ways,
+        either by running &odis; separately with the <command>-g</command>
         option and loading that file, or by generating the file directly
-        from within <literal>g09dis</literal> itself.
+        from within <command>g09dis</command> itself.
       </para>
+      <note>
+        <simpara>Actually there is no really good reason to load the listing
+          from a file.  It takes only a moment for &odis; to disassemble
+          even a fairly large file, and the listing obtained should be
+          most up-to-date.
+        </simpara>
+      </note>
     </section>
   </section>
-  <section><title>The command file</title>
-     <para>If you simply issue the command <computeroutput>os9disasm
-       &lt;programfile&gt;</computeroutput> on a program file, the resultant
-       code generated <emphasis>should</emphasis> assemble back into an
-       identical module or program file as that from which it was disassembled.
+  <section id="cmdfile"><title>The command file</title>
+     <para>If you simply issue the command <command>os9disasm
+       &lt;programfile&gt;</command> on a program file, the resultant
+       code that it would generate <emphasis>should</emphasis> assemble back
+       into an identical module or program file as that from which it was
+       disassembled.
      </para>
      <para>However, in this form, the source might not be very intelligible in
        places. Without some direction, &odis; blindly disassembles all byte
@@ -177,13 +201,13 @@
          assembler code, but rather are constant values that the program
          might use. These can be string constants, lookup tables, or simply
          numeric constants. These blocks of data code can be specified in one
-         of five ways
+         of six ways
        </para>
        <informaltable frame="none">
          <tgroup cols="2"><colspec colwidth='1.5in'/>
            <tbody valign="top">
              <row>
-               <entry><command>A</command></entry>
+               <entry id="asciis"><command>A</command></entry>
                <entry><command>ASCII data</command>
                  <para>
                    will generate <computeroutput>FCB</computeroutput>,
@@ -195,6 +219,17 @@
                  <para>In OS9 mode, <computeroutput>fcs</computeroutput>
                    statements will be generated if a character with the MSB set
                    is encountered.
+                 </para>
+               </entry>
+             </row>
+             <row>
+               <entry><command>=</command></entry>
+               <entry><command>ROF Data ASCII specification</command>
+                 <para>This is for use only with ROF disassemblies, and
+                   is for Initialized data.  Its usage is similar to the
+                   <command>A</command> specification, except that it is
+                   restricted to initialized vsects.  See
+                   <link linkend="asciis">ASCII Data</link> above.
                  </para>
                </entry>
              </row>
@@ -275,11 +310,11 @@
       the concepts of label classes, standard labels, offsets, and data areas
       be understood.
     </para>
-    <section>
+    <section id="lblclass">
       <title>Label Class</title>
         <para>One of the more important jobs in disassembling a program is the
-          proper generation of labels. This is the creation of a label name
-          from an address, usually by preceding the address with a letter (e.g.
+          proper generation of labels. &odis; creates label name from an
+          address, usually by preceding the address with a letter (e.g.
           address <command>$1234</command> becomes
           <computeroutput>L1234</computeroutput>).
         </para>
@@ -300,9 +335,9 @@
           instructions
         </para>
         <programlisting>
-          LDA &lt;$10   (direct)
-          LDA &gt;$0010  (extended)
-          BRA $0010      (relative),
+          LDA &lt;$10     (direct)
+          LDA &gt;$0010   (extended)
+          BRA $0010    (relative),
         </programlisting>
         <para>All seem to refer to the same address <command>$0010</command>,
           but in fact refer to three different memory locations. The direct
@@ -315,6 +350,8 @@
         </para>
         <para>In order to allow a different label to be assigned in such
           cases, &odis; uses the concept of <command>label classes</command>.
+        </para>
+        <para>
           Basically, a label class is simply the letter used as the first
           character in a generated label name.  Thus, if <command>direct
           </command>references are assigned to the label class
@@ -362,7 +399,7 @@
              If the value is between -9 and 9, then &odis; will generate a
              decimal constant, otherwise, it will generate a hexadecimal
              constant.  Note that this differs from the original
-             <filename>dynamite+</filename> in that there, only positive
+             <filename>dynamite+</filename> in that with it, only positive
              values between 0 and 9 would generate a decimal constant.
              However, it seems more logical to include the same range of
              negative values in the same class.
@@ -372,30 +409,58 @@
            <entry><command>^</command></entry>
            <entry><emphasis>Generates an ASCII constant. </emphasis>
              The particular form which &odis; will generate depends upon the
-             value of the constant. For a one byte value from $00 to $20, or
-             $7F, &odis; will generate the standard name of the control
-             character (<computeroutput>SPACE</computeroutput> for $20,
-             <computeroutput>DEL</computeroutput> for $7f).  For a one byte
-             value from $21 to $7E, &odis; will generate an ASCII constant
-             consisting of an apostrophe (') followed by the ASCII graphic for
-             that particular code value. For a one byte value from $80 to $FF,
-             &odis; will generate the proper form for the value without the
-             high bit set, appending an offset of +$80 (e.g.  disassemble
-             <computeroutput>LDA #$C1</computeroutput> as <computeroutput>LDA
-             #'A+$80</computeroutput>). For two byte values to be disassembled
-             as an ASCII constant, &odis; will break the value apart into the
-             two separate bytes, and generate each as a one byte ASCII
-             constant, taking into account the possible presence of a parity
-             bit on each byte. As an option, if both bytes are the codes for
-             ASCII graphic characters, &odis; can generate a double ASCII
-             constant consisting of a double quote (") followed by the two
-             characters. Some examples: <computeroutput>LDD
-             #$8D3F</computeroutput> is disassembled as <computeroutput>LDD
-             #CR*256+'?+$8000</computeroutput>, <computeroutput>LDD
-             #$4142</computeroutput> is disassembled as <computeroutput>LDD
-             #"AB</computeroutput> (double ASCII enabled) or
-             <computeroutput>LDD #'A*256+'B</computeroutput> (double ASCII
-             disabled).
+             value of the constant.
+             <itemizedlist>
+                <listitem>
+                  <simpara>For a one byte value from $00 to $20, or
+                    $7F, &odis; will generate the standard name of the control
+                    character (<computeroutput>SPACE</computeroutput> for $20,
+                    <computeroutput>DEL</computeroutput> for $7f).
+                  </simpara>
+                </listitem>
+                <listitem><simpara>For a one byte value from $21 to $7E, &odis;
+                    will generate an ASCII constant consisting of an apostrophe
+                    (') followed by the ASCII graphic for that particular code
+                    value.
+                </simpara></listitem>
+                <listitem><simpara>For a one
+                    byte value from $80 to $FF, &odis; will generate the proper
+                    form for the value without the high bit set, appending an
+                    offset of +$80.
+                  </simpara>
+                  <simpara><computeroutput>LDA #$C1</computeroutput>
+                    disassebles as <computeroutput>LDA
+                    #'A+$80</computeroutput>.
+                </simpara></listitem>
+                <listitem><simpara>For two byte values to be disassembled as an
+                    ASCII constant, &odis; will break the value apart into the
+                    two separate bytes, and generate each as a one byte ASCII
+                    constant, taking into account the possible presence of a
+                    parity bit on each byte.
+                  </simpara>
+                  <simpara>As an option, if both bytes are
+                    the codes for ASCII graphic characters, &odis; can generate
+                    a double ASCII constant consisting of a double quote (")
+                    followed by the two characters.
+                  </simpara>
+                  <simpara>Some examples:
+                  </simpara>
+                  <simplelist>
+                    <member>
+                      <computeroutput>LDD #$8D3F</computeroutput> is
+                      disassembled
+                      as <computeroutput>LDD #CR*256+'?+$8000</computeroutput>
+                    </member>
+                    <member><computeroutput>LDD #$4142</computeroutput> is
+                      disassembled as <computeroutput>LDD #"AB</computeroutput>
+                      (double ASCII enabled) or:
+                    </member>
+                    <member><computeroutput>LDD #'A*256+'B</computeroutput>
+                      (double ASCII disabled).
+                    </member>
+                  </simplelist>
+                </listitem>
+             </itemizedlist>
            </entry>
          </row>
          <row>
@@ -723,8 +788,10 @@
        ASCII data areas are those which contain ASCII characters, and should be
        disassembled using <command>FCC</command> or <command>FCS</command>
        statements, if possible. Graphic ASCII characters are collected together
-       and output in <command>FCC</command> or <command>FCS</command> statements,
-       with a double quote (") delimiter. The <command>FCS</command> statement
+       and output in <command>FCC</command> or <command>FCS</command>
+       statements, with a double quote (") delimiter as the preferred
+       delimiter, but a delimiter will be chosen such that it does not occur in
+       the string.  The <command>FCS</command> statement
        will be used, if enabled (it can be optionally disabled), whenever a
        character with the high bit set.  Nongraphic ASCII characters, which
        include the control characters, <command>DEL</command> ($7F), and

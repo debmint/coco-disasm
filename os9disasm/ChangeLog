@@ -1,3 +1,12 @@
+os9disasm (0.9.0)
+  * cmdfile.c, dprint.c, odis.h - Added ability to append comments to end of
+    command line.
+  * progdis.c - Fixed bug.  References that were made with an offset to that
+    reference were not displayed properly.  The were simply displayed as a
+	reference to the variable without the reference added/subtracted in.
+
+-- davebree    Sat, 09 Feb 2008 16:24:54 -0600
+
 os9disasm (0.6.0)
   * cmdfile.c, progdis.c, lbltree.c - Changed the addlbl() parameters.  The
     class is now passed by the class letter itself rather than as a number,

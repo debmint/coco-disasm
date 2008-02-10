@@ -611,7 +611,8 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
     {
         GtkWidget *align,
                   *vbox,
-                  *use_offset;
+                  *frame,
+                  *label;
 
         gchar *addr, *opcod, *pbyt, *mnem,
               *oprand;
@@ -697,8 +698,10 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
          * Add Offset if desired        *
          * **************************** */
 
-        align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
+        frame = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                       "Offset from address");
+
+        align = gtk_vbox_new (0, 1);    // Utilize align for vbox
 
         if (offset_list == NULL )   /* If not initialized */
         {
@@ -712,7 +715,22 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
 
         gtk_entry_set_text (GTK_ENTRY (GTK_BIN (
                                        cb_data->offset_entry)->child), "NONE");
-        gtk_container_add (GTK_CONTAINER (align), cb_data->offset_entry);
+
+        gtk_box_pack_start (GTK_BOX (align), cb_data->offset_entry, 0, 0, 3);
+
+        /* Add help labels */
+
+        pack_hsep (GTK_BOX (align));
+        label = gtk_label_new_with_mnemonic ("Enter label class followed by");
+        gtk_box_pack_start (GTK_BOX (align), label, 0, 0, 1);
+        label = gtk_label_new_with_mnemonic ("hexadecimal offset");
+        gtk_box_pack_start (GTK_BOX (align), label, 0, 0, 1);
+        label = gtk_label_new_with_mnemonic ("$=hex, &=decimal, @=either,");
+        gtk_box_pack_start (GTK_BOX (align), label, 0, 0, 1);
+        label = gtk_label_new_with_mnemonic ("or Label Class letter");
+        gtk_box_pack_start (GTK_BOX (align), label, 0, 0, 1);
+
+        gtk_container_add (GTK_CONTAINER (frame), align);
         
         /* Initialize to "not" have offset */
      /*   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (use_offset), FALSE);

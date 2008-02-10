@@ -348,11 +348,11 @@ save_lbl(fileinf *fdat, GtkWidget *my_win, gchar **newfile)
     fclose (outfile);
 }
 
-    /* *******
-     * This function clears out the data in
-     * an existing liststore
-     * *******
-     */
+    /* ************************************ *
+     * This function clears out the data in *
+     * an existing liststore                *
+     * ************************************ */
+
 void
 list_store_empty( fileinf *fdat)
 {
@@ -440,10 +440,10 @@ save_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     fclose (outfile);
 }
 
-        /* **********
-         * Clears data in an existing text buffer
-         * **********
-         */
+        /* ************************************** *
+         * Clears data in an existing text buffer *
+         * ************************************** */
+
 void
 clear_text_buf( fileinf *fdat)
 {
@@ -510,6 +510,7 @@ load_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     *newfile = NULL;
 
     /* Now open the file and read it */
+
     if (!(infile = fopen (fdat->fname, "rb")))
     {
         fprintf (stderr, "Cannot open file %s for read!\n", fdat->fname);
@@ -533,7 +534,56 @@ load_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     doc_set_modified(fdat, FALSE);
 }
 
-/* load_list_tree() - generic single-column Treeview load */
+/* ****************************************************** *
+ * str_digit() - check that a string is a valid deximal # *
+ * Passed:  str - pointer to string to check              *
+ * Returns: 1 if all chars in string match,               *
+ *          0 if any do not                               *
+ * ****************************************************** */
+
+int
+str_digit (char *str)
+{
+    char *ch = str;
+
+    while (*ch)
+    {
+        if (!isdigit (*(ch++)))
+        {
+            return (0);
+        }
+    }
+
+    return (1);     /* If we get here, all chars have matched */
+}
+
+/* ****************************************************** *
+ * str_xdigit() - check that a string is a valid hex #    *
+ * Passed:  str - pointer to string to check              *
+ * Returns: 1 if all chars in string match,               *
+ *          0 if any do not                               *
+ * ****************************************************** */
+
+int
+str_xdigit (char *str)
+{
+    char *ch = str;
+
+    while (*ch)
+    {
+        if (!isxdigit (*(ch++)))
+        {
+            return (0);
+        }
+    }
+
+    return (1);     /* If we get here, all chars have matched */
+}
+
+/* ****************************************************** *
+ * load_list_tree() - generic single-column Treeview load *
+ * ****************************************************** */
+
 static void
 load_list_tree (fileinf * fdat, FILE *infile)
 {
@@ -547,14 +597,24 @@ load_list_tree (fileinf * fdat, FILE *infile)
         /* get rid of newlines and leading/trailing whitespaces,
          * if present
          */
+
         g_strstrip(buffer);
         
-        splits = g_strsplit (buffer, "\t", LST_NCOLS);
-
-        if (splits[LST_LIN] && splits[LST_ADR] && splits[LST_OPCO] &&
-                             splits[LST_PBYT] && splits[LST_LBL] &&
-                             splits[LST_MNEM] && splits[LST_OPER])
+        if (strlen (buffer))
         {
+            /* Assure that there are enough fields */
+
+            strcat (buffer,"\t\t\t\t\t\t");
+
+            /* Split the string, with all excess going into splits[LS_NCOLS] */
+
+            splits = g_strsplit (buffer, "\t", LST_NCOLS + 1);
+
+            if (!str_digit (splits[LST_LIN]) || !str_xdigit (splits[LST_ADR]))
+            {
+                continue;
+            }
+
             gtk_list_store_append (fdat->l_store, &iter);
             gtk_list_store_set (fdat->l_store, &iter,
                                 LST_LIN, splits[LST_LIN],
@@ -565,16 +625,17 @@ load_list_tree (fileinf * fdat, FILE *infile)
                                 LST_MNEM, splits[LST_MNEM],
                                 LST_OPER, splits[LST_OPER],
                                 -1);
+
+            g_strfreev (splits);
+            splits = NULL;
         }
-
-        g_strfreev (splits);
-        splits = NULL;
+    
+        doc_set_modified(fdat,FALSE);
     }
-
-    doc_set_modified(fdat,FALSE);
 }
 
 /* load_lbl() - load the label file into the GtkTreeView */
+
 void
 load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
 {
@@ -713,11 +774,11 @@ sysfailed (char *msg)
 }
 
 
-/* ************************************ *
- * run_disassembler  - a callback from  *
- *          the menu                    *
- * Passed: action, the global variables *
- * ************************************ */
+/* ********************************************** *
+ * run_disassembler  - a callback from the menu   *
+ *                     does a disassembly pass    *
+ * Passed: action, the global variables           *
+ * ********************************************** */
 
 void
 run_disassembler (GtkAction * action, glbls * hbuf)
@@ -841,7 +902,8 @@ run_disassembler (GtkAction * action, glbls * hbuf)
                 sysfailed(msg);
         }
     }
-    else {  /* else we're piping to the GUI */
+    else        /* else we're piping to the GUI */
+    {
         FILE *infile;
         
         /* Now open the file and read it */
@@ -884,11 +946,12 @@ compile_listing (GtkAction * action, glbls * hbuf)
     int old_write_list = write_list;
 
     /* temporarily flag that we're writing to GUI */
+    
     write_list = LIST_GTK;
 
     run_disassembler (action, hbuf);
 
-    write_list = old_write_list;   /* restore write_list */
+    write_list = old_write_list;        /* restore write_list */
 }
 
 /* *************************************** *
@@ -909,12 +972,14 @@ load_listing (GtkAction * action, glbls * hbuf)
         /* Call list_store_empty - if it's a listing, fdat->altered shouldn't
          * be set to TRUE (hopefully)
          */
+        
         list_store_empty(&(hbuf->list_file));
 
         (hbuf->list_file).fname = g_strdup (hbuf->filename_to_return);
         free_filename_to_return (&(hbuf->filename_to_return));
 
         /* Now open the file and read it */
+        
         if (!(infile = fopen ((hbuf->list_file).fname, "r")))
         {
             fprintf (stderr, "Cannot open file \"%s\" for read!\n",
@@ -968,6 +1033,7 @@ cmd_save_as (GtkAction * action, glbls * hbuf)
     {
 
         /* handle fname */
+        
         if (hbuf->cmdfile.fname)
         {
             g_free(hbuf->cmdfile.fname);
@@ -1147,6 +1213,7 @@ void opts_load (GtkAction *action, glbls *hbuf)
     if (!optfile)
     {
         /* Print Error message */
+        
         free_filename_to_return ( &(hbuf->filename_to_return));
         return;
     }

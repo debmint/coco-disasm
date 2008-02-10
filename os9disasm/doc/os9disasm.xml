@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
 <!ENTITY odis "<command>OS9Disasm</command>">
+<!ENTITY gtk "<command>GTK</command>">
 <!ENTITY odinst SYSTEM "odisinst.xml">
+<!ENTITY odquick SYSTEM "odquick.xml">
 <!ENTITY odrun SYSTEM "odrun.xml">
 <!ENTITY odcmd SYSTEM "odcmd.xml">
 <!ENTITY g09dis SYSTEM "g09dis.xml">
@@ -113,7 +115,39 @@
         code, and (hopefully) very few bugs remain.
       </para>
     </section>
+    <section><title>Structure of this package</title>
+        <para>The &odis; package is comprised of actually two parts.  The
+            <computeroutput>os9disasm</computeroutput> portion and the
+            <computeroutput>g09dis</computeroutput> part.
+        </para>
+        <section><title>The os9disasm package</title>
+            <para>The files under the <computeroutput>os9disasm</computeroutput>
+                directory comprise the disassembler portion of the package.
+                It is a stand-alone product in that this is the part that does
+                all the disassembly work.  This is the command-line interface
+                and it is called by command-line options.  See
+                <xref linkend="cmdoptions"/> for details on the individual
+                command-line options that &odis; uses.
+            </para>
+        </section>
+        <section><title>The g09dis package</title>
+            <para>The files under the <computeroutput>g09dis</computeroutput>
+                directory make up the GUI portion of the package.  Although
+                it is not necessary for the compilation, it can make it easier
+                to get a good output without getting as deeply involved with
+                the disassembler itself.  The interface hopefully makes the
+                process more intuitive.
+            </para>
+            <para>Remember that by default, the package is built
+                <emphasis>without</emphasis> including this portion, and that,
+                when configuring, you need to include the option
+                <emphasis>--with-g09dis</emphasis> with the
+                <emphasis>configure</emphasis> command.
+            </para>
+        </section>
+    </section>
   </section>
+  &odquick;
   &odinst;
   &odrun;
   &odcmd;

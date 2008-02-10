@@ -1,20 +1,20 @@
-/*############################################################################
-#
-#  os9disasm - OS9-6809 CROSS DISASSEMBLER 
-#             following the example of Dynamite+
-#             
-# # ######################################################################## #
-#
-#  $Id$
-#                                                                            #
-#  Edition History:                                                          #
-#  #  Date       Comments                                              by    #
-#  -- ---------- -------------------------------------------------     ---   #
-#  01 2003/01/31 First began project                                   dlb   #
-##############################################################################
-# File:  dprint.c                                                            #
-# Purpose: handle printing and output function                               #
-############################################################################*/
+/************************************************************************** *
+*                                                                           *
+*  os9disasm - OS9-6809 CROSS DISASSEMBLER                                  *
+*             following the example of Dynamite+                            *
+*                                                                           *
+* ************************************************************************* *
+*                                                                           *
+*  $Id$                              *
+*                                                                           *
+*  Edition History:                                                         *
+*  *  Date       Comments                                              by   *
+*  -- ---------- -------------------------------------------------     ---  *
+*  01 2003/01/31 First began project                                   dlb  *
+*************************************************************************** *
+* File:  dprint.c                                                           *
+* Purpose: handle printing and output function                              *
+*************************************************************************** */
 
 #include "odis.h"
 #include <time.h>
@@ -22,9 +22,11 @@
 #define CNULL '\0'
 
 extern char *CmdBuf;
+extern struct printbuf *pbuf;
+extern struct rof_hdr *rofptr;
 
-char *pseudcmd = "%5d  %04X %-14s %-10s %-6s %s\n";
-char *realcmd = "%5d  %04X %-04s %-9s %-10s %-6s %s\n";
+char *pseudcmd = "%5d  %04X %-14s %-10s %-6s %s %s\n";
+char *realcmd = "%5d  %04X %-04s %-9s %-10s %-6s %s %s\n";
 char *blankcmd = "%5d";
 
 int PgNum = 0;
@@ -56,12 +58,18 @@ OutputLine (char *pfmt, struct printbuf *pb)
         && (nl = FindLbl (SymLst[(int) strpos (lblorder, 'L')], CmdEnt)))
     {
         strcpy (pb->lbnm, nl->sname);
+
+        if (IsROF && nl->global)
+        {
+            strcat (pb->lbnm, ":");
+        }
     }
 
     PrintFormatted (pfmt, pb);
 
     if (WrtSrc)
-        fprintf (outpath, "%s %s %s\n", pb->lbnm, pb->mnem, pb->operand);
+        fprintf (outpath, "%s %s %s %s\n", pb->lbnm, pb->mnem,
+                                          pb->operand, pb->comment);
 }
 
     /* Straighten/clean up - prepare for next line  */
@@ -70,10 +78,109 @@ static void
 PrintCleanup (struct printbuf *pb)
 {
     PrevEnt = CmdEnt;
-    memset (pb, 0, sizeof (struct printbuf));
+
+    if (pb)
+    {
+        memset (pb, 0, sizeof (struct printbuf));
+    }
+
     CmdLen = 0;
     ++PgLin;
     ++LinNum;
+}
+
+/* *********************************************** *
+ * PrintNonCmd() - A utility function to print any *
+ *          non-command line (except stored        *
+ *          comments).  Prints the line with line  *
+ *          number, and updates PgLin, LinNum      *
+ * Passed: str - the string to print               *
+ *         preblank - true if blankline before str *
+ *         postblank - true if blankline after str *
+ * *********************************************** */
+
+void
+PrintNonCmd (char *str, int preblank, int postblank)
+{
+    if (IsROF)
+    {
+        if (preblank)
+        {
+            BlankLine();
+        }
+
+        printf ("%5d %s\n", LinNum, str);
+        
+        if (WrtSrc)
+        {
+            fprintf (outpath, "%s", str);
+        }
+
+        if (postblank)
+        {
+            BlankLine();
+        }
+    }
+    
+    PrintCleanup (0);
+}
+
+/* *********************************************** *
+ * get_comment() - Checks for append comment for   *
+ *      current command line.                      *
+ * Passed: class,                                  *
+ *         entry address for command               *
+ * Returns: ptr to comment string if present       *
+ *          ptr to empty string if none            *
+ * *********************************************** */
+
+char *
+get_apcomment(char clas, int addr)
+{
+    struct apndcmnt *mytree = CmntApnd[strpos (lblorder, clas)];
+
+    if (!clas)
+    {
+        return ("");
+    }
+
+    if (mytree)
+    {
+        while (1)
+        {
+            if (addr < mytree->adrs)
+            {
+                if (mytree->apLeft)
+                {
+                    mytree = mytree->apLeft;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                if (addr > mytree->adrs)
+                {
+                    if (mytree->apRight)
+                    {
+                        mytree = mytree->apRight;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    return mytree->CmPtr;
+                }
+            }
+        }
+    }
+
+    return ("");
 }
 
 /* *********************************************** *
@@ -85,9 +192,10 @@ PrintCleanup (struct printbuf *pb)
 void
 PrintLine (char *pfmt, struct printbuf *pb, char class, int cmdlow, int cmdhi)
 {
-    NonBoundsLbl ();            /*Check for non-boundary labels */
+    NonBoundsLbl (class);            /*Check for non-boundary labels */
 
     PrintComment (class, cmdlow, cmdhi);
+    pb->comment = get_apcomment(class, cmdlow);
     OutputLine (pfmt, pb);
 
     PrintCleanup (pb);
@@ -139,12 +247,12 @@ PrintFormatted (char *pfmt, struct printbuf *pb)
     if (pfmt == pseudcmd)
     {
         printf (pfmt, LinNum, CmdEnt, pb->instr, pb->lbnm,
-                pb->mnem, pb->operand);
+                pb->mnem, pb->operand, pb->comment);
     }
     else
     {
         printf (pfmt, LinNum, CmdEnt, pb->instr, pb->opcod, pb->lbnm,
-                pb->mnem, pb->operand);
+                pb->mnem, pb->operand, pb->comment);
     }
 }
 
@@ -241,33 +349,42 @@ PrintComment(char lblclass, int cmdlow, int cmdhi)
 }
 
 void
-NonBoundsLbl ()
+NonBoundsLbl (char class)
 {
-    int x;
-    struct nlist *nl;
-    struct printbuf altbuf, *bf = &altbuf;
-
-    for (x = PrevEnt + 1; x < CmdEnt; x++)
+    if (class)
     {
-        if ((nl = FindLbl (SymLst[(int) strpos (lblorder, 'L')], x)))
+        int x;
+
+        for (x = PrevEnt + 1; x < CmdEnt; x++)
         {
-            memset (bf, 0, sizeof (struct printbuf));
-            strcpy (bf->lbnm, nl->sname);
-            strcpy (bf->mnem, "equ");
-            if (x > CmdEnt)
+            struct printbuf altbuf, *bf = &altbuf;
+            struct nlist *nl;
+            
+            if ((nl = FindLbl (ListRoot (class), x)))
             {
-                sprintf (bf->operand, "*+%d", x - CmdEnt);
+                memset (bf, 0, sizeof (struct printbuf));
+                strcpy (bf->lbnm, nl->sname);
+                strcpy (bf->mnem, "equ");
+
+                if (x > CmdEnt)
+                {
+                    sprintf (bf->operand, "*+%d", x - CmdEnt);
+                }
+                else
+                {
+                    sprintf (bf->operand, "*-%d", CmdEnt - x);
+                }
+
+                printf (pseudcmd, LinNum++, nl->myaddr, bf->instr,
+                        bf->lbnm, bf->mnem, bf->operand);
+                ++PgLin;
+                
+                if (WrtSrc)
+                {
+                    fprintf (outpath, "%s %s %s\n", bf->lbnm, bf->mnem,
+                             bf->operand);
+                }
             }
-            else
-            {
-                sprintf (bf->operand, "*-%d", CmdEnt - x);
-            }
-            printf (pseudcmd, LinNum++, nl->myaddr, bf->instr,
-                    bf->lbnm, bf->mnem, bf->operand);
-            ++PgLin;
-            if (WrtSrc)
-                fprintf (outpath, "%s %s %s\n", bf->lbnm, bf->mnem,
-                         bf->operand);
         }
     }
 }
@@ -292,7 +409,7 @@ RsOrg (void)
     /* Call NonBoundsLbl() after OutputLine to try to get any unlisted
      * labels listed with the correct Pc offsets */
 
-    NonBoundsLbl ();
+    NonBoundsLbl ('L');
     PrintCleanup (prtbf);
     BlankLine ();
     
@@ -317,12 +434,52 @@ RsEnd (void)
     BlankLine ();
 }
 
-/* ************************************** *
- * OS9Modline()  - print out OS9 mod line *
- * Note: We're going to assume that the   *
- *    file is positioned at the right     *
- *    place - we may try merged modules   *
- * ************************************** */
+/* ********************************************* *
+ * ROFPsect() - writes out psect                 *
+ * Passed: rof_hdr *rptr                         *
+ * ********************************************* */
+
+#define OPSCAT(str) sprintf (pbuf->operand, "%s,%s", pbuf->operand, str)
+#define OPDCAT(nu) sprintf (pbuf->operand, "%s,%d", pbuf->operand, nu)
+#define OPHCAT(nu) sprintf (pbuf->operand, "%s,%04x", pbuf->operand, nu)
+
+void
+ROFPsect (struct rof_hdr *rptr)
+{
+    struct nlist *nl;
+
+    strcpy (pbuf->instr, "");
+    strcpy (pbuf->opcod, "");
+    strcpy (pbuf->lbnm, "");
+    strcpy (pbuf->mnem, "psect");
+    sprintf (pbuf->operand, "%s,$%x,$%x,%d,%d", rptr->rname,
+                                              rptr->ty_lan >> 8,
+                                              rptr->ty_lan & 0xff,
+                                              rptr->edition,
+                                              rptr->stksz
+            );
+
+    if ((nl = FindLbl (ListRoot('L'), rptr->modent)))
+    {
+        OPSCAT(nl->sname);
+    }
+    else
+    {
+        OPHCAT ((int)(rptr->modent));
+    }
+
+    CmdEnt = 0;
+    PrevEnt = 1;    /* To prevent NonBoundsLbl() output */
+    PrintLine (pseudcmd, pbuf, CNULL, 0, 0); 
+}
+
+
+/* ********************************************* *
+ * OS9Modline()  - print out OS9 mod line        *
+ * Note: We're going to assume that the          *
+ *    file is positioned at the right            *
+ *    place - we may try merged modules          *
+ * ********************************************* */
 
 void
 OS9Modline ()
@@ -417,20 +574,163 @@ WrtEmod ()
         fprintf (outpath, " %s\n", "end");
 }
 
-/* OS9DataPrint()	Mainline routine to list data defs
- */
+/* *************************************************** *
+ * WrtEnds() - writes the "ends" command line          *
+ * *************************************************** */
+
+void
+WrtEnds(void)
+{
+    strcpy (pbuf->mnem, "ends");
+    BlankLine();
+    PrintLine (realcmd, pbuf, 'D', 0, 0);
+    BlankLine();
+}
+
+/* *************************************************** *
+ * ROFDataPrint() - Mainline routine to list data defs *
+ *          for ROF's                                  *
+ * *************************************************** */
+
+void
+ROFDataPrint ()
+{
+    struct nlist *dta, *srch;
+//    char *vstyp[2] = {"vsect dp", "vsect"};
+    char *dptell[2] = {"* Uninitialized data (class %c)",
+                       "* Initialized Data (class %c)"};
+    int sizes[4] = { rofptr->udpsz, rofptr->idpsz,
+                     rofptr->udatsz, rofptr->idatsz
+                   },
+        *thissz = sizes;
+
+    int vs,
+        isinit;
+    int reftyp[] = {2, 3, 0, 1};     /* Label ref Type */
+    char dattmp[5];
+    char *dattyp = dattmp;
+    char mytmp[50];
+
+    InProg = 0;
+    memset (pbuf, 0, sizeof (struct printbuf));
+
+    /* We compute dattyp for flexibility.  If we change the label type
+     * specification all we have to do is change it in rof_class() and it
+     * should work here automatically rather than hard-coding the classes
+     */
+
+    dattyp[4] = '\0';
+
+    for (vs = 0; vs < 5; vs++)
+    {
+        dattyp[vs] = rof_class (reftyp[vs]);
+    }
+
+    for ( vs = 0; vs <= 1; vs++)    /* Cycle through DP, non-dp */
+    {
+        //if ((ListRoot (dattyp[0]) || ListRoot (dattyp[1])))
+        if ((thissz[0]) || thissz[1])
+        {
+            strcpy (pbuf->mnem, "vsect");
+
+            if (!vs)
+            {
+                strcpy (pbuf->operand, "dp");
+            }
+            else
+            {
+                strcpy (pbuf->operand, "");
+            }
+
+            BlankLine();
+            PrintLine (realcmd, pbuf, dattyp[vs], 0, 0);
+            BlankLine();
+
+            /* Process each of un-init, init */
+
+            for (isinit = 0; isinit <= 1; isinit++)
+            {
+                dta = ListRoot (dattyp[isinit]);
+
+                sprintf (mytmp, dptell[isinit], dattyp[isinit]);
+
+                if (isinit)
+                {
+                    PrintNonCmd (mytmp, 0, 1);
+                    ListInitROF (dta, thissz[isinit], vs, dattyp[isinit]);
+                }
+                else
+                {
+                    if (dta)
+                    {
+                        /* for PrintNonCmd(), send isinit so that a pre-blank
+                         * line is not printed, since it is provided by
+                         * PrinLine above */
+    
+                        PrintNonCmd (mytmp, isinit, 1);
+                        srch = dta;
+    
+                        while (srch->LNext)
+                        {
+                            srch = srch->LNext;
+                        }
+    
+                        if (srch->myaddr)
+                        {                       /* i.e., if not D000 */
+                            strcpy (pbuf->mnem, "rmb");
+                            sprintf (pbuf->operand, "%d", srch->myaddr);
+                            CmdEnt = PrevEnt = 0;
+                            PrintLine (realcmd, pbuf, dattyp[isinit], 0,
+                                                      srch->myaddr);
+                        }
+    
+                        /* For max value, send a large value so ListData
+                         * will print all for class
+                         */
+    
+                        ModData = thissz[isinit];
+                        ListData (dta, thissz[isinit]);
+                    }           /* end "if (dta)" */
+                    else        /* else no labels.. check to see */
+                    {           /* if any "hidden" variables */
+                        if (thissz[isinit])
+                        {
+                            PrintNonCmd (mytmp, isinit, 1);
+                            strcpy (pbuf->mnem, "rmb");
+                            sprintf (pbuf->operand, "%d", thissz[isinit]);
+                            PrintLine (realcmd, pbuf, dattyp[isinit], 0,
+                                                        0);
+                        }
+                    }
+                }
+            }
+
+            /* Do "ends" for this vsect */
+
+            WrtEnds();
+        }
+
+        dattyp += 2;   /* Done with this class, point to next */
+        thissz += 2;   /* And to the next data size */
+    }
+
+    InProg = 1;
+}
+
+/* *************************************************** *
+ * OS9DataPrint()	Mainline routine to list data defs *
+ * *************************************************** */
 
 void
 OS9DataPrint ()
 {
     struct nlist *dta, *srch;
-    struct printbuf PB, *pbf = &PB;
+/*    struct printbuf PB, *pbuf = &PB;*/
     char *what = "* OS9 data area definitions";
 
-    InProg = 0;                 /* Stop looking for Inline program labels to substitute */
-    memset (pbf, 0, sizeof (struct printbuf));
+    InProg = 0;    /* Stop looking for Inline program labels to substitute */
+    memset (pbuf, 0, sizeof (struct printbuf));
 
-    /*if ((dta = SymLst[0]))*/
     if ((dta=ListRoot('D')))
     {                           /* special tree for OS9 data defs */
         BlankLine ();
@@ -447,10 +747,10 @@ OS9DataPrint ()
 
         if ((srch->myaddr))
         {                       /* i.e., if not D000 */
-            strcpy (pbf->mnem, "rmb");
-            sprintf (pbf->operand, "%d", srch->myaddr);
+            strcpy (pbuf->mnem, "rmb");
+            sprintf (pbuf->operand, "%d", srch->myaddr);
             CmdEnt = PrevEnt = 0;
-            PrintLine (realcmd, pbf, 'D', 0, srch->myaddr);
+            PrintLine (realcmd, pbuf, 'D', 0, srch->myaddr);
         }
         ListData (dta, ModData);
     }
@@ -464,9 +764,13 @@ OS9DataPrint ()
     InProg = 1;
 }
 
-/* ListData() - recursive routine to print rmb's for Data definitions
- *    Passed: address of upper (or calling) ListData() routine
- */
+/* ****************************************************** *
+ * ListData() - recursive routine to print rmb's for Data *
+ *              definitions                               *
+ * Passed: pointer to current nlist element               *
+ *         address of upper (or calling) ListData()       *
+ *             routine                                    *
+ * ****************************************************** */
 
 void
 ListData (struct nlist *me, int upadr)
@@ -477,18 +781,28 @@ ListData (struct nlist *me, int upadr)
 
     memset (pbf, 0, sizeof (struct printbuf));
 
-    /* Process preceding entries first */
+    /* Process lower entries first */
+    
     if (me->LNext)
     {
         ListData (me->LNext, me->myaddr);
     }
 
+    /* Don't print non-data elements here */
+
+    if (me->myaddr > ModData)
+    {
+        return;
+    }
+
     /* Now we've come back, print this entry */
+    
     strcpy (pbf->lbnm, me->sname);
-    if (me->myaddr != ModData)
-        strcpy (pbf->mnem, "rmb");
-    else
-        strcpy (pbf->mnem, "equ");
+
+    if (IsROF && me->global)
+    {
+        strcat (pbf->lbnm, ":");
+    }
 
     if (me->RNext)
     {
@@ -505,21 +819,38 @@ ListData (struct nlist *me, int upadr)
     }
     
     /* Don't print any class 'D' variables which are not in Data area */
+    /* Note, Don't think we'll get this far, we have a return up above,
+     * but keep this one till we know it works
+    
     if ((OSType == OS_9) && (me->myaddr > ModData))
     {
         return;
-    }
+    }*/
     
     if (me->myaddr != ModData)
+    {
+        strcpy (pbf->mnem, "rmb");
         sprintf (pbf->operand, "%d", datasize);
+    }
     else
-        strcpy (pbf->operand, ".");
+    {
+        if (IsROF)
+        {
+            strcpy (pbf->mnem, "rmb");
+            sprintf (pbf->operand, "%d", datasize);
+        }
+        else
+        {
+            strcpy (pbf->mnem, "equ");
+            strcpy (pbf->operand, ".");
+        }
+    }
 
     CmdEnt = me->myaddr;
     PrevEnt = CmdEnt;
     PrintLine (realcmd, pbf, 'D', me->myaddr, (me->myaddr + datasize));
 
-    if (me->RNext)
+    if (me->RNext && (me->myaddr < ModData))
     {
         ListData (me->RNext, upadr);
     }
@@ -549,27 +880,38 @@ WrtEquates (int stdflg)
 
     while ((NowClass = *(curnt++)) != ';')
     {
+        int minval;
+
         flg = stdflg;
         strcpy (ClsHd, "%5d %21s");
         
         if ((me = ListRoot (NowClass)))
         {
             /* For OS9, we only want external labels this pass */
+            
             if ( (OSType == OS_9) && (NowClass == 'D'))
             {
                 if (stdflg)     /* Don't print data defs */
                 {
-                    return;
+                    continue;
                 }
 
                 /* Probably an error if this happens
                  * What we're doing is positioning me to
                  * last real data element*/
-                if (!(me = FindLbl (me, ModData)))
+                
+               /* if (!(me = FindLbl (me, ModData)))
                 {
-                    return;
-                }
+                    continue;
+                }*/
             }
+
+            /* Don't write vsect data for ROF's */
+
+/*            if ((IsROF) && stdflg && index ("BDGH", NowClass))
+            {
+                continue;
+            }*/
             
             switch (NowClass)
             {
@@ -589,51 +931,105 @@ WrtEquates (int stdflg)
             }
 
             HadWrote = 0;       /* flag header not written */
-            TellLabels (me, flg, NowClass);
+
+            /* Determine minimum value for printing *
+             * minval will be the first value to    *
+             * print                                */
+
+            minval = 0;     /* Default to "print all" */
+
+            if (OSType == OS_9)
+            {
+                if (IsROF)
+                {
+                    minval = rof_datasize (NowClass);
+
+                    /* If this class has any data, we want to exclude
+                     * printing the last entry.
+                     * Otherwise, if no real entries, we want to print
+                     * element "0"
+                     */
+
+                    if (minval)
+                    {
+                        ++minval;
+                    }
+                }
+                else
+                {
+                    if (NowClass == 'D')
+                    {
+                        minval = ModData + 1;
+                    }
+                    else {
+                        if (NowClass == 'L')
+                        {
+                            minval = ModSiz + 1;
+                        }
+                    }
+                }
+            }
+
+            TellLabels (me, flg, NowClass, minval);
         }
     }
+
     InProg = 1;
 }
 
 /* TellLabels(me) - Print out the labels for class in "me" tree */
 
 void
-TellLabels (struct nlist *me, int flg, char class)
+TellLabels (struct nlist *me, int flg, char class, int minval)
 {
     struct printbuf PBF, *pb = &PBF;
 
     memset (pb, 0, sizeof (struct printbuf));
+
     if (me->LNext)
     {
-        TellLabels (me->LNext, flg, class);
+        TellLabels (me->LNext, flg, class, minval);
     }
 
     if ((flg < 0) || (flg == me->stdnam))
     {
         /* Don't print real OS9 Data variables here */
-        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr<=ModData)))
+
+        if (me->myaddr >= minval)
+/*        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr <= ModData)))*/
         {
             if (!HadWrote)
             {
                 BlankLine ();
                 printf (ClsHd, LinNum++, "", NowClass);
                 ++PgLin;
+                
                 if (outpath)
                     fprintf (outpath, SrcHd, NowClass);
+                
                 HadWrote = 1;
                 BlankLine ();
             }
     
             strcpy (pb->lbnm, me->sname);
             strcpy (pb->mnem, "equ");
-            sprintf (pb->operand, "$%04x", me->myaddr);
-            if (UpCase)
-                UpPbuf (pb);
+
+            if (index ("!^", class))
+            {
+                sprintf (pb->operand, "$%02x", me->myaddr);
+            }
+            else
+            {
+                sprintf (pb->operand, "$%04x", me->myaddr);
+            }
+
             CmdEnt = PrevEnt = me->myaddr;
             PrintLine (realcmd, pb, class, me->myaddr, me->myaddr + 1);
         }
     }
 
     if (me->RNext)
-        TellLabels (me->RNext, flg,class);
+    {
+        TellLabels (me->RNext, flg, class, minval);
+    }
 }

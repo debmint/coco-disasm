@@ -1,6 +1,6 @@
 # Makefile for g09dis
 
-# $Id:$
+# $Id$
 
 bin_PROGRAMS = g09dis
 

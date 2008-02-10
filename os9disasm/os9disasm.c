@@ -94,7 +94,8 @@ build_path (char *fname, char *fullname, int nsize)
         strncpy (fullname, myhome, nsize);
         nsize -= strlen (fullname);
         strncat (fullname, &fname[1], nsize);
-        realname = strdup (fullname);
+        //realname = strdup (fullname);
+        realname = fullname;
     }
 
     if (!realname)
@@ -123,7 +124,7 @@ build_path (char *fname, char *fullname, int nsize)
             }
 
             strncat (fullname, fname, nsize);
-            realname = strdup (fullname);
+            realname = fullname;
         }
     }
 
@@ -164,6 +165,9 @@ do_opt (char *c)
                 exit (1);
         }
 
+        break;
+    case 'r':           /* File is an ROF file */
+        IsROF = 1;
         break;
     case 's':                  /* Label file name       */
         if (LblFilz < MAX_LBFIL)
@@ -276,12 +280,51 @@ pass1 ()
 
     switch (OSType)
     {
+        int firstword;
+
         case OS_Coco:
             rsdoshdr ();
             break;
         default:   /* default is OS_9 */
             UseFCC = 1;
-            os9hdr ();
+
+            firstword = o9_fgetword (progpath);
+
+            if (firstword == 0x62cd)
+            {
+                firstword = firstword << 16 | o9_fgetword (progpath);
+
+                if ( firstword == 0x62cd2387)
+                {
+                    IsROF = 1;
+                }
+                else
+                {
+                    fprintf (stderr, "Not an ROF Header - starts with %08x\n",
+                                     firstword);
+                    exit (1);
+                }
+            }
+            else
+            {
+                if (firstword != 0x87cd)
+                {
+                    fprintf (stderr, "Not a valid header - starts with %04x\n",
+                                     firstword);
+                    exit (1);
+                }
+            }
+
+            rewind (progpath);
+
+            if (IsROF)
+            {
+                rofhdr ();
+            }
+            else
+            {
+                os9hdr ();
+            }
     }
 
     if (cmdfilename)
@@ -389,7 +432,7 @@ GetLabels ()                    /* Read the labelfiles */
             fclose (inpath);
         }
 
-        free (tmpnam);
+        //free (tmpnam);
     }
     
     /* and now the standard label file */
@@ -419,7 +462,7 @@ GetLabels ()                    /* Read the labelfiles */
         fclose (inpath);
     }
 
-    free (tmpnam);
+    //free (tmpnam);
 
     /* Now read in label files specified on the command line */
 
@@ -435,10 +478,10 @@ GetLabels ()                    /* Read the labelfiles */
         else
         {
             fprintf (stderr, "ERROR! cannot open Label File %s for read\n",
-                     filename);
+                     tmpnam);
         }
 
-        free (tmpnam);
+        //free (tmpnam);
     }
 }
 
@@ -564,7 +607,16 @@ main (int argc, char **argv)
     fclose (inpath);*/
 
     pass1 ();
-    progdis ();
+
+/*    if (IsROF)
+    {
+        rofhdr ();
+    }
+    else
+    {*/
+        progdis ();
+/*    }*/
+
     GetLabels ();               /* Read in Label files */
     Pass2 = 1;
     rewind (progpath);
@@ -575,5 +627,6 @@ main (int argc, char **argv)
     }
 
     progdis ();
+
     exit (0);
 }

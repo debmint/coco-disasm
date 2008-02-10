@@ -1,0 +1,75 @@
+<section id="quickref"><title>A quick reference of &odis; Operation</title>
+  <simpara>In this section, we'll try to give a quick and brief rundown of
+    the operation of &odis;
+  </simpara>
+  <section><title>Using the command file</title>
+    <para>A <emphasis>command file</emphasis> (specified by the
+      <computeroutput>"-c"</computeroutput> option) is practically mandatory
+      for useful disassembly.  The <emphasis>command file</emphasis> is
+      explained in more detail in <xref linkend="thecmdfile"/>.  Briefly,
+      the <emphasis>command file</emphasis> can be used for three things.
+    </para>
+    <itemizedlist>
+      <listitem>
+        <formalpara>
+          <title>Specify commandline options to pass to &odis;.</title>During
+          the process of disassembling a program, you will undoubtedly have to
+          run the disassembly several times.  To avoid the necessity of having
+          to pass the options to &odis; each time, the commanline options (see
+          <xref linkend="cmdoptions"/> for a desctiption of the options) by
+          beginning the line with <command>"+"</command>.
+        </formalpara>
+      </listitem>
+      <listitem>
+        <formalpara><title>Specify Data boundaries</title>You can specify
+          sections of code as being data instead of code.  This cause &odis;
+          to not attempt to disassemble these areas as code, but rather as
+          either ASCII data, or constants.  These constants can be specified
+          as either numeric data, either hexadecimal or decimal, or as
+          labels.  This is explained further in <xref linkend="databounds"/>.
+        </formalpara>
+      </listitem>
+      <listitem>
+        <formalpara><title>Specify an alternate label class</title>
+          You can specify that the label reference for a line or range of
+          lines is different than the default.  This is a rather complex
+          concept and is explained more fully in <xref linkend="laddrmod"/>
+        </formalpara>
+      </listitem>
+      <listitem>
+        <formalpara><title>Specify Comments to insert into source code</title>
+          You can specify comments to be placed into the source listing and
+          source file.  Comments can be beneficial to you during disassembly
+          and also for later reference.  As you come up with comments, you
+          can add them as needed.  See <xref linkend="asmcomments"/> for
+          details.
+        </formalpara>
+      </listitem>
+    </itemizedlist>
+  </section>
+  <section><title>Data (noncode) Areas</title>
+    <para>Some sections of the module will not be code.  There may be strings
+      of text, or constants, which may be lookup tables or or other constants
+      of any sort.  To specify a <emphasis>Data area</emphasis>, the command
+      is preceded by a letter corresponding to the type of data.  Please
+      see <xref linkend="dataaddr"/> for a fuller explanation.
+    </para>
+  </section>
+  <section><title>Addressing Mode Specification</title>
+    <note>
+      <para>For a full description of <emphasis>Label Class</emphasis> please
+        refer to <xref linkend="lblclass"/>
+      </para>
+    </note>
+    <para>When disassembling code, &odis; will determine a reference in
+      the operand to be a certain type based upon the <emphasis>mode</emphasis>
+      of the assembler command.  &odis; has a default label class to assign
+      a certain addressing mode, depending upon the target system.  For
+      code in a program module, for example, &odis; will assume that, since
+      register <emphasis>U</emphasis> usually points to the base of the
+      data area, that something indexed by <emphasis>U</emphasis> refers
+      to data, and will assign it class <emphasis>"D"</emphasis> (the default
+      class for <command>D</command>ata).
+    </para>
+  </section>
+</section>
