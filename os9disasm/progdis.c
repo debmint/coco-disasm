@@ -469,7 +469,7 @@ regput (int pbyte, char *op1, int pcrel)
                         ofst += Pc;
                     }
 
-                    if (ofst != 0)
+                    if ((ofst != 0) || (dozeros))
                     {
                         sprintf (&(op1[strlen(op1)]), "%+d", ofst);
                     }
@@ -717,7 +717,16 @@ TxIdx ()
                 sprintf (oper1, ",--%c", regNam);
                 break;
             case 4:
-                sprintf (oper1, ",%c", regNam);
+                if (dozeros)
+                {
+                    LblCalc (oper1, 0, AMode);
+                    sprintf (oper1, "%s,%c", oper1, regNam);
+                }
+                else
+                {
+                    sprintf (oper1, ",%c", regNam);
+                }
+
                 break;
             case 5:
                 sprintf (oper1, "b,%c", regNam);
@@ -781,6 +790,7 @@ GetCmd ()
     char byte_offset;
     long file_pos = ftell (progpath);   /* Save entry position in file */
     int oprandpc;
+    int a = 0;
 
     *tmp = '\0';
     CmdLen = 0;
@@ -916,16 +926,33 @@ GetCmd ()
         
         for (ct = 0; ct < 8; ct++)
         {
+
             if (pbyte & 1)
             {
+                if (ct == 1)  /* Flag that reg "a" was included */
+                {
+                    a = 1;
+                }
+
                 if (strlen (pbuf->operand))
                 {
-                    strcat (pbuf->operand, ",");
-                    strcat (pbuf->operand, cptr[ct]);
+                    if ((ct == 2) && (a))
+                    {
+                        pbuf->operand[strlen (pbuf->operand) - 1] = 'd';
+                    }
+                    else
+                    {
+                        strcat (pbuf->operand, ",");
+                        strcat (pbuf->operand, cptr[ct]);
+                    }
                 }
                 else
-                    strcpy (pbuf->operand, cptr[ct]);
+                {
+                    strcat (pbuf->operand, cptr[ct]);
+                }
+
             }
+
             pbyte = pbyte >> 1;
         }
         break;

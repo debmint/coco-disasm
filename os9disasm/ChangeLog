@@ -1,4 +1,11 @@
 os9disasm (0.9.0)
+  * dprint.c, odis.h, progdis.c, os9disasm.c
+    Added ability to print 0 offsets to register indexed mode.  Default is to
+	not print 0 offsets.
+	psh a,b or pul a,b is now printed as psh d or pul d
+
+-- davebree    Sat, 01 Mar 2008 10:56:37 -0600
+
   * cmdfile.c, dprint.c, odis.h - Added ability to append comments to end of
     command line.
   * progdis.c - Fixed bug.  References that were made with an offset to that

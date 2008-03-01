@@ -562,6 +562,7 @@ WrtEmod ()
     BlankLine ();
     memset (prtbf, 0, sizeof (struct printbuf));
     strcpy (prtbf->mnem, "end");
+    prtbf->comment = "";
 
     if (UpCase)
     {
@@ -714,6 +715,7 @@ ROFDataPrint ()
         thissz += 2;   /* And to the next data size */
     }
 
+    BlankLine ();
     InProg = 1;
 }
 
