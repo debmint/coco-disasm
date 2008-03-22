@@ -57,7 +57,7 @@ int code_begin,
 
 extern int CodEnd,
            PrevEnt;
-extern char *realcmd;
+extern char realcmd[];
 extern struct printbuf *pbuf;
 
 /* DEBUGGING function */

@@ -25,8 +25,8 @@ extern char *CmdBuf;
 extern struct printbuf *pbuf;
 extern struct rof_hdr *rofptr;
 
-char *pseudcmd = "%5d  %04X %-14s %-10s %-6s %s %s\n";
-char *realcmd = "%5d  %04X %-04s %-9s %-10s %-6s %s %s\n";
+char pseudcmd[80] = "%5d  %04X %-14s %-10s %-6s %s %s\n";
+char realcmd[80] =  "%5d  %04X %-04s %-9s %-10s %-6s %s %s\n";
 char *blankcmd = "%5d";
 
 int PgNum = 0;
@@ -37,11 +37,27 @@ static char ClsHd[100];         /* header string for label equates */
 int HadWrote;                   /* flag that header has been written */
 char *SrcHd;                    /* ptr for header for source file */
 
+/* *************************************************************** *
+ * adjpscmd () - Adjusts pseudcmd/realcmd label length to          *
+ *              NamLen + 2                                         *
+ * *************************************************************** */
+
+void
+adjpscmd (void)
+{
+    sprintf (pseudcmd, "%s%d%s\n", "%5d  %04X %-14s %-",
+                                   NamLen + 2,
+                                   "s %-6s %s %s");
+    sprintf (realcmd, "%s%d%s\n", "%5d  %04X %-04s %-9s %-",
+                                  NamLen + 2,
+                                  "s %-6s %s %s");
+}
+
 void
 tabinit ()
 {
-    realcmd = "%5d\t%04X\t%s\t%s\t%s\t%s\t%s\n";
-    pseudcmd = "%5d\t%04X\t%s\t\t%s\t%s\t%s\n";
+    strcpy (realcmd, "%5d\t%04X\t%s\t%s\t%s\t%s\t%s\n");
+    strcpy (pseudcmd, "%5d\t%04X\t%s\t\t%s\t%s\t%s\n");
 }
 
 /* ************************************** *
@@ -254,6 +270,7 @@ PrintFormatted (char *pfmt, struct printbuf *pb)
         printf (pfmt, LinNum, CmdEnt, pb->instr, pb->opcod, pb->lbnm,
                 pb->mnem, pb->operand, pb->comment);
     }
+    fflush (stdout);
 }
 
 void
@@ -376,7 +393,7 @@ NonBoundsLbl (char class)
                 }
 
                 printf (pseudcmd, LinNum++, nl->myaddr, bf->instr,
-                        bf->lbnm, bf->mnem, bf->operand);
+                        bf->lbnm, bf->mnem, bf->operand, "");
                 ++PgLin;
                 
                 if (WrtSrc)

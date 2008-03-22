@@ -148,39 +148,39 @@
          (except for <command>pkgconfig</command>) will have a "-dev"
          counterpart that will be needed for compiling.
        </para>
-       <section><title>Building and/or running on Windows</title>
-         <para>These packages can be built and run on Windows systems.  The
-           first requirement, and this applies to both &odis; and &gtk;,
-           is the linux interface by which you can compile the programs.  I
-           recommend MinGW, available from sourceforge.net.  There is another
-           interface, called Cygwin, but it must be present to run the
-           programs, but, as I understand it, programs compiled under MinGW
-           can be run on a Windows system where MinGW is not installed.  Of
-           course, to run the program compiled on MinGW on another computer,
-           the runtimes for that program will have to be installed.
-         </para>
-         <para>The &gtk; interface is available for Windows, and &odis;, of
-           course, can be run from the command line without &gtk; if you do
-           not wish to bother with &gtk;.
-         </para>
-         <para>The &gtk; interface is available by several means.  There are
-           at least two executable install systems available (cannot recall
-           the sources at the present), or the various modules can be
-           installed piece by piece.
-         </para>
-         <para>
-           In my opinion, the piece-by-piece installation is better in that,
-           if one particular package is upgraded, you can simply overwrite
-           the existing package and not have to do a complete reinstall.
-           Tor Lillqvist maintains a pretty good and web page for this,
-           accessible through either the gtk.org or the gimp.org website,
-           following the links for Windows packages.  These are zip files,
-           and you can begin by installing only the ones you think you will
-           need, and, if you need something else, go back and install it in
-           addition.
-         </para>
-       </section>
      </section>
+   </section>
+   <section><title>Building and/or running on Windows</title>
+     <para>These packages can be built and run on Windows systems.  The
+       first requirement, and this applies to both &odis; and &gtk;,
+       is the linux interface by which you can compile the programs.  I
+       recommend MinGW, available from sourceforge.net.  There is another
+       interface, called Cygwin, but it must be present to run the
+       programs, but, as I understand it, programs compiled under MinGW
+       can be run on a Windows system where MinGW is not installed.  Of
+       course, to run the program compiled on MinGW on another computer,
+       the runtimes for that program will have to be installed.
+     </para>
+     <para>The &gtk; interface is available for Windows, and &odis;, of
+       course, can be run from the command line without &gtk; if you do
+       not wish to bother with &gtk;.
+     </para>
+     <para>The &gtk; interface is available by several means.  There are
+       at least two executable install systems available (cannot recall
+       the sources at the present), or the various modules can be
+       installed piece by piece.
+     </para>
+     <para>
+       In my opinion, the piece-by-piece installation is better in that,
+       if one particular package is upgraded, you can simply overwrite
+       the existing package and not have to do a complete reinstall.
+       Tor Lillqvist maintains a pretty good and web page for this,
+       accessible through either the gtk.org or the gimp.org website,
+       following the links for Windows packages.  These are zip files,
+       and you can begin by installing only the ones you think you will
+       need, and, if you need something else, go back and install it in
+       addition.
+     </para>
    </section>
    <section><title>Installing the program(s)</title>
      <para>To install the program, you can issue the command <command>make

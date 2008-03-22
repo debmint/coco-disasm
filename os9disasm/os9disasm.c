@@ -108,10 +108,10 @@ build_path (char *fname, char *fullname, int nsize)
             realname = fname;
         }
         else
-        {                       /* OK.. one last shot..  assume it's in Defdir */
+        {              /* OK.. one last shot..  assume it's in Defdir */
             if (!strncmp (DefDir, "~/", 2))
             {
-                int tmpsize = nsize;;
+                int tmpsize = nsize;
 
                 strncpy (fullname, myhome, nsize);
                 tmpsize -= strlen (fullname);
@@ -240,10 +240,25 @@ do_opt (char *c)
         case 's':
             ShortLbl = 6;
             break;
+        case 'l':
+            NamLen = atoi(pass_eq (pt));
+
+            /* Make sure NamLen doesn't exceed max length */
+
+            if (NamLen > NLMAX)
+            {
+                NamLen = NLMAX;
+            }
+
+            adjpscmd ();        /* Adjust the printout formats */
+
+            break;
         default:
             usage ();
             exit (1);
         }
+
+        break;
     case 'd':
         if (!doingcmds)
         {
@@ -384,8 +399,8 @@ RdLblFile ()
 
                 if (nl)
                 {
-                    strncpy (nl->sname, labelname, ShortLbl);
-                    nl->sname[ShortLbl] = '\0';
+                    strncpy (nl->sname, labelname, NamLen);
+                    nl->sname[NamLen] = '\0';
                     nl->stdnam = 1;
                 }
             }

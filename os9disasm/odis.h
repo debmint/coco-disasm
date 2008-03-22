@@ -160,6 +160,12 @@ GLOBAL int PgWidth
 #endif
 ;
 
+GLOBAL int NamLen
+#ifdef MAIN
+= 8
+#endif
+;
+
 GLOBAL char *lblorder
 #ifdef MAIN
 = "!^$&@%ABCDEFGHIJKLMNOPQRSTUVWXYZ"

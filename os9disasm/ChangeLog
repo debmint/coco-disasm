@@ -1,3 +1,9 @@
+os9disasm (0.9.1)
+  * os9disasm.c, progdis.c, odis.h
+    Added ability to specify label name length
+
+-- davebree	   Fri, 21 Mar 2008 20:32:42 -0500
+
 os9disasm (0.9.0)
   * dprint.c, odis.h, progdis.c, os9disasm.c
     Added ability to print 0 offsets to register indexed mode.  Default is to

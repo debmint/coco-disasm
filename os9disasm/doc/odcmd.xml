@@ -586,8 +586,7 @@
       and label class. The text file is read, and any lines having the format
     </para></formalpara>
     <screen>
-      <literal>&lt;code&gt;</literal> EQU
-      <literal>&lt;value&gt; &lt;class&gt;</literal>
+      <literal>&lt;code&gt;</literal> EQU <literal>&lt;value&gt; &lt;class&gt;</literal>
     </screen>
     <para>-just like an assembler equate directive - are processed.
     </para>

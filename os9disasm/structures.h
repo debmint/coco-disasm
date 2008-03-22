@@ -32,7 +32,7 @@ struct dflts {
 
 /* Symbol Table tree structure */
 
-#define NLMAX 8
+#define NLMAX 12
 
 struct nlist {
 	char sname[NLMAX+1];	/* symbol name	*/
@@ -93,7 +93,7 @@ struct amodedef {
 struct printbuf {
 	char instr[16],
 	     opcod[20],
-	     lbnm[10],
+	     lbnm[NLMAX+1],
 	     mnem[6],
 	     operand[50],
          *comment;

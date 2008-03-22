@@ -36,7 +36,7 @@ char *PshPulu[] = { "cc", "a", "b", "dp", "x", "y", "s", "pc" };
 char RegOrdr[] = "xyus";
 
 /*extern struct lkuptbl *Pre10, *Pre11, *Byte1;*/
-extern char *pseudcmd, *realcmd;
+extern char pseudcmd[], realcmd[];
 
 char CmdBuf[10];                /* buffer to hold bytes of cmd code */
 int UnkCount;                   /* Count of unknowns now being held */
