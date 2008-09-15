@@ -44,6 +44,7 @@ usage ()
     fprintf (stderr, "    -pd[=]<pagd depth>     default=66\n");
     fprintf (stderr, "    -s[=]<label file> - up to %d allowed\n", MAX_LBFIL);
     fprintf (stderr, "    -x[=]<type> - Target OS\n");
+    fprintf (stderr, "    -a    Specify all 8-bit indexes with \"<\"\n");
     fprintf (stderr, "                C=Coco (default = OS9)\n");
     fprintf (stderr,
              "    -z  -  Print zero register offset. (Default is \"no\"\n");
@@ -146,6 +147,9 @@ do_opt (char *c)
 
     switch (tolower (*(pt++)))
     {
+    case 'a':
+        Show8bit = 1;
+        break;
     case 'o':                  /* output asm src       */
         asmfile = pass_eq (pt);
         if (!(outpath = fopen (asmfile, "wb")))

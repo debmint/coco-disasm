@@ -79,9 +79,10 @@ GLOBAL int CpuTyp	/* Target cpu (6809 or 6309 */
 #endif
 ;
 
-GLOBAL int dozeros; /* 1 = print zero offsets */
-GLOBAL int UseTabs; /* Use Tabs in output */
-GLOBAL int UseFCC;	/* Flag (if set) to enable "fcc" statement
+GLOBAL int Show8bit;    /* 1 = Always specify short index offsets "<" */
+GLOBAL int dozeros;     /* 1 = print zero offsets */
+GLOBAL int UseTabs;     /* Use Tabs in output */
+GLOBAL int UseFCC;	    /* Flag (if set) to enable "fcc" statement
 			   default for OSTYpe=OS_9 */
 GLOBAL int UpCase
 #ifdef MAIN

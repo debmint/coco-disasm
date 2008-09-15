@@ -348,7 +348,9 @@ asmcomment (char *lpos, FILE *cmdfile)
     
     switch (*lpos)
     {
+#ifndef OSK
         case '\r':
+#endif
         case '\n':
             return 0;    /* Require AT LEAST the delimiter on the first line */
         default:
@@ -924,11 +926,12 @@ setoffset (char *p, struct ofsetree *oft)
     p = skipblank (p);
     c = toupper (*(p++));
 
-    if (! index (lblorder, oft->oclas_maj = c))
+    if ( ! index (lblorder, oft->oclas_maj = c) )
         nerrexit ("No offset specified !!");
 
     p = skipblank (p);
-    if (!isxdigit (*p))
+    
+    if ( ! isxdigit (*p))
         nerrexit ("Non-Hex number in offset value spec");
     /* NOTE: need to be sure string is lowercase and following
      * value needs to go into the structure */
@@ -1049,9 +1052,9 @@ setupbounds (char *lpos)
             ++NoEnd;            /* flag for next pass */
             break;
         default:
-            fprintf (stderr, "NoEnd in prev cmd.. ");
+            /*fprintf (stderr, "NoEnd in prev cmd.. ");
             fprintf (stderr, "inserting \\x%x for prev hi\n", bdry->b_lo);
-            fprintf(stderr,"...\n");
+            fprintf(stderr,"...\n");*/
             prevbnd->b_hi = bdry->b_lo - 1;
             NoEnd -= 2;          /* undo one flagging */
         }

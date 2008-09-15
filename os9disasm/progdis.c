@@ -548,7 +548,7 @@ regput (int pbyte, char *op1, int pcrel)
     {           /* Some assemblers don't automatically do 8-bit mode    */
                 /* for PCR indexing                                     */
 
-        if (pbyte & 4)              /* PCR indexed */
+        if (pbyte & 4) /* PCR indexed */
         {
             strcpy (op1, "<");
         }
@@ -1082,6 +1082,12 @@ GetCmd ()
             }
             
             sprintf (pbuf->opcod, "%s%02x", pbuf->opcod, offset & 0xff);
+            
+            if ((AMode == AM_DRCT) && Show8bit)
+            {
+                strcpy (pbuf->operand, "<");
+            }
+
             break;
         }
 
