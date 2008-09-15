@@ -18,12 +18,12 @@
 
 #include "odis.h"
 
-/* *********************************** *
- * o9_fgetword() - get a 6809-formatted *
- *   word (double byte) from stream    *
- * Passed: FILE stream                 *
- * Returns big-endian WORD             *
- * *********************************** */
+/* **************************************** *
+ * o9_fgetword() - get a 6809-formatted     *
+ *   word (double byte) from stream         *
+ * Passed: FILE stream                      *
+ * Returns big-endian WORD                  *
+ * **************************************** */
 
 int
 o9_fgetword(FILE *fp)
@@ -50,13 +50,13 @@ o9_int (char *o9num)
     return ((msb << 8) + lsb);
 }
 
-/* ********************************************** *
- * skipblank() passes over any space, tab, or any *
- *             newline character in the string    *
- * Passed: p pointer to begin of string to parse  *
- * Returns: pointer to first character of "valid" *
- *          data, or null if end of data          *
- * ********************************************** */
+/* **************************************************** *
+ * skipblank() passes over any space, tab, or any       *
+ *             newline character in the string          *
+ * Passed: p pointer to begin of string to parse        *
+ * Returns: pointer to first character of "valid"       *
+ *          data, or null if end of data                *
+ * **************************************************** */
 
 char *
 skipblank (char *p)
@@ -66,14 +66,16 @@ skipblank (char *p)
      * ( especially the extra character MS-Dos uses
      */
 
-    //while ((*p == ' ') || (*p == '\t'))
     while ((*p) && (index (" \t\r\f\n", *p)))
     {
         ++p;
     }
 
     if (*p == '\n')
+    {
         *p = 0;
+    }
+
     return p;
 }
 
@@ -169,5 +171,55 @@ isblank (int c)
     {
         return 0;
     }
+}
+#endif
+
+#ifndef HAVE_STRNCASECMP
+int
+strncasecmp (s1, s2, n)
+    char *s1,
+         *s2;
+    int   n;
+{
+    while (n--)
+    {
+        if ((*s1 == '\0') && (*s2 == '\0'))
+        {
+            return 0; /* End of both strings */
+        }
+
+        if (toupper (*s1) != toupper (*s2))
+        {
+            return (*s2 - *s1);
+        }
+
+        ++s1;
+        ++s2;
+    }
+
+    return 0;
+}
+#endif
+
+#ifndef HAVE_STRCASECMP
+int
+strcasecmp (char *s1, char *s2)
+{
+    return (strncasecmp (s1, s2, -1));
+}
+#endif
+
+#ifndef HAVE_STRDUP
+char *
+strdup (char *str)
+{
+    char *dupstr;
+
+    if ( (dupstr = malloc (strlen (str) + 1)) )
+    {
+        strcpy (dupstr, str);
+    }
+
+    return dupstr;
 }
 #endif

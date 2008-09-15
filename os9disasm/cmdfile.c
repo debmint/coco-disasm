@@ -286,7 +286,11 @@ cmntsetup (char *cpos, char *clas, int *adrs)
     
     /* Now move up past address */
 
-    while (!(isblank(*cpos)))
+#ifdef OSK
+    while ((*cpos != ' ') && (*cpos != '\t'))
+#else
+    while ( ! (isblank(*cpos)))
+#endif
     {
         ++cpos;
     }

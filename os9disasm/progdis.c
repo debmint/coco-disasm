@@ -837,7 +837,7 @@ GetCmd ()
     PBytSiz = tbl->adbyt;
 
     /* Special case for OS9 */
-    
+
     if ((OSType == OS_9) && !(strncasecmp (tbl->mnem, "swi2", 4)))
     {
         register unsigned int ch;
@@ -866,7 +866,7 @@ GetCmd ()
 
         }
 
-        if (!Pass2)
+        if ( ! Pass2)
         {
             addlbl (ch, '!');
         }
@@ -886,8 +886,12 @@ GetCmd ()
 
     /* take care of aim/oim/tim immediate # */
     /* TODO  add addressing mode for this!!! */
-    
+
+#ifdef OSK
+    if (findstr (0, tbl->mnem, "im"))
+#else
     if (strstr (tbl->mnem, "im"))
+#endif
     {
         unsigned int im = fgetc (progpath);
 
