@@ -1,41 +1,41 @@
-/*############################################################################
-#
-#  os9disasm - OS9-6809 CROSS DISASSEMBLER 
-#             following the example of Dynamite+
-#             
-# # ######################################################################## #
-#
-#  $Id$
-#                                                                            #
-#  Edition History:                                                          #
-#  #  Date       Comments                                              by    #
-#  -- ---------- -------------------------------------------------     ---   #
-#  01 2003/01/31 First began project                                   dlb   #
-##############################################################################
-# File:  lbltree.c                                                           #
-# Purpose: handle operations on label trees                                  #
-#                                                                            #
-# Calls:                                                                     #
-#   struct databndaries *ClasHere(struct databndaries *bp):                  #
-#       Passed: ptr to struct to match address                               #
-#       Returns: ptr to boundary if matched                                  #
-#            0 if no match, -1 if out-of-bounds "bp" passed                  #
-#                                                                            #
-#   struct databndaries *bGoBegin(struct databndaries *)                     #
-#       Passed: ptr to head of appropriate tree or branch                    #
-#       Returns: ptr positioned to begin of tree or branch                   #
-#                                                                            #
-#   struct nlist *addlbl(int loc, char C)                                    #
-#       Descr: adds a label to list of existing labels                       #
-#       Passed:  loc=address of label                                        #
-#            C=class                                                         #
-#       Returns: ptr to new entry if added, 0 if match found                 #  
-#                                                                            #
-#   struct nlist *ListRoot(char symbol)                                      #
-#       Passed:  symbol for label class (char)                               #
-#       Returns: ptr to entry point for that class                           #
-#									                                         #
-############################################################################*/
+/* ************************************************************************ *
+ *                                                                          *
+ * os9disasm - OS9-6809 CROSS DISASSEMBLER                                  *
+ *            following the example of Dynamite+                            *
+ *                                                                          *
+ * ************************************************************************ *
+                                                                            *
+ * $Id$                             *
+ *                                                                          *
+ * Edition History:                                                         *
+ * #  Date       Comments                                              by   *
+ * -- ---------- -------------------------------------------------     ---  *
+ * 01 2003/01/31 First began project                                   dlb  *
+ * ************************************************************************ *
+ * File:  lbltree.c                                                         *
+ * Purpose: handle operations on label trees                                *
+ *                                                                          *
+ * Calls:                                                                   *
+ *   struct databndaries *ClasHere(struct databndaries *bp):                *
+ *       Passed: ptr to struct to match address                             *
+ *       Returns: ptr to boundary if matched                                *
+ *            0 if no match, -1 if out-of-bounds "bp" passed                *
+ *                                                                          *
+ *   struct databndaries *bGoBegin(struct databndaries *)                   *
+ *       Passed: ptr to head of appropriate tree or branch                  *
+ *       Returns: ptr positioned to begin of tree or branch                 *
+ *                                                                          *
+ *   struct nlist *addlbl(int loc, char C)                                  *
+ *       Descr: adds a label to list of existing labels                     *
+ *       Passed:  loc=address of label                                      *
+ *            C=class                                                       *
+ *       Returns: ptr to new entry if added, 0 if match found               *
+ *                                                                          *
+ *   struct nlist *ListRoot(char symbol)                                    *
+ *       Passed:  symbol for label class (char)                             *
+ *       Returns: ptr to entry point for that class                         *
+ *                                                                          *
+ * ************************************************************************ */
 
 #include "odis.h"
 #include "amodes.h"
@@ -68,7 +68,7 @@ no_dataget (struct databndaries *bp, char c, int k)
 {
     int x;
     char bf[6];
-    
+
     /* Let's add ModBegin to save conversion */
     register char *cp = ModBegin + bp->b_lo;
     register char *dtop = ModBegin + bp->b_hi;
@@ -79,7 +79,7 @@ no_dataget (struct databndaries *bp, char c, int k)
     {
         offset = bp->dofst->of_maj;
 
-        if (!bp->dofst->add_to)
+        if ( ! bp->dofst->add_to)
             offset = -offset;
         if ((bp->dofst)->incl_pc)
             offset += Pc;
@@ -94,8 +94,11 @@ no_dataget (struct databndaries *bp, char c, int k)
         bf[k] = '\0';           /* Be sure it's null terminated */
         x = o9_int (bf);        /* and this takes care of little-endian */
         x += offset;
-        if (!(Pass2))
+        if ( ! (Pass2))
+        {
             addlbl (x, c);
+        }
+
         cp += k;
     }
 }
@@ -116,6 +119,7 @@ bGoBegin (struct databndaries *pt)
         else
             pt = pt->DRight;
     }
+
     /*  Here, we're at the lowest left-most point on the list */
     return pt;
 }
@@ -130,8 +134,10 @@ ClasHere (struct databndaries *bp, int adrs)
     register struct databndaries *pt;
     register int h = (int) adrs;
 
-    if (!(pt = bp))
+    if ( ! (pt = bp))
+    {
         return 0;
+    }
 
     while (1)
     {
@@ -147,12 +153,18 @@ ClasHere (struct databndaries *bp, int adrs)
             if (h > pt->b_hi)
             {
                 if (pt->DRight)
+                {
                     pt = pt->DRight;
+                }
                 else
+                {
                     return 0;
+                }
             }
             else
+            {
                 return pt;
+            }
         }
     }
 }
@@ -190,12 +202,20 @@ LblCalc (char *dst, int adr, int amod)
             if (kls->dofst)
             {
                 oclass = (char) (kls->dofst->oclas_maj);
+
                 if (kls->dofst->add_to)
+                {
                     raw -= kls->dofst->of_maj;
+                }
                 else
+                {
                     raw += kls->dofst->of_maj;
+                }
+
                 if (kls->dofst->incl_pc)
+                {
                     raw += Pc;
+                }
             }
         }
         else
@@ -214,12 +234,20 @@ LblCalc (char *dst, int adr, int amod)
             if (kls->dofst)
             {
                 oclass = kls->dofst->oclas_maj;
+
                 if (kls->dofst->add_to)
+                {
                     raw -= kls->dofst->of_maj;
+                }
                 else
+                {
                     raw += kls->dofst->of_maj;
+                }
+
                 if (kls->dofst->incl_pc)
+                {
                     raw += Pc;
+                }
             }
         }
         else
@@ -228,7 +256,7 @@ LblCalc (char *dst, int adr, int amod)
         }
     }
 
-    if (!Pass2)
+    if ( ! Pass2)
     {
         addlbl (raw, mainclass);
     }
@@ -270,10 +298,15 @@ LblCalc (char *dst, int adr, int amod)
         if (kls && kls->dofst)
         {
             char c = kls->dofst->oclas_maj;
+
             if (kls->dofst->add_to)
+            {
                 strcat (dst, "+");
+            }
             else
+            {
                 strcat (dst, "-");
+            }
 
 /*            if ((OSType == OS_9) &&
                 (c == strpos (lblorder, 'D')) &&
@@ -323,20 +356,30 @@ PrintLbl (char *dest, char clas, int adr, struct nlist *dl)
 
     if (clas == '@')
     {
-        if ((adr <= 9) || ((PBytSiz == 1) && adr > 244) ||
-            ((PBytSiz == 2) && adr > 65526))
+        if ( (adr <= 9) ||
+             ((PBytSiz == 1) && adr > 244) ||
+             ((PBytSiz == 2) && adr > 65526)  )
+        {
             clas = '&';
+        }
         else
+        {
             clas = '$';
+        }
     }
 
     switch (clas)
     {
     case '$':
         if (PBytSiz == 1)       /* This may be a kludge */
+        {
             adr &= 0xff;
+        }
         else
+        {
             adr &= 0xffff;
+        }
+
         sprintf (tmp, OpCodFmt[PBytSiz], adr);
         sprintf (dest, "$%s", tmp);
         break;
@@ -380,6 +423,7 @@ PrintLbl (char *dest, char clas, int adr, struct nlist *dl)
             strcat (dest, (mask & adr ? "1" : "0"));
             mask >>= 1;
         }
+
         break;
     default:
         strcpy (dest, dl->sname);
@@ -397,15 +441,23 @@ movchr (char *dst, unsigned char ch)
         sprintf (mytmp, "'%c", ch & 0x7f);
         strcat (dst, mytmp);
     }
-    else if ((pp = FindLbl (ListRoot ('^'), ch & 0x7f)))
-        strcat (dst, pp->sname);
     else
     {
-        sprintf (mytmp, "$%02x", ch & 0x7f);
-        strcat (dst, mytmp);
+        if ((pp = FindLbl (ListRoot ('^'), ch & 0x7f)))
+        {
+            strcat (dst, pp->sname);
+        }
+        else
+        {
+            sprintf (mytmp, "$%02x", ch & 0x7f);
+            strcat (dst, mytmp);
+        }
     }
+
     if (ch & 0x80)
+    {
         strcat (dst, "+$80");
+    }
 }
 
 struct nlist *
@@ -428,13 +480,13 @@ addlbl (int loc, char C)
     }*/
 
     /* (for now, at least), don't add labels for class '@', '$', or '&' */
-    
+
     if (index ("@$&", C))
     {
         return 0;
     }
 
-    if (!index (lblorder, C))
+    if ( ! index (lblorder, C))
     {                           /* Nonexistant label class      */
         fprintf (stderr,
                  "Illegal label Class '\\%x' for location %04x Pc = %04x\n",
@@ -443,10 +495,11 @@ addlbl (int loc, char C)
     }
 
     /* This may be a kludge - may need to fix later */
-    
+
     if (C == '^')
     {
         loc &= 0x7f;
+
         if (loc > 0x20)
         {                       /* don't allow labels for printables
                                    except space */
@@ -455,10 +508,12 @@ addlbl (int loc, char C)
     }
 
     /* Now search list to see if label already defined      */
+
     if ((pt = SymLst[c_indx]))
     {                           /* Already have entries      */
         register int found = 0;
-        while (!found)
+
+        while ( ! found)
         {
             if (loc < (int) pt->myaddr)
             {
@@ -490,7 +545,7 @@ addlbl (int loc, char C)
         }
     }
 
-    if (!(me = calloc (1, sizeof (struct nlist))))
+    if ( ! (me = calloc (1, sizeof (struct nlist))))
     {
         fprintf (stderr, "Cannot allocate memory for Label.\n");
         exit (errno);
@@ -500,7 +555,7 @@ addlbl (int loc, char C)
     /*strncpy (me->sname, &C, 1);
     sprintf (tmplbl, "%04x", loc & 0xffff);
     strncat (me->sname, tmplbl, 4);*/
-    
+
     me->myaddr = loc;
 
     if (pt)
@@ -551,16 +606,33 @@ FindLbl (struct nlist *nl, int loc)
     while (1)
     {
         if (loc < nl->myaddr)
+        {
             if (nl->LNext)      /* Still another entry */
+            {
                 nl = nl->LNext;
+            }
             else
+            {
                 return 0;       /* No more in this direction */
-        else if (loc > nl->myaddr)
-            if (nl->RNext)
-                nl = nl->RNext;
-            else
-                return 0;
+            }
+        }
         else
-            return nl;          /* Success */
+        {
+            if (loc > nl->myaddr)
+            {
+                if (nl->RNext)
+                {
+                    nl = nl->RNext;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                return nl;          /* Success */
+            }
+        }
     }
 }

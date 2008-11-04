@@ -96,14 +96,14 @@ fstrncpy (char *dest, int n, FILE *fp)
 
     while (n-- )
     {
-        if (!(*(pt++) = fgetc (fp)))    /* Null == end of string */
+        if ( ! (*(pt++) = fgetc (fp)))    /* Null == end of string */
         {
             return dest;
         }
     }
 
     /* If we get here, we've maxed out the count */
-    
+
     *pt = '\0';
     return dest;
 }
@@ -125,8 +125,11 @@ rofhdr (void)
     rofptr->sync[1] = o9_fgetword (progpath);
     rofptr->ty_lan = o9_fgetword (progpath);
     rofptr->valid = fgetc (progpath);
-    
-    if ((count = fread (rofptr->rdate, sizeof (rofptr->rdate), 1, progpath)) != 1)
+
+    if ((count = fread ( rofptr->rdate,
+                         sizeof (rofptr->rdate),
+                         1, progpath)
+                       ) != 1)
     {
         fprintf (stderr, "read() FAILED for date - read %d bytes\n",count);
     }
@@ -150,7 +153,8 @@ rofhdr (void)
 
     count = glbl_cnt = o9_fgetword (progpath);
 
-    while (count--) {
+    while (count--)
+    {
         char name[10];
         struct nlist *me;
         int adrs;
@@ -182,7 +186,8 @@ rofhdr (void)
 
     ext_count = o9_fgetword (progpath);
 
-    while (ext_count--) {
+    while (ext_count--)
+    {
         char _name[10];
         int ncount;
 
@@ -193,7 +198,7 @@ rofhdr (void)
 
         get_refs (_name, ncount, 1);
     }
-    
+
     /* Local variables... */
 
     ext_count = o9_fgetword (progpath);
@@ -292,7 +297,8 @@ rof_addlbl (int adrs, struct rof_extrn *ref)
 
 void get_refs(char *vname, int count, int is_extern)
 {
-    while (count--) {
+    while (count--)
+    {
         unsigned char _ty;
         int _ofst;
         struct rof_extrn *me,
@@ -326,7 +332,7 @@ void get_refs(char *vname, int count, int is_extern)
                 nerrexit ("Unknown external type encountered");
         }
 
-        if ( !(me=calloc(1, sizeof(struct rof_extrn))))
+        if (  ! (me=calloc(1, sizeof(struct rof_extrn))))
         {
             nerrexit ("Cannot allocate memory for rof external ref");
         }
@@ -335,44 +341,47 @@ void get_refs(char *vname, int count, int is_extern)
         {
             strncpy (me->name, vname, sizeof(me->name));
         }
-        
+
         me->Type = _ty;
         me->Ofst = _ofst;
         me->Extrn = is_extern;
-    
+
         /* If this tree has not yet been initialized, simply set the
          * base pointer to this entry (as the first)
          */
-    
-        if (!*base)
+
+        if ( ! *base)
         {
             *base = me;
         }
-    
+
         /* If we get here, this particular tree has alreay been started,
          * so find where to put the new entry.  Note, for starters, let's
          * assume that each entry will be unique, that is, this location
          * won't be here
          */
-    
+
         else
         {
             extrns = *base;     /* Use the global externs pointer */
-        
+
             while (1) {
                 struct rof_extrn **to_me = 0;
-        
+
                 if (_ofst < extrns->Ofst)
                 {
-                    if (extrns->LNext) {
+                    if (extrns->LNext)
+                    {
                         extrns = extrns->LNext;
                         continue;
                     }
-                    else {
+                    else
+                    {
                         to_me = &(extrns->LNext);
                     }
                 }
-                else {
+                else
+                {
                     if (_ofst > extrns->Ofst)
                     {
                         if (extrns->RNext) {
@@ -384,7 +393,7 @@ void get_refs(char *vname, int count, int is_extern)
                         }
                     }
                 }
-        
+
                 if (to_me)          /* I.E. found the proper empty spot */
                 {
                     *to_me = me;    /* Point Parent's next ptr to "me"  */
@@ -412,7 +421,7 @@ find_extrn ( struct rof_extrn *xtrn, int adrs)
         return 0;
     }
 
-    while (!found)
+    while ( ! found)
     {
         if (adrs < xtrn->Ofst)
         {
@@ -464,7 +473,7 @@ rof_lblref (int *value)
 {
     struct rof_extrn *thisref;
 
-    if (!(thisref = find_extrn (xtrn_code, Pc)))
+    if ( ! (thisref = find_extrn (xtrn_code, Pc)))
     {
         return 0;
     }
@@ -472,7 +481,7 @@ rof_lblref (int *value)
     /**value = getc (progpath);
     ++Pc;*/
 
-    if (!(thisref->Type & LOC1BYT))
+    if ( ! (thisref->Type & LOC1BYT))
     {
         *value = getc (progpath);
         ++Pc;
@@ -485,9 +494,9 @@ rof_lblref (int *value)
         Pc += 2;
     }
 
-    if ((!Pass2) && (!thisref->Extrn))
+    if ( ! (Pass2) && ! (thisref->Extrn))
     {
-        if (!strlen(thisref->name))
+        if ( ! strlen(thisref->name))
         {
             sprintf (thisref->name, "%c%04x",
                     rof_class (thisref->Type) , *value);
@@ -547,7 +556,7 @@ rof_find_asc (struct asc_data *tree, int entry)
 }
 
 /* ******************************************************** *
- * rof_datasize() - returns the end of rof data area       *
+ * rof_datasize() - returns the end of rof data area        *
  * Passed: Label Class letter to search                     *
  * Returns: size of this data area                          *
  *          If not a data area, returns 0                   *
@@ -770,17 +779,17 @@ ListInitROF (struct nlist *nl, int mycount, int notdp, char class)
     if (mylist)
     {
         srchlst = mylist;
-    
+
         while (srchlst->LNext)
         {
             srchlst = srchlst->LNext;
         }
-    
+
         if (srchlst->Ofst != 0)   /* I.E., if not 0 */
         {
             DataDoBlock (mylist, srchlst->Ofst, ascdat, class);
         }
-    
+
         ROFDataLst (mylist, mycount, ascdat, class);
     }
     else
@@ -826,10 +835,10 @@ rof_ascii ( char *cmdline)
             {
                 nerrexit ("Cannot allocate memory for asc_data");
             }
-    
+
             me->start = start;
             me->length = end - start + 1;
-    
+
             switch (tolower (vsct))
             {
                 case 'd':
@@ -841,17 +850,17 @@ rof_ascii ( char *cmdline)
                 default:
                     nerrexit ("Unknown ascii tree specification");
             }
-    
-            if (!(*tree))       /* If this tree has not been yet started */
+
+            if ( ! (*tree))       /* If this tree has not been yet started */
             {
                 *tree = me;
             }
             else
             {
                 struct asc_data *srch;
-        
+
                 srch = *tree;
-        
+
                 while (1)
                 {
                     if (start < srch->start)

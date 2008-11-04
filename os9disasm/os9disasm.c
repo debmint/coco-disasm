@@ -1,20 +1,20 @@
-/*############################################################################
-#
-# os9disasm - a project to disassemble Os9-coco modules into source code
-#             following the example of Dynamite+
-#             
-# # ######################################################################## #
-#
-#  $Id$
-#                                                                            #
-#  Edition History:                                                          #
-#  #  Date       Comments                                              by    #
-#  -- ---------- -------------------------------------------------     ---   #
-#  01 2003/01/31 First began project                                   dlb   #
-##############################################################################
-# File:  o9dis.c                                                             #
-# Purpose: mainline for program                                              #
-############################################################################*/
+/* ************************************************************************ *
+ *                                                                          *
+ * os9disasm - a project to disassemble Os9-coco modules into source code   *
+ *             following the example of Dynamite+                           *
+ *                                                                          *
+ * ************************************************************************ *
+ *                                                                          *
+ *  $Id$                         *
+ *                                                                          *
+ *  Edition History:                                                        *
+ *  #  Date       Comments                                              by  *
+ *  -- ---------- -------------------------------------------------     --- *
+ *  01 2003/01/31 First began project                                   dlb *
+ ************************************************************************** *
+ * File:  o9dis.c                                                           *
+ * Purpose: mainline for program                                            *
+ * ************************************************************************ */
 
 #define MAIN
 
@@ -58,16 +58,15 @@ pass_eq (char *pr)
     return (*pr == '=' ? ++pr : pr);
 }
 
-/* ********************************************* *
- * build_path()  - locate a filename and build   *
- *                 build a full pathlist.        *
- * Passed:    the filename                       *
- * Returned:  return ptr to full pathname        *
- * Note:  fullname is only a temporary buffer,   *
- *        Unless fname is unaltered, the         *
- *        returned pointer is one to a newly     *
- *        created string.                        *
- * ********************************************* */
+/* **************************************************** *
+ * build_path()  - locate a filename and build a full   *
+ *                 pathlist.                            *
+ * Passed:    the filename                              *
+ * Returned:  return ptr to full pathname               *
+ * Note:  fullname is only a temporary buffer,          *
+ *        Unless fname is unaltered, the returned       *
+ *        pointer is one to a newly created string      *
+ * **************************************************** */
 
 static char *
 build_path (char *fname, char *fullname, int nsize)
@@ -82,7 +81,7 @@ build_path (char *fname, char *fullname, int nsize)
 
     while (**pt)
     {
-        if (!strncmp (*pt, fname, strlen (*pt)))
+        if ( ! strncmp (*pt, fname, strlen (*pt)))
         {
             realname = fname;
             break;
@@ -92,7 +91,7 @@ build_path (char *fname, char *fullname, int nsize)
 
     /* is it "~/xxx" ? */
 
-    if (!strncmp (fname, "~/", 2))
+    if ( ! strncmp (fname, "~/", 2))
     {
         strncpy (fullname, myhome, nsize);
         nsize -= strlen (fullname);
@@ -101,23 +100,23 @@ build_path (char *fname, char *fullname, int nsize)
         realname = fullname;
     }
 
-    if (!realname)
+    if ( ! realname)
     {
         /* If we get here, fname is simply a basename.. */
-        if (!(access (fname, R_OK)))    /* Try in current directory */
+        if ( ! (access (fname, R_OK)))    /* Try in current directory */
         {
             realname = fname;
         }
         else
         {              /* OK.. one last shot..  assume it's in Defdir */
-            if (!strncmp (DefDir, "~/", 2))
+            if ( ! strncmp (DefDir, "~/", 2))
             {
                 int tmpsize = nsize;
 
                 strncpy (fullname, myhome, nsize);
                 tmpsize -= strlen (fullname);
 
-                strncat (fullname, &DefDir[1], nsize);
+                strncat (fullname, &DefDir[1], tmpsize);
                 nsize -= strlen (fullname);
             }
             else
@@ -150,9 +149,9 @@ do_opt (char *c)
     case 'a':
         Show8bit = 1;
         break;
-    case 'o':                  /* output asm src       */
+    case 'o':                  /* output asm src file */
         asmfile = pass_eq (pt);
-        if (!(outpath = fopen (asmfile, "wb")))
+        if ( ! (outpath = fopen (asmfile, "wb")))
             nerrexit ("Cannot open output file\n");
         WrtSrc = 1;
         break;
@@ -178,7 +177,7 @@ do_opt (char *c)
     case 's':                  /* Label file name       */
         if (LblFilz < MAX_LBFIL)
         {
-            if (!doingcmds)
+            if ( ! doingcmds)
                 LblFNam[LblFilz] = pass_eq (pt);
             else
             {
@@ -191,12 +190,14 @@ do_opt (char *c)
                    }
                    strcpy(LblFNam[LblFilz],pt); */
                 pt = pass_eq (pt);
-                if (!(LblFNam[LblFilz] = strdup (pt)))
+
+                if ( ! (LblFNam[LblFilz] = strdup (pt)))
                 {
-                    fprintf (stderr,
-                             "Cannot strdup() Label filename %s\n", pt);
+                    fprintf (stderr, "Cannot strdup() Label filename %s\n",
+                                      pt);
                 }
             }
+
             ++LblFilz;
         }
         else
@@ -217,6 +218,7 @@ do_opt (char *c)
 
             cmdfilename = build_path (pass_eq (pt), tmpstr, sizeof (tmpstr));
         }
+
         break;
     case 'u':                  /* Translate to upper-case */
         UpCase = 1;
@@ -264,7 +266,7 @@ do_opt (char *c)
 
         break;
     case 'd':
-        if (!doingcmds)
+        if ( ! doingcmds)
         {
             DefDir = pass_eq (pt);
         }
@@ -272,7 +274,8 @@ do_opt (char *c)
         {
             /*DefDir = malloc(strlen(pt)+2); */
             pt = pass_eq (pt);
-            if (!(DefDir = strdup (pt)))
+
+            if ( ! (DefDir = strdup (pt)))
             {
                 fprintf (stderr, "Cannot allocate memory for Defs dirname\n");
                 exit (1);
@@ -367,10 +370,11 @@ RdLblFile ()
     struct nlist *nl;
     char *lbegin;
 
-    while (!feof (inpath))
+    while ( ! feof (inpath))
     {
         fgets (rdbuf, sizeof (rdbuf), inpath);
-        if (!(lbegin = skipblank (rdbuf)) || (*lbegin == '*'))
+
+        if ( ! (lbegin = skipblank (rdbuf)) || (*lbegin == '*'))
         {
             continue;
         }
@@ -379,7 +383,7 @@ RdLblFile ()
         {
             clas = toupper (clas);
 
-            if (!strcasecmp (eq, "equ"))
+            if ( ! strcasecmp (eq, "equ"))
             {
                 /* Store address in proper place */
 
@@ -414,7 +418,7 @@ RdLblFile ()
 
 /* ********************************************* *
  * GetLabels() - Set up label definitions        *
- *      Set up defaults and read all label files *   
+ *      Set up defaults and read all label files *
  * ********************************************* */
 
 static void
@@ -447,9 +451,10 @@ GetLabels ()                    /* Read the labelfiles */
     if ((OSType == OS_9) || (OSType == OS_Moto))
     {
         tmpnam = build_path ("sysnames", filename, sizeof (filename));
-        if (!(inpath = fopen (tmpnam, "rb")))
+
+        if ( ! (inpath = fopen (tmpnam, "rb")))
             fprintf (stderr, "Error in opening Sysnames file..%s\n",
-                     filename);
+                              filename);
         else
         {
             RdLblFile ();
@@ -458,7 +463,7 @@ GetLabels ()                    /* Read the labelfiles */
 
         //free (tmpnam);
     }
-    
+
     /* and now the standard label file */
     switch (OSType)
     {
@@ -475,10 +480,10 @@ GetLabels ()                    /* Read the labelfiles */
         stdlbl = "dynalbl";
         break;
     }
-    
+
     tmpnam = build_path (stdlbl, filename, sizeof (filename));
-    
-    if (!(inpath = fopen (tmpnam, "rb")))
+
+    if ( ! (inpath = fopen (tmpnam, "rb")))
         fprintf (stderr, "Error in opening Sysnames file..%s\n", filename);
     else
     {
@@ -516,7 +521,7 @@ InitDefaults ()
 
     doingcmds = 0;
 
-    if (!(myhome = getenv ("HOME")))
+    if ( ! (myhome = getenv ("HOME")))
     {
         fprintf (stderr, "Cannot determine HOME directory.. aborting..\n");
         exit (1);
@@ -533,11 +538,11 @@ InitDefaults ()
 
 }
 
-/* ************************* *
- *                           *
- * program main entry point  *
- *                           *
- * ************************* */
+/* **************************** *
+ *                              *
+ * program main entry point     *
+ *                              *
+ * **************************** */
 
 int
 main (int argc, char **argv)
@@ -582,11 +587,11 @@ main (int argc, char **argv)
     }
 
     /* todo later: (maybe)let it recurse more than one file */
-    
-    if (!modfile)
+
+    if ( ! modfile)
     {
         /* todo later: input filename from keyboard */
-        
+
         fprintf (stderr, "No input file specified!\n");
         usage ();
         exit (1);
@@ -604,31 +609,11 @@ main (int argc, char **argv)
         FileSize = (int) statbf.st_size;
     }
 
-    if (!(progpath = fopen (modfile, "rb")))
+    if ( ! (progpath = fopen (modfile, "rb")))
     {
         fprintf (stderr, "Cannot open infile (%s) to read\n", modfile);
         exit (errno);
     }
-
-    /* We'll load the whole module into memory rather than
-     * trying to read from the file
-     */
-
-    /* discontinue this - we're going to read file directly now
-     * (hopefully)
-     */
-    
-    /*if (!(ModBegin = malloc (FileSize + 100)))
-    {
-        fprintf (stderr, "Error!!  Cannot malloc memory for infile!\n");
-        exit (errno);
-    }
-    if (fread (ModBegin, FileSize, 1, inpath) < 1)
-    {
-        fprintf (stderr, "Error!! Didn't read all of file %s\n", modfile);
-        exit (errno);
-    }
-    fclose (inpath);*/
 
     pass1 ();
 

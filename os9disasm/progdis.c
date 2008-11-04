@@ -1,20 +1,20 @@
-/*############################################################################
-#                                                                            #
-#  os9disasm - OS9-6809 CROSS DISASSEMBLER                                   #
-#             following the example of Dynamite+                             #
-#                                                                            #
-# # ######################################################################## #
-#                                                                            #
-#  $Id$
-#                                                                            #
-#  Edition History:                                                          #
-#  #  Date       Comments                                              by    #
-#  -- ---------- -------------------------------------------------     ---   #
-#  01 2003/01/31 First began project                                   dlb   #
-##############################################################################
-#    File:  progdis.c                                                        #
-# Purpose:  do disassembly of program file                                   #
-#############################################################################*/
+/* ************************************************************************ *
+ *                                                                          *
+ *  os9disasm - OS9-6809 CROSS DISASSEMBLER                                 *
+ *             following the example of Dynamite+                           *
+ *                                                                          *
+ * ************************************************************************ *
+ *                                                                          *
+ *  $Id$                           *
+ *                                                                          *
+ *  Edition History:                                                        *
+ *  #  Date       Comments                                              by  *
+ *  -- ---------- -------------------------------------------------     --- *
+ *  01 2003/01/31 First began project                                   dlb *
+ * ************************************************************************ *
+ *    File:  progdis.c                                                      *
+ * Purpose:  do disassembly of program file                                 *
+ * ************************************************************************ */
 
 #define _GNU_SOURCE
 #include "odis.h"
@@ -62,12 +62,12 @@ MovBytes (struct databndaries *db)
     int valu;
 
     CmdEnt = Pc;
-    
+
     while (Pc <= db->b_hi)
     {
         tmps[0] = '\0';
         /*leftbit*/valu = fgetc (progpath);
-        
+
         if (PBytSiz == 2)
         {
             /*rightbit = fgetc (progpath);
@@ -75,13 +75,13 @@ MovBytes (struct databndaries *db)
             valu = (valu << 8) + fgetc (progpath);
         }
         LblCalc (tmps, valu, AMode);
-        
+
         if (Pass2)
         {
             if (strlen (pbuf->instr) < 10)
             {
                 char tmp[20];
-                
+
                 if (PBytSiz == 1)
                 {
                     sprintf (tmp, "%02x ", valu);
@@ -90,19 +90,19 @@ MovBytes (struct databndaries *db)
                 {
                     sprintf (tmp, "%04x ", valu);
                 }
-                
+
                 strcat (pbuf->instr, tmp);
             }
-            
+
             if (strlen (pbuf->operand))
             {
                 strcat (pbuf->operand, ",");
             }
-            
+
             strcat (pbuf->operand, tmps);
-            
-            if ((strlen (pbuf->operand) > 22) ||
-                    (FindLbl (ListRoot ('L'), Pc + PBytSiz)))
+
+            if ( (strlen (pbuf->operand) > 22)          ||
+                 (FindLbl (ListRoot ('L'), Pc + PBytSiz))  )
             {
                 strcpy (pbuf->mnem, PBytSiz == 1 ? "fcb" : "fdb");
                 PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc + PBytSiz);
@@ -112,7 +112,7 @@ MovBytes (struct databndaries *db)
 
         Pc += PBytSiz;
     }
-    
+
     if (strlen (pbuf->operand))
     {
         strcpy (pbuf->mnem, PBytSiz == 1 ? "fcb" : "fdb");
@@ -133,19 +133,19 @@ AddDelims (char *dest, char *src)
     char *dref = bestdelims;
 
     /* First, try to use some "preferred" delimiters */
-    
+
     while (strchr (src, *dref))
     {
         ++dref;
-        
+
         if (*dref == '\0')
         {
             break;
         }
     }
-    
+
     delim = *dref;
-    
+
     if (delim == '\0')
     {
         /* OK.. we didn't find a delim in the above..  Now let's
@@ -155,12 +155,12 @@ AddDelims (char *dest, char *src)
 
         delim = '\x25';
 
-        while (!strchr(src, delim))
+        while ( ! strchr(src, delim))
         {
             ++delim;
 
             /* This should never happen, but just in case */
-            
+
             if (delim == '\x7f')
             {
                 fprintf (stderr,
@@ -169,7 +169,7 @@ AddDelims (char *dest, char *src)
             }
         }
     }
-    
+
     sprintf (dest, "%c%s%c", delim, src, delim);
 }
 
@@ -187,6 +187,7 @@ MovASC (int nb, char class)
     CmdEnt = Pc;
 
     *oper_tmp = '\0';
+
     while (nb--)
     {
         register int x;
@@ -199,7 +200,7 @@ MovASC (int nb, char class)
         else {
             fprintf (stderr, "0x%02x\n",x);
         }*/
-        
+
         if ((isprint (x)) || ((x & 0x80) && UseFCC && isprint (x & 0x7f)))
         {
             if (Pass2)
@@ -210,10 +211,10 @@ MovASC (int nb, char class)
                     sprintf (c, "%02x ", x);
                     strcat (pbuf->instr, c);
                 }
-                
+
                 sprintf (c, "%c", x & 0x7f);
                 strcat (oper_tmp, c);
-                
+
                 if (Pass2 && (x & 0x80))
                 {
                     strcpy (pbuf->mnem, "fcs");
@@ -223,7 +224,7 @@ MovASC (int nb, char class)
                     CmdEnt = Pc + 1;
                     strcpy (pbuf->mnem, "fcc");
                 }
-                
+
                 if ((strlen (oper_tmp) > 24) ||
                     (strlen (oper_tmp) && FindLbl (ListRoot (class), Pc + 1)))
                 {
@@ -244,8 +245,8 @@ MovASC (int nb, char class)
                 *oper_tmp = '\0';
                 CmdEnt = Pc;
             }
-            
-            if (!Pass2)
+
+            if ( ! Pass2)
             {
                 if ((x & 0x7f) < 33)
                 {
@@ -256,13 +257,13 @@ MovASC (int nb, char class)
             {
                 /* a dummy ptr to pass to Printlbl() to satify prototypes */
                 struct nlist *nlp;
-                
+
                 /* do the following to keep gcc quiet about uninitialized
                  * variable.. If we're wrong, we'll get a segfault letting
                  * us know of our mistake.. */
 
                 nlp = NULL;
-                
+
                 strcpy (pbuf->mnem, "fcb");
                 PrintLbl (pbuf->operand, '^', x, nlp);
                 sprintf (pbuf->instr, "%02x", x & 0xff);
@@ -273,7 +274,7 @@ MovASC (int nb, char class)
         }
         ++Pc;
     }  /* end while (nb--) - all chars moved */
-    
+
     if (strlen (oper_tmp))        /* Clear out any pending string */
     {
         AddDelims (pbuf->operand, oper_tmp);
@@ -319,7 +320,7 @@ NsrtBnds (struct databndaries *bp)
         default:
             break;
     }
-    
+
     NowClass = 0;
     /*Pc=(bp->b_hi)+PBytSiz; *//* Not needed for Pass2, but no harm */
 }
@@ -337,7 +338,7 @@ IsCmd (int *fbyte, int *csiz)
     int c = fgetc (progpath);
 
     *csiz = 2;
-    
+
     switch (*fbyte = c)
     {
         case '\x10':
@@ -360,15 +361,19 @@ IsCmd (int *fbyte, int *csiz)
             sz = sizeof (Byte1) / sizeof (struct lkuptbl);
             break;
     }
-    
+
     while ((T->cod != c))
     {
         if (--sz == 0)
+        {
             return 0;
+        }
+
         ++T;
     }
+
     AMode = T->amode;
-    
+
     return ((T->cod == c) && (T->t_cpu <= CpuTyp)) ? T : 0;
 }
 
@@ -391,7 +396,7 @@ GetIdxOffset (int postbyte)
 
             /* Set up for n,R or n,PC later if other
             * cases don't apply */
-    
+
     switch (postbyte & 1)
     {                   /* postbyte size */
     case 0:            /* single byte */
@@ -411,9 +416,9 @@ GetIdxOffset (int postbyte)
         {
             offset = 0;     /* to be or'ed with the raw obtained value */
         }
-        
+
         offset |= msk;
-        
+
         break;
     }
 
@@ -443,7 +448,7 @@ regput (int pbyte, char *op1, int pcrel)
     int oldpc = Pc;
 
     ofst = GetIdxOffset (pbyte);
-    
+
     if (IsROF)
     {
         struct rof_extrn *myref;
@@ -532,7 +537,7 @@ regput (int pbyte, char *op1, int pcrel)
             return;
         }
     }
- 
+
     *op1 = '\0';
 
     if (pbyte & 1)
@@ -589,7 +594,7 @@ TxIdx ()
     ++Pc;
 
     /* Extended indirect    [mmnn] */
-    
+
     if (postbyte == 0x9f)
     {
         register unsigned short da;
@@ -601,8 +606,9 @@ TxIdx ()
             struct rof_extrn *myval;
             int destval;
 
-            if (!(myval = rof_lblref (&destval))) {
-                destval = o9_fgetword (progpath);
+            if ( ! (myval = rof_lblref (&destval)))
+            {
+                   destval = o9_fgetword (progpath);
             }
 
             if (Pass2)
@@ -654,12 +660,12 @@ TxIdx ()
         regNam = RegOrdr[((postbyte >> 5) & 3)]; /* Current register offset */
         AMode += (postbyte >> 5) & 3;
 
-        if (!(postbyte & 0x80))
+        if ( ! (postbyte & 0x80))
         {                       /* 0RRx xxxx = 5-bit    */
             int sbit;           /*the offset portion of the postbyte */
 
                 /* 0,r not valid asm mode? (except for rof's)*/
-            if (!(postbyte & 0x1f))
+            if ( ! (postbyte & 0x1f))
             {
                 return 0;
             }
@@ -670,18 +676,19 @@ TxIdx ()
             {
                 sbit -= 0x10;   /* sbit is now a signed integer */
             }
-            
+
             /* The logic for the below:  rma, at least, will not assemble *
              * any label reference into 5-bit mode.  Probably it would    *
              * suffice to simply say "if (IsROF)", but we'll leave the    *
              * option open for the off-chance that an offset assignment   *
              * would work somewhere                                       */
 
-            if (IsROF && !(ClasHere (LAdds[AMode], CmdEnt)))
+            if (IsROF &&  ! (ClasHere (LAdds[AMode], CmdEnt)))
             {       /* Don't think that 5-bit mode will occur for labels */
                 sprintf (pbuf->operand, "%s%d,%c", pbuf->operand, sbit, regNam);
             }
-            else {
+            else
+            {
                 LblCalc (pbuf->operand, sbit, AMode);
                 sprintf (pbuf->operand, "%s,%c", pbuf->operand, regNam);
             }
@@ -704,57 +711,57 @@ TxIdx ()
 
             switch (postbyte & 0x0f)
             {
-            case 0:
-                sprintf (oper1, ",%c+", regNam);
-                break;
-            case 1:
-                sprintf (oper1, ",%c++", regNam);
-                break;
-            case 2:
-                sprintf (oper1, ",-%c", regNam);
-                break;
-            case 3:
-                sprintf (oper1, ",--%c", regNam);
-                break;
-            case 4:
-                if (dozeros)
-                {
-                    LblCalc (oper1, 0, AMode);
+                case 0:
+                    sprintf (oper1, ",%c+", regNam);
+                    break;
+                case 1:
+                    sprintf (oper1, ",%c++", regNam);
+                    break;
+                case 2:
+                    sprintf (oper1, ",-%c", regNam);
+                    break;
+                case 3:
+                    sprintf (oper1, ",--%c", regNam);
+                    break;
+                case 4:
+                    if (dozeros)
+                    {
+                        LblCalc (oper1, 0, AMode);
+                        sprintf (oper1, "%s,%c", oper1, regNam);
+                    }
+                    else
+                    {
+                        sprintf (oper1, ",%c", regNam);
+                    }
+
+                    break;
+                case 5:
+                    sprintf (oper1, "b,%c", regNam);
+                    break;
+                case 6:
+                    sprintf (oper1, "a,%c", regNam);
+                    break;
+                case 0x0b:
+                    sprintf (oper1, "d,%c", regNam);
+                    break;
+                case 0x08:                      /*  n,R */
+                case 0x09:                      /* nn,R */
+                    regput (postbyte, oper1, 0);
                     sprintf (oper1, "%s,%c", oper1, regNam);
-                }
-                else
-                {
-                    sprintf (oper1, ",%c", regNam);
-                }
+                    break;
+                case 0x0c:                      /*  n,PC (8-bit) */
+                case 0x0d:                      /* nn,PC (16 bit) */
+                    AMode = AM_REL;
+                    /* below is a temporary fix */
+                    myclass = DEFAULTCLASS;
+                    regput (postbyte, oper1, 1);
 
-                break;
-            case 5:
-                sprintf (oper1, "b,%c", regNam);
-                break;
-            case 6:
-                sprintf (oper1, "a,%c", regNam);
-                break;
-            case 0x0b:
-                sprintf (oper1, "d,%c", regNam);
-                break;
-            case 0x08:                      /*  n,R */
-            case 0x09:                      /* nn,R */
-                regput (postbyte, oper1, 0);
-                sprintf (oper1, "%s,%c", oper1, regNam);
-                break;
-            case 0x0c:                      /*  n,PC (8-bit) */
-            case 0x0d:                      /* nn,PC (16 bit) */
-                AMode = AM_REL;
-                /* below is a temporary fix */
-                myclass = DEFAULTCLASS;
-                regput (postbyte, oper1, 1);
-
-                sprintf (oper1, "%s,%s", oper1, "pcr");
-                break;
-            default:           /* Illegal Code */
-                return 0;
+                    sprintf (oper1, "%s,%s", oper1, "pcr");
+                    break;
+                default:           /* Illegal Code */
+                    return 0;
             }
-    
+
             if (postbyte & 0x10)
             {
                 sprintf (pbuf->operand, "%s[%s]", pbuf->operand, oper1);
@@ -796,7 +803,7 @@ GetCmd ()
     CmdLen = 0;
     CmdEnt = Pc;                /* Save this entry point for case of bad code */
 
-    if (!(tbl = IsCmd (&firstbyte, &pcbump)))
+    if ( ! (tbl = IsCmd (&firstbyte, &pcbump)))
     {
         /*      ++Pc;
            ++noncode; */
@@ -807,16 +814,16 @@ GetCmd ()
     }
 
     /* If illegal code is present, then print it out if pass 2 */
-    
+
     if (noncode && Pass2)
     {
         /* Pc hasn't moved, data from Pc to
          * p - 1 is noncode     */
         return 0;
     }
-    
+
     /* Now move stuff to printer buffer */
-    
+
     if (Pass2)
     {
         if (pcbump == 2)
@@ -838,7 +845,7 @@ GetCmd ()
 
     /* Special case for OS9 */
 
-    if ((OSType == OS_9) && !(strncasecmp (tbl->mnem, "swi2", 4)))
+    if ((OSType == OS_9) &&  ! (strncasecmp (tbl->mnem, "swi2", 4)))
     {
         register unsigned int ch;
         register struct nlist *nl;
@@ -847,7 +854,7 @@ GetCmd ()
 
         sprintf (pbuf->opcod, "%02x", (ch = fgetc (progpath)));
         ++Pc;
-        
+
         if (IsROF)
         {
             struct rof_extrn *myref;
@@ -911,7 +918,7 @@ GetCmd ()
     case AM_INH:
         return 1;               /*Nothing else to do */
     case AM_XIDX:
-        if (!TxIdx ())
+        if ( ! TxIdx ())
         {                       /* Process Indexed mode */
             return 0;           /* ?????? */
         }
@@ -922,12 +929,12 @@ GetCmd ()
         ++Pc;
         sprintf (pbuf->opcod, "%02x", pbyte & 0xff);
         cptr = PshPuls;
-        
+
         if ((pbyte == 0x36) || (pbyte == 0x37))
         {
             cptr = PshPulu;
         }
-        
+
         for (ct = 0; ct < 8; ct++)
         {
 
@@ -971,11 +978,11 @@ GetCmd ()
         {
             return 0;           /* Illegal */
         }
-        
+
         /* do r0 */
         strcpy (pbuf->operand, RegReg[ct]);
 
-        if (!((tbl->cod) & 1))
+        if ( ! ((tbl->cod) & 1))
         {
             strcat (pbuf->operand, "+");
         }
@@ -986,11 +993,11 @@ GetCmd ()
                 strcat (pbuf->operand, "-");
             }
         }
-        
+
         /* now "r1" */
         strcat (pbuf->operand, ",");
         strcat (pbuf->operand, RegReg[(pbyte) & 0x0f]);
-        
+
         switch (tbl->cod)
         {
         case 0x38:
@@ -1029,11 +1036,11 @@ GetCmd ()
             }
         }
 
-        if (!strlen (regpt[ct]) || !strlen (regpt[pbyte]))
+        if ( ! strlen (regpt[ct]) || !strlen (regpt[pbyte]))
             return 0;
 
         /* Can't tfr between different-sized registers */
-        
+
         if (ct != 0x0c)         /* "0" register for 6309 */
         {
             if ((ct & 0x08) != (pbyte & 0x08))
@@ -1079,14 +1086,14 @@ GetCmd ()
             byte_offset = (char)fgetc (progpath);
             offset = (int)byte_offset;
             ++Pc;
-            
+
             if ((AMode == AM_DRCT) || (AMode == AM_BYTI))
             {
                 offset &= 0xff;
             }
-            
+
             sprintf (pbuf->opcod, "%s%02x", pbuf->opcod, offset & 0xff);
-            
+
             if ((AMode == AM_DRCT) && Show8bit)
             {
                 strcpy (pbuf->operand, "<");
@@ -1098,7 +1105,7 @@ GetCmd ()
         if (IsROF)
         {
             struct rof_extrn *myref;
-    
+
             myref = find_extrn (xtrn_code, oprandpc);
 
             if (myref)
@@ -1160,7 +1167,7 @@ GetCmd ()
                         {
                             offset |= ((-1) ^ (signmsk[bytpt]));
                         }
-                    
+
                         sprintf (&(pbuf->operand[strlen(pbuf->operand)]),
                                     "%+d", offset);
                     }
@@ -1170,7 +1177,7 @@ GetCmd ()
                 {
                     rof_addlbl (offset, myref);
                 }
-            
+
                 return 1;
             }
         }
@@ -1181,13 +1188,15 @@ GetCmd ()
     case AM_BIT:
         pbyte = fgetc (progpath);
         ++Pc;
-        
+
         sprintf (pbuf->opcod, "%02x", pbyte);
         pbyte &= 0xff;
         tmpbyt = pbyte >> 6;
 
         if (tmpbyt > 3)
+        {
             return 0;
+        }
 
         sprintf (pbuf->operand, "%s.%d,",
                     PshPuls[(int)tmpbyt], (pbyte >> 3) & 7);
@@ -1225,7 +1234,9 @@ DoPrt (struct nlist *nl)
     {
         DoPrt (nl->LNext);
     }
+
     printf (prfmt, nl->sname, nl->myaddr);
+
     if (nl->RNext)
     {
         DoPrt (nl->RNext);
@@ -1259,7 +1270,7 @@ rsdoshdr (void)
 {
     char here = fgetc (progpath);
     int length;
-    
+
     if (here)
     {
         fprintf (stderr, "First character in file %s not 0\n", modfile);
@@ -1343,10 +1354,11 @@ progdis ()
      */
 
     long old_pos;
-    
+
     LinNum = PgLin = 0;
 
     /* Be sure we start with a clear pbuf */
+
     memset (pbuf, 0, sizeof (struct printbuf));
 
     if (Pass2)
@@ -1362,10 +1374,10 @@ progdis ()
                 OS9Modline ();
             }
         }
-        
+
         WrtEquates (1);         /* now do standard named labels */
         WrtEquates (0);         /* write non-standard labels */
-        
+
         if (OSType == OS_9)
         {
             if (IsROF)
@@ -1402,7 +1414,7 @@ progdis ()
                 Pc = HdrLen;       /* Entry point for executable code */
             }
     }
-    
+
     while (Pc < (CodEnd))
     {
         register struct databndaries *bp;
@@ -1412,7 +1424,7 @@ progdis ()
         /* Try this to see if it avoids buffer overflow */
         memset (pbuf, 0, sizeof (struct printbuf));
         CmdEnt = Pc;
-        
+
         /* check if in data boundary */
         if ((bp = ClasHere (dbounds, Pc)))
         {
@@ -1421,7 +1433,7 @@ progdis ()
         else
         {
             old_pos = ftell (progpath); /* Remember position on entry */
-            
+
             if (GetCmd () && (Pc <= CodEnd))
             {
                 if (Pass2)
@@ -1440,7 +1452,7 @@ progdis ()
                  * In either case, we'll simply pick off a single byte and
                  * write an "fcb" command, bump Pc to next byte and continue.
                  */
-                
+
                 int bcode;
 
                 /* Restore file position to orig */
@@ -1448,11 +1460,11 @@ progdis ()
                 fseek (progpath, old_pos, SEEK_SET);
                 bcode = fgetc (progpath);
                 Pc = CmdEnt;
-                
+
                 if (Pass2)
                 {
                     char *pp;
-                    
+
                     memset (pbuf, 0, sizeof (struct printbuf));
                     sprintf (pbuf->instr, "%02x", bcode);
                     strcpy (pbuf->mnem, "fcb");
@@ -1460,7 +1472,7 @@ progdis ()
                     sprintf (pp, "%02x", bcode);
                     PrintLine (pseudcmd, pbuf, 'L', CmdEnt, CmdEnt+1);
                 }
-                
+
                 Pc = ++CmdEnt;
             }
         }
@@ -1474,7 +1486,7 @@ progdis ()
         if ((OSType == OS_Coco) && (Pc == CodEnd))
         {
             int hstart;
-           
+
             if ((hstart = fgetc (progpath)) == 0)  /* Another Block of code follows */
             {
                 ungetc (hstart, progpath);  /* Restore byte for rsdoshdr() */
@@ -1485,7 +1497,7 @@ progdis ()
                     /* The following CmdEnt juggling is to try to get
                      * any label equ's just before the new org to print
                      * with the correct offset */
-                    
+
                     /*CmdEnt = prevcmdent;*/
                     RsOrg();
                     /*CmdEnt = newcmdent;*/

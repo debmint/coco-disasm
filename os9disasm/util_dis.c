@@ -1,20 +1,20 @@
-/*############################################################################
-#                                                                            #
-# os9disasm - OS9-6809 CROSS DISASSEMBLER                                    # 
-#             following the example of Dynamite+                             #
-#                                                                            #
-# # ######################################################################## #
-#
-#  $Id$
-#                                                                            #
-#  Edition History:                                                          #
-#  #  Date       Comments                                              by    #
-#  -- ---------- -------------------------------------------------     ---   #
-#  01 2003/01/31 First began project                                   dlb   #
-##############################################################################
-# File:  util_dis.c                                                          #
-# Purpose: Contain common utilities needed by all prog                       #
-############################################################################*/
+/* ************************************************************************ *
+ *                                                                          *
+ * os9disasm - OS9-6809 CROSS DISASSEMBLER                                  *
+ *             following the example of Dynamite+                           *
+ *                                                                          *
+ * ************************************************************************ *
+ *                                                                          *
+ *  $Id$                          *
+ *                                                                          *
+ *  Edition History:                                                        *
+ *  #  Date       Comments                                              by  *
+ *  -- ---------- -------------------------------------------------     --- *
+ *  01 2003/01/31 First began project                                   dlb *
+ * ************************************************************************ *
+ * File:  util_dis.c                                                        *
+ * Purpose: Contain common utilities needed by all prog                     *
+ * ************************************************************************ */
 
 #include "odis.h"
 
@@ -30,7 +30,7 @@ o9_fgetword(FILE *fp)
 {
     int msb,
         lsb;
-    
+
     msb = fgetc(fp);
     lsb = fgetc(fp);
 
@@ -45,8 +45,11 @@ o9_int (char *o9num)
     unsigned int msb = (unsigned char) o9num[0],
         lsb = (unsigned char) o9num[1];
 
-    if (!o9num)
+    if ( ! o9num)
+    {
         return -1;
+    }
+
     return ((msb << 8) + lsb);
 }
 
@@ -61,7 +64,7 @@ o9_int (char *o9num)
 char *
 skipblank (char *p)
 {
-    /* We did just pass over spaces or tabs, but we need to 
+    /* We did just pass over spaces or tabs, but we need to
      * also be sure we are past all return characters
      * ( especially the extra character MS-Dos uses
      */
@@ -98,7 +101,7 @@ strpos (char *s, char c)
 
 
 /* PBFcp():	take 1 or 2 byte and moves them to the appropriate
- * *pbuf->instr and pbuf->operand positions  
+ * *pbuf->instr and pbuf->operand positions
  */
 
 void

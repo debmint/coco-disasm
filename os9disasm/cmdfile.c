@@ -1,20 +1,20 @@
-/*############################################################################
-#
-# os9disasm - a project to disassemble Os9-coco modules into source code
-#             following the example of Dynamite+
-#             
-# # ######################################################################## #
-#
-#  $Id$
-#                                                                            #
-#  Edition History:                                                          #
-#  #  Date       Comments                                              by    #
-#  -- ---------- -------------------------------------------------     ---   #
-#  01 2003/01/31 First began project                                   dlb   #
-##############################################################################
-# File:  cmdfile.c                                                           #
-# Purpose: process command file                                              #
-############################################################################*/
+/* ************************************************************************ *
+ *                                                                          *
+ * os9disasm - a project to disassemble Os9-coco modules into source code   *
+ *             following the example of Dynamite+                           *
+ *                                                                          *
+ * ************************************************************************ *
+ *                                                                          *
+ *  $Id$                           *
+ *                                                                          *
+ *  Edition History:                                                        *
+ *  #  Date       Comments                                              by  *
+ *  -- ---------- -------------------------------------------------     --- *
+ *  01 2003/01/31 First began project                                   dlb *
+ * ************************************************************************ *
+ * File:  cmdfile.c                                                         *
+ * Purpose: process command file                                            *
+ * ************************************************************************ */
 
 /*#include <ctype.h>*/
 #define _GNU_SOURCE     /* Needed to get isblank() defined */
@@ -32,11 +32,11 @@ do_cmd_file ()
     char miscbuf[240];
 
     NxtBnd = 0;                 /* init Next boundary pointer */
-    
-    if (!(cmdfp = fopen (cmdfilename, "rb")))
+
+    if ( ! (cmdfp = fopen (cmdfilename, "rb")))
     {
         fprintf (stderr, "Erorr # %d: Cannot open cmd file %s for read\n",
-                 errno, cmdfilename);
+                          errno, cmdfilename);
         exit (1);
     }
 
@@ -45,9 +45,9 @@ do_cmd_file ()
         char *th,
              *mbf;
         ++LinNum;
-       
+
         mbf = skipblank (miscbuf);
-        
+
         /* Convert newlines and carriage returns to null */
 
         if ((th = (char *) strchr (mbf, '\n')))
@@ -55,21 +55,21 @@ do_cmd_file ()
             *th = '\0';
         }
 
-	if ((th = strchr (mbf, '\r')))
-	{
-            *th = '\0';
-	}
-        
-        if (!strlen (mbf))      /* blank line? */
+        if ((th = strchr (mbf, '\r')))
+        {
+                *th = '\0';
+        }
+
+        if ( ! strlen (mbf))      /* blank line? */
         {
             continue;
         }
-        
+
         if (*mbf == '*')        /* Cmdfile Comment?     */
         {
             continue;           /*yes, ignore   */
         }
-        
+
         if (*mbf == '+')
         {
             if (optincmd (++mbf) == -1)
@@ -102,7 +102,7 @@ do_cmd_file ()
 
             continue;
         }
-        
+
         if (*mbf == '>')
         {
             cmdamode (skipblank (++mbf));
@@ -116,7 +116,7 @@ do_cmd_file ()
             rof_ascii (skipblank (++mbf));
             continue;
         }
-        
+
         if (strchr (BoundsNames, toupper (*mbf)) || isdigit (*mbf))
         {
             boundsline (mbf);
@@ -145,13 +145,12 @@ apndcmnt (char *lpos)
     struct apndcmnt *mycmnt,
                     **me_ptr;
     char *cline;
-            
 
-    if (!(lpos = cmntsetup (lpos, &lblclass, &myadr)))
+    if ( ! (lpos = cmntsetup (lpos, &lblclass, &myadr)))
     {
         return -1;
     }
-    
+
     mycmnt = CmntApnd[strpos (lblorder, lblclass)];
     me_ptr = &(CmntApnd[strpos (lblorder, lblclass)]);
 
@@ -201,7 +200,7 @@ apndcmnt (char *lpos)
         mycmnt = calloc (1,sizeof (struct apndcmnt));
     }
 
-    if (!mycmnt)
+    if ( ! mycmnt)
     {
         fprintf (stderr, "Cannot allocate memory for append comment\n");
         exit (1);
@@ -268,22 +267,22 @@ cmntsetup (char *cpos, char *clas, int *adrs)
     {
         *clas = toupper(*clas);
     }
-    
-    if (!strchr(lblorder,*clas))
+
+    if ( ! strchr(lblorder,*clas))
     {
         fprintf (stderr, "Illegal label class for comment, Line %d\n", LinNum);
         return (char *)0;
     }
-    
+
     cpos = skipblank (cpos);    /* cpos now points to address */
-    
+
     if (sscanf (cpos,"%x", adrs) != 1)
     {
         fprintf (stderr,"Error in getting address of comment : Line #%d\n",
                  LinNum);
         exit (1);
     }
-    
+
     /* Now move up past address */
 
 #ifdef OSK
@@ -304,12 +303,13 @@ cmntsetup (char *cpos, char *clas, int *adrs)
  * Passed: address for comment,                    *
  *         parent or null if first in tree         *
  * *********************************************** */
+
 struct commenttree *
 newcomment (int addrs, struct commenttree *parent)
 {
     struct commenttree *newtree;
 
-    if (!(newtree = calloc(1,sizeof (struct commenttree))))
+    if ( ! (newtree = calloc(1,sizeof (struct commenttree))))
     {
         fprintf (stderr, "Cannot allocate memory for commenttree\n");
         exit (1);
@@ -344,12 +344,12 @@ asmcomment (char *lpos, FILE *cmdfile)
     register struct commenttree *me;
     struct cmntline *prevline = 0;
     char lblclass;
- 
-    if (!(lpos = cmntsetup (lpos, &lblclass, &adr)))
+
+    if ( ! (lpos = cmntsetup (lpos, &lblclass, &adr)))
     {
         return -1;
     }
-    
+
     switch (*lpos)
     {
 #ifndef OSK
@@ -366,8 +366,8 @@ asmcomment (char *lpos, FILE *cmdfile)
     /* Now locate or set up an appropriate tree structure */
 
     treebase = Comments[strpos (lblorder, lblclass)];
-    
-    if (!treebase)
+
+    if ( ! treebase)
     {
         me = treebase = Comments[strpos (lblorder, lblclass)] =
             newcomment (adr, 0);
@@ -375,7 +375,7 @@ asmcomment (char *lpos, FILE *cmdfile)
     else
     {
         struct commenttree *oldme;
-        
+
        /* int cmtfound = 0;*/
         me = treebase;
 
@@ -408,7 +408,7 @@ asmcomment (char *lpos, FILE *cmdfile)
                     }
                     else        /* The same address was previously done */
                     {
-                        oldme = me; 
+                        oldme = me;
                         me = newcomment (adr, me);
                         oldme->cmtRight = me;
                         break;
@@ -439,8 +439,9 @@ asmcomment (char *lpos, FILE *cmdfile)
     {
         struct cmntline *cline;
         char mbuf[500];
-        
+
         lastline = 0;
+
         if (strchr(lpos,'\n'))
         {
             *strchr(lpos,'\n') = '\0';
@@ -451,6 +452,7 @@ asmcomment (char *lpos, FILE *cmdfile)
         }
 
         /* If this is the last line, set flag for later */
+
         if (lpos[strlen(lpos) - 1] == delim)
         {
             lastline = 1;
@@ -458,14 +460,14 @@ asmcomment (char *lpos, FILE *cmdfile)
         }
 
         /* Now we can finally store the comment */
-        if (!(txt = calloc (1, strlen(lpos)+1)))
+        if ( ! (txt = calloc (1, strlen(lpos)+1)))
         {
             fprintf(stderr,"Error - cannot allocate memory for comment\n");
             exit(1);
         }
         strncpy (txt,lpos,strlen(lpos));
 
-        if (!(cline = calloc (1, sizeof (struct cmntline))))
+        if ( ! (cline = calloc (1, sizeof (struct cmntline))))
         {
             fprintf (stderr,
                     "Error - cannot allocate memory for comment line\n");
@@ -515,14 +517,14 @@ optincmd (char *lpos)
         {
             return (-1);
         }
-        
+
         lpos += strlen (spt);
-        
+
         if (*spt == '-')
         {
             ++spt;
         }
-        
+
         do_opt (spt);
     }
     return (0);
@@ -540,13 +542,16 @@ cmdsplit (char *dest, char *src)
 
     src = skipblank (src);
 
-    if (!(c = *src) || (c == '\n'))
+    if ( ! (c = *src) || (c == '\n'))
         return 0;
 
     if (strchr (src, ';'))
     {
         while ((c = *(src++)) != ';')
+        {
             *(dest++) = c;
+        }
+
         *dest = '\0';
     }
     else
@@ -568,7 +573,7 @@ cmdamode (char *pt)
     char buf[80];
 
     GettingAmode = 1;
-    
+
     while ((pt = cmdsplit (buf, pt)))
     {
         DoMode (buf);
@@ -592,7 +597,8 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
     dpt = tmpdat;               /* just to be sure */
 
     /* see if it's just a single byte/word */
-    if (!(isxdigit (*(pt = skipblank (pt)))))
+
+    if ( ! (isxdigit (*(pt = skipblank (pt)))))
     {
         if ((*pt == '-') || ((*pt == '/')))
         {
@@ -630,7 +636,7 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
     }
 
     /* Scan for second number/range/etc */
-    
+
     switch (c = *(pt = skipblank (pt)))
     {
     case '/':
@@ -649,7 +655,7 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
                 {                   /* second bump won't be done */
                     ++NoEnd;
                 }
-                
+
                 ++NoEnd;
                 *hi = *lo;
                 break;
@@ -670,7 +676,7 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
             {  /* if a NoEnd from prev cmd, second bump won't be done */
                 ++NoEnd;
             }
-            
+
             ++NoEnd;          /* Flag need end address */
             *hi = *lo;          /* tmp value */
             break;
@@ -685,16 +691,16 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
         }
         break;
     default:
-        if (!(*pt))
+        if ( ! (*pt))
         {
             NxtBnd = *lo + usize;
             *hi = NxtBnd - 1;
         }
     }
-    
+
     if (*pt)
     {
-        fprintf(stderr,"|%s|  ",pt);
+        fprintf (stderr,"|%s|  ",pt);
         nerrexit ("Extra data..");
     }
 }
@@ -718,7 +724,7 @@ DoMode (char *lpos)
     switch (c = toupper (*(lpos++)))
     {
     case 'D':
-			if(notimm)
+			if (notimm)
 				AMode=AM_DRCT;
 			else
 				AMode=AM_DIMM;
@@ -728,7 +734,7 @@ DoMode (char *lpos)
     case 'U':
     case 'S':
         AMode = (int) strpos ("DXYUS", c) + notimm + 1; /*+2 */
-        if (!AMode)
+        if ( ! AMode)
         {
             nerrexit ("Class \'%c\' not found");
         }
@@ -750,8 +756,8 @@ DoMode (char *lpos)
     lpos = skipblank (lpos);
     class = *(lpos++);
     class = toupper (class);
-    
-    if (!index (lblorder, class))
+
+    if ( ! index (lblorder, class))
     {
         nerrexit ("Illegal class definition");
     }
@@ -759,8 +765,8 @@ DoMode (char *lpos)
     /* Offset spec (if any) */
 
     /* check for default reset (no address) */
-    
-    if (!(lpos = skipblank (lpos)) || !(*lpos) || (*lpos == ';'))
+
+    if ( ! (lpos = skipblank (lpos)) || ! (*lpos) || (*lpos == ';'))
     {
         /* Changed the following after change for addlbl() */
         //DfltLbls[AMode - 1] = lblorder[class - 1];
@@ -771,12 +777,12 @@ DoMode (char *lpos)
     if (*(lpos) == '(')
     {
         otreept = calloc (1, sizeof (struct ofsetree));
-        
-        if (!otreept)
+
+        if ( ! otreept)
         {
             nerrexit ("Cannot allocate memory for offset!");
         }
-        
+
         lpos = setoffset (++lpos, otreept);
     }
 
@@ -784,11 +790,12 @@ DoMode (char *lpos)
 
      /*  Hopefully, passing a hard-coded 1 will work always.
      */
+
     getrange (lpos, &lo, &hi, 1, 0);
 
     /* Now insert new range into tree */
-    
-    if (!(mptr = calloc (1, sizeof (struct databndaries))))
+
+    if ( ! (mptr = calloc (1, sizeof (struct databndaries))))
     {
         nerrexit ("Cannot allocate memory for data definition");
     }
@@ -799,7 +806,7 @@ DoMode (char *lpos)
     mptr->b_typ = class;        /*a_mode; */
     mptr->dofst = otreept;
 
-    if (!LAdds[AMode])
+    if ( ! LAdds[AMode])
     {
         LAdds[AMode] = mptr;
         mptr->dabove = 0;
@@ -807,7 +814,7 @@ DoMode (char *lpos)
     else
     {
         lp = LAdds[AMode];
-        
+
         while (1)
         {
             if (hi < lp->b_lo)
@@ -861,7 +868,6 @@ boundsline (char *mypos)
 {
     char tmpbuf[80];
     register char *hold;
-    /*char *stophere=&mypos[strlen(mypos)]; */
     register int count = 1;
 
     GettingAmode = 0;
@@ -879,7 +885,7 @@ boundsline (char *mypos)
     {
         char *nextpos;
         mypos = hold;
-        
+
         while ((nextpos = cmdsplit (tmpbuf, mypos)))
         {
             setupbounds (tmpbuf);
@@ -900,11 +906,12 @@ setoffset (char *p, struct ofsetree *oft)
     oft->oclas_maj = oft->of_maj = oft->add_to = 0;
 
     p = skipblank (p);
-    if (!strchr (p, ')'))
+
+    if ( ! strchr (p, ')'))
     {
         nerrexit ("\"(\" in command with no \")\"");
     }
-    
+
     if ((c = toupper (*(p++))) == '*')
     {
         /* Hope this works - flag * addressing like this  */
@@ -934,11 +941,15 @@ setoffset (char *p, struct ofsetree *oft)
         nerrexit ("No offset specified !!");
 
     p = skipblank (p);
-    
+
     if ( ! isxdigit (*p))
+    {
         nerrexit ("Non-Hex number in offset value spec");
+    }
+
     /* NOTE: need to be sure string is lowercase and following
      * value needs to go into the structure */
+
     p = movxnum (bufr, p);
     sscanf (bufr, "%x", &oft->of_maj);
     /*if(add_to)
@@ -951,7 +962,7 @@ setoffset (char *p, struct ofsetree *oft)
     else {
         nerrexit ("Illegal character.. offset must end with \")\"");
     }
-    
+
     return ++p;
 }
 
@@ -989,12 +1000,12 @@ setupbounds (char *lpos)
         case 'S':
             lpos = skipblank (++lpos);
             lclass = toupper (*lpos);
-            
-            if (!index (lblorder, lclass))
+
+            if ( ! index (lblorder, lclass))
             {
                 nerrexit ("Illegal Label Class");
             }
-            
+
             break;
         case 'W':
             PBytSiz = 2;
@@ -1010,22 +1021,27 @@ setupbounds (char *lpos)
     }
 
     bdtyp = (int) strpos (BoundsNames, c);
+
     /* Offset spec (if any) */
+
     lpos = skipblank (++lpos);
-    
+
     if (*(lpos) == '(')
     {
         otreept = calloc (1, sizeof (struct ofsetree));
-        if (!otreept)
+        if ( ! otreept)
+        {
             nerrexit ("Cannot allocate memory for offset!");
+        }
+
         lpos = setoffset (++lpos, otreept);
     }
 
     getrange (lpos, &rglo, &rghi, PBytSiz, 1);
-    
+
     /* Now create the addition to the list */
-    
-    if (!(bdry = calloc (1, sizeof (struct databndaries))))
+
+    if ( ! (bdry = calloc (1, sizeof (struct databndaries))))
     {
         fprintf (stderr, "Cannot allocate memory for boundary\n");
         exit (1);
@@ -1038,7 +1054,7 @@ setupbounds (char *lpos)
     bdry->DLeft = bdry->DRight = 0;
     bdry->dofst = otreept;
 
-    /* We had to put it down here where bdry had already been malloc'ed 
+    /* We had to put it down here where bdry had already been malloc'ed
      * The way it works:  if a range is open-ended, getrange()
      * flags it 1, This flag passed through here.. We don't want
      * to substitute till the next pass, so we bump it up one
@@ -1063,10 +1079,10 @@ setupbounds (char *lpos)
             NoEnd -= 2;          /* undo one flagging */
         }
     }
-    
+
     prevbnd = bdry;             /* save this for open-ended bound */
 
-    if (!dbounds)
+    if ( ! dbounds)
     {                           /* First entry  */
         bdry->dabove = 0;
         dbounds = bdry;
@@ -1160,10 +1176,11 @@ movdigit (char *dst, char *src)
     return src;
 }
 
+/* FIXME : This is not used, but it's wrong anyway... fix or delete */
 int
 endofcmd (char *pp)
 {
-    return (1 ? ((*pp == '\n') || (*pp == ';') || (!(*pp))) : 0);
+    return (1 ? ((*pp == '\n') || (*pp == ';') || ( ! (*pp))) : 0);
 }
 
 void

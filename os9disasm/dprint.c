@@ -1,20 +1,20 @@
-/************************************************************************** *
-*                                                                           *
-*  os9disasm - OS9-6809 CROSS DISASSEMBLER                                  *
-*             following the example of Dynamite+                            *
-*                                                                           *
-* ************************************************************************* *
-*                                                                           *
-*  $Id$                              *
-*                                                                           *
-*  Edition History:                                                         *
-*  *  Date       Comments                                              by   *
-*  -- ---------- -------------------------------------------------     ---  *
-*  01 2003/01/31 First began project                                   dlb  *
-*************************************************************************** *
-* File:  dprint.c                                                           *
-* Purpose: handle printing and output function                              *
-*************************************************************************** */
+/* ************************************************************************ *
+ *                                                                          *
+ *  os9disasm - OS9-6809 CROSS DISASSEMBLER                                 *
+ *             following the example of Dynamite+                           *
+ *                                                                          *
+ * ************************************************************************ *
+ *                                                                          *
+ *  $Id$                             *
+ *                                                                          *
+ *  Edition History:                                                        *
+ *  *  Date       Comments                                              by  *
+ *  -- ---------- -------------------------------------------------     --- *
+ *  01 2003/01/31 First began project                                   dlb *
+ * ************************************************************************ *
+ * File:  dprint.c                                                          *
+ * Purpose: handle printing and output function                             *
+ * ************************************************************************ */
 
 #include "odis.h"
 #include <time.h>
@@ -70,8 +70,8 @@ OutputLine (char *pfmt, struct printbuf *pb)
 {
     struct nlist *nl;
 
-    if (InProg
-        && (nl = FindLbl (SymLst[(int) strpos (lblorder, 'L')], CmdEnt)))
+    if (  InProg &&
+         (nl = FindLbl (SymLst[(int) strpos (lblorder, 'L')], CmdEnt))  )
     {
         strcpy (pb->lbnm, nl->sname);
 
@@ -84,8 +84,10 @@ OutputLine (char *pfmt, struct printbuf *pb)
     PrintFormatted (pfmt, pb);
 
     if (WrtSrc)
-        fprintf (outpath, "%s %s %s %s\n", pb->lbnm, pb->mnem,
-                                          pb->operand, pb->comment);
+        fprintf (outpath, "%s %s %s %s\n", pb->lbnm,
+                                           pb->mnem,
+                                           pb->operand,
+                                           pb->comment  );
 }
 
     /* Straighten/clean up - prepare for next line  */
@@ -105,15 +107,15 @@ PrintCleanup (struct printbuf *pb)
     ++LinNum;
 }
 
-/* *********************************************** *
- * PrintNonCmd() - A utility function to print any *
- *          non-command line (except stored        *
- *          comments).  Prints the line with line  *
- *          number, and updates PgLin, LinNum      *
- * Passed: str - the string to print               *
- *         preblank - true if blankline before str *
- *         postblank - true if blankline after str *
- * *********************************************** */
+/* ************************************************************ *
+ * PrintNonCmd() - A utility function to print any non-command  *
+ *          line (except stored comments).                      *
+ *          Prints the line with line number, and updates       *
+ *          PgLin & LinNum                                      *
+ * Passed: str - the string to print                            *
+ *         preblank - true if blankline before str              *
+ *         postblank - true if blankline after str              *
+ * ************************************************************ */
 
 void
 PrintNonCmd (char *str, int preblank, int postblank)
@@ -126,7 +128,7 @@ PrintNonCmd (char *str, int preblank, int postblank)
         }
 
         printf ("%5d %s\n", LinNum, str);
-        
+
         if (WrtSrc)
         {
             fprintf (outpath, "%s", str);
@@ -137,25 +139,25 @@ PrintNonCmd (char *str, int preblank, int postblank)
             BlankLine();
         }
     }
-    
+
     PrintCleanup (0);
 }
 
-/* *********************************************** *
- * get_comment() - Checks for append comment for   *
- *      current command line.                      *
- * Passed: class,                                  *
- *         entry address for command               *
- * Returns: ptr to comment string if present       *
- *          ptr to empty string if none            *
- * *********************************************** */
+/* ******************************************************** *
+ * get_comment() - Checks for append comment for current    *
+ *              command line.                               *
+ * Passed: (1) class,                                       *
+ *         (2) entry address for command                    *
+ * Returns: ptr to comment string if present                *
+ *          ptr to empty string if none                     *
+ * ******************************************************** */
 
 char *
 get_apcomment(char clas, int addr)
 {
     struct apndcmnt *mytree = CmntApnd[strpos (lblorder, clas)];
 
-    if (!clas)
+    if ( ! clas)
     {
         return ("");
     }
@@ -199,11 +201,11 @@ get_apcomment(char clas, int addr)
     return ("");
 }
 
-/* *********************************************** *
- * PrintLine () - The generic, global printline    *
- *    function.  It checks for unlisted boundaries *
- *    prints the line, and then does cleanup       *
- * *********************************************** */
+/* ******************************************************** *
+ * PrintLine () - The generic, global printline function    *
+ *                It checks for unlisted boundaries, prints *
+ *                the line, and then does cleanup           *
+ * ******************************************************** */
 
 void
 PrintLine (char *pfmt, struct printbuf *pb, char class, int cmdlow, int cmdhi)
@@ -233,7 +235,7 @@ UpString (char *s)              /* Translate a string to uppercase */
 /* *********************************************** *
  * UpPbuf() - Translates a whole print buffer's    *
  *            contents to upper case, if UpCase    *
- * Passed: Pointer to the print buffer to upcase   *
+ * Passed: Pointer to the print buffer to UpCase   *
  * *********************************************** */
 
 void
@@ -252,14 +254,14 @@ UpPbuf (struct printbuf *pb)
 void
 PrintFormatted (char *pfmt, struct printbuf *pb)
 {
-    if (!PgLin || PgLin > (PgDepth - 6))
+    if ( ! PgLin || PgLin > (PgDepth - 6))
         StartPage ();
 
     if (UpCase)
     {
         UpPbuf (pb);
     }
-    
+
     if (pfmt == pseudcmd)
     {
         printf (pfmt, LinNum, CmdEnt, pb->instr, pb->lbnm,
@@ -281,8 +283,12 @@ StartPage ()
     struct tm *tm;
 
     if (PgLin)
+    {
         while (PgLin++ < PgDepth)
+        {
             printf ("\n");
+        }
+    }
 
     ++PgNum;
     PgLin = 0;
@@ -301,8 +307,12 @@ StartPage ()
     {                           /* print disassembler info on first page */
         LinNum = 1;
         printf ("%5d%20s %s %s\n", LinNum++, "", bywhom, modfile);
+
         if (WrtSrc)
+        {
             fprintf (outpath, "%s %s\n", bywhom, modfile);
+        }
+
         BlankLine ();
     }
 }
@@ -310,17 +320,23 @@ StartPage ()
 void
 BlankLine ()                    /* Prints a blank line */
 {
-    if (!PgLin || PgLin > (PgDepth - 6))
+    if ( ! PgLin || PgLin > (PgDepth - 6))
+    {
         StartPage ();
+    }
 
     printf ("%5d\n", LinNum++);
     ++PgLin;
+
     if (WrtSrc)
+    {
         fprintf (outpath, "\n");
+    }
 }
 
 /* print any comments appropriate */
-void
+
+    void
 PrintComment(char lblclass, int cmdlow, int cmdhi)
 {
     register struct commenttree *me;
@@ -345,17 +361,17 @@ PrintComment(char lblclass, int cmdlow, int cmdhi)
                 else        /* Assume for now it's equal */
                 {
                     struct cmntline *line;
-    
+
                     line = me->commts;
-    
+
                     do {
                         printf("%5d       * %s\n", LinNum++, line->ctxt);
-                        
+
                         if (WrtSrc)
                         {
                             fprintf (outpath, "* %s\n", line->ctxt);
                         }
-                        
+
                     } while ((line = line->nextline));
 
                     break;  /* This address done, proceed with next x */
@@ -376,7 +392,7 @@ NonBoundsLbl (char class)
         {
             struct printbuf altbuf, *bf = &altbuf;
             struct nlist *nl;
-            
+
             if ((nl = FindLbl (ListRoot (class), x)))
             {
                 memset (bf, 0, sizeof (struct printbuf));
@@ -395,7 +411,7 @@ NonBoundsLbl (char class)
                 printf (pseudcmd, LinNum++, nl->myaddr, bf->instr,
                         bf->lbnm, bf->mnem, bf->operand, "");
                 ++PgLin;
-                
+
                 if (WrtSrc)
                 {
                     fprintf (outpath, "%s %s %s\n", bf->lbnm, bf->mnem,
@@ -420,6 +436,7 @@ RsOrg (void)
     sprintf (prtbf->operand, "$%04x", ModLoad);
 
     /* The following block prints out the line */
+
     BlankLine ();
     OutputLine (realcmd, prtbf);
 
@@ -429,7 +446,7 @@ RsOrg (void)
     NonBoundsLbl ('L');
     PrintCleanup (prtbf);
     BlankLine ();
-    
+
     fseek (progpath, HdrLen, SEEK_SET);
 }
 
@@ -470,10 +487,10 @@ ROFPsect (struct rof_hdr *rptr)
     strcpy (pbuf->lbnm, "");
     strcpy (pbuf->mnem, "psect");
     sprintf (pbuf->operand, "%s,$%x,$%x,%d,%d", rptr->rname,
-                                              rptr->ty_lan >> 8,
-                                              rptr->ty_lan & 0xff,
-                                              rptr->edition,
-                                              rptr->stksz
+                                                rptr->ty_lan >> 8,
+                                                rptr->ty_lan & 0xff,
+                                                rptr->edition,
+                                                rptr->stksz
             );
 
     if ((nl = FindLbl (ListRoot('L'), rptr->modent)))
@@ -521,6 +538,7 @@ OS9Modline ()
     sprintf (prtbf->operand, "%s,%s,$%02x,$%02x,%s",
              FindLbl (LL, ModSiz)->sname, FindLbl (LL, ModNam)->sname,
              ModTyp, ModRev, FindLbl (LL, ModExe)->sname);
+
     if (HdrLen == 13)
     {
         strcat (prtbf->operand, ",");
@@ -528,6 +546,7 @@ OS9Modline ()
                     ModData)->sname);
         /*strcat (prtbf->operand, FindLbl (SymLst[0], ModData)->sname);*/
     }
+
     /*PrintLine("%5d  %08x %-10s%s %-10s %-6s %s\n",prtbf); */
     PrintLine (pseudcmd, prtbf, CNULL, 0, 0);
     InProg = 1;
@@ -558,7 +577,7 @@ WrtEmod ()
     memset (prtbf, 0, sizeof (struct printbuf));
     first = o9_fgetword (progpath);
     last = fgetc (progpath);
-    sprintf(prtbf->instr, "%04x%02x", first, last); 
+    sprintf(prtbf->instr, "%04x%02x", first, last);
     strcpy (prtbf->mnem, "emod");
     BlankLine ();
 /*	PrintLine("%5d  %06x %-12s%s %-10s %-6s %s\n",prtbf);*/
@@ -588,8 +607,11 @@ WrtEmod ()
 
     PrintFormatted (realcmd, prtbf);
     /*printf("%5d  %20s%s\n",LinNum,"","end"); */
+
     if (WrtSrc)
+    {
         fprintf (outpath, " %s\n", "end");
+    }
 }
 
 /* *************************************************** *
@@ -684,15 +706,15 @@ ROFDataPrint ()
                         /* for PrintNonCmd(), send isinit so that a pre-blank
                          * line is not printed, since it is provided by
                          * PrinLine above */
-    
+
                         PrintNonCmd (mytmp, isinit, 1);
                         srch = dta;
-    
+
                         while (srch->LNext)
                         {
                             srch = srch->LNext;
                         }
-    
+
                         if (srch->myaddr)
                         {                       /* i.e., if not D000 */
                             strcpy (pbuf->mnem, "rmb");
@@ -701,11 +723,11 @@ ROFDataPrint ()
                             PrintLine (realcmd, pbuf, dattyp[isinit], 0,
                                                       srch->myaddr);
                         }
-    
+
                         /* For max value, send a large value so ListData
                          * will print all for class
                          */
-    
+
                         ModData = thissz[isinit];
                         ListData (dta, thissz[isinit]);
                     }           /* end "if (dta)" */
@@ -755,14 +777,21 @@ OS9DataPrint ()
         BlankLine ();
         printf ("%5d %22s%s\n", LinNum++, "", what);
         ++PgLin;
+
         if (WrtSrc)
+        {
             fprintf (outpath, "%s\n", what);
+        }
+
         BlankLine ();
 
         /*first, if first entry is not D000, rmb bytes up to first */
         srch = dta;
+
         while (srch->LNext)
+        {
             srch = srch->LNext;
+        }
 
         if ((srch->myaddr))
         {                       /* i.e., if not D000 */
@@ -771,6 +800,7 @@ OS9DataPrint ()
             CmdEnt = PrevEnt = 0;
             PrintLine (realcmd, pbuf, 'D', 0, srch->myaddr);
         }
+
         ListData (dta, ModData);
     }
     else
@@ -801,7 +831,7 @@ ListData (struct nlist *me, int upadr)
     memset (pbf, 0, sizeof (struct printbuf));
 
     /* Process lower entries first */
-    
+
     if (me->LNext)
     {
         ListData (me->LNext, me->myaddr);
@@ -815,7 +845,7 @@ ListData (struct nlist *me, int upadr)
     }
 
     /* Now we've come back, print this entry */
-    
+
     strcpy (pbf->lbnm, me->sname);
 
     if (IsROF && me->global)
@@ -828,7 +858,9 @@ ListData (struct nlist *me, int upadr)
         srch = me->RNext;       /* Find smallest entry in that list */
 
         while (srch->LNext)
+        {
             srch = srch->LNext;
+        }
 
         datasize = (srch->myaddr) - (me->myaddr);
     }
@@ -836,16 +868,16 @@ ListData (struct nlist *me, int upadr)
     {
         datasize = (upadr) - (me->myaddr);
     }
-    
+
     /* Don't print any class 'D' variables which are not in Data area */
     /* Note, Don't think we'll get this far, we have a return up above,
      * but keep this one till we know it works
-    
+
     if ((OSType == OS_9) && (me->myaddr > ModData))
     {
         return;
     }*/
-    
+
     if (me->myaddr != ModData)
     {
         strcpy (pbf->mnem, "rmb");
@@ -877,7 +909,7 @@ ListData (struct nlist *me, int upadr)
 
 /* ************************************************** *
  * WrtEquates() - Print out label defs                *
- * Passed: stdflg - 1 for std labels, 0 for externals *        
+ * Passed: stdflg - 1 for std labels, 0 for externals *
  * ************************************************** */
 
 void
@@ -894,8 +926,11 @@ WrtEquates (int stdflg)
     struct nlist *me;
 
     InProg = 0;
-    if (!stdflg)                /* print ! and ^ only on std class pass */
+
+    if ( ! stdflg)                /* print ! and ^ only on std class pass */
+    {
         curnt += 2;
+    }
 
     while ((NowClass = *(curnt++)) != ';')
     {
@@ -903,11 +938,11 @@ WrtEquates (int stdflg)
 
         flg = stdflg;
         strcpy (ClsHd, "%5d %21s");
-        
+
         if ((me = ListRoot (NowClass)))
         {
             /* For OS9, we only want external labels this pass */
-            
+
             if ( (OSType == OS_9) && (NowClass == 'D'))
             {
                 if (stdflg)     /* Don't print data defs */
@@ -918,7 +953,7 @@ WrtEquates (int stdflg)
                 /* Probably an error if this happens
                  * What we're doing is positioning me to
                  * last real data element*/
-                
+
                /* if (!(me = FindLbl (me, ModData)))
                 {
                     continue;
@@ -931,22 +966,22 @@ WrtEquates (int stdflg)
             {
                 continue;
             }*/
-            
+
             switch (NowClass)
             {
-            case '!':
-                strcat (ClsHd, syshd);
-                SrcHd = syshd;
-                flg = -1;
-                break;
-            case '^':
-                strcat (ClsHd, aschd);
-                SrcHd = aschd;
-                flg = -1;
-                break;
-            default:
-                strcat (ClsHd, genhd[flg]);
-                SrcHd = genhd[flg];
+                case '!':
+                    strcat (ClsHd, syshd);
+                    SrcHd = syshd;
+                    flg = -1;
+                    break;
+                case '^':
+                    strcat (ClsHd, aschd);
+                    SrcHd = aschd;
+                    flg = -1;
+                    break;
+                default:
+                    strcat (ClsHd, genhd[flg]);
+                    SrcHd = genhd[flg];
             }
 
             HadWrote = 0;       /* flag header not written */
@@ -1017,19 +1052,21 @@ TellLabels (struct nlist *me, int flg, char class, int minval)
         if (me->myaddr >= minval)
 /*        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr <= ModData)))*/
         {
-            if (!HadWrote)
+            if ( ! HadWrote)
             {
                 BlankLine ();
                 printf (ClsHd, LinNum++, "", NowClass);
                 ++PgLin;
-                
+
                 if (outpath)
+                {
                     fprintf (outpath, SrcHd, NowClass);
-                
+                }
+
                 HadWrote = 1;
                 BlankLine ();
             }
-    
+
             strcpy (pb->lbnm, me->sname);
             strcpy (pb->mnem, "equ");
 
