@@ -25,8 +25,8 @@ extern char *CmdBuf;
 extern struct printbuf *pbuf;
 extern struct rof_hdr *rofptr;
 
-char pseudcmd[80] = "%5d  %04X %-14s %-10s %-6s %s %s\n";
-char realcmd[80] =  "%5d  %04X %-04s %-9s %-10s %-6s %s %s\n";
+char pseudcmd[80] = "%5d  %04X %-14s %-10s %-6s %-10s %s\n";
+char realcmd[80] =  "%5d  %04X %-04s %-9s %-10s %-6s %-10s %s\n";
 char *blankcmd = "%5d";
 
 int PgNum = 0;
@@ -34,6 +34,7 @@ int PrevEnt = 0;                /* Previous CmdEnt - to print non-boundary label
 int InProg;                     /* Flag that we're in main program, so that it won't
                                    munge the label name */
 static char ClsHd[100];         /* header string for label equates */
+static char FmtBuf[200];        /* Buffer to store formatted string */
 int HadWrote;                   /* flag that header has been written */
 char *SrcHd;                    /* ptr for header for source file */
 
@@ -47,10 +48,10 @@ adjpscmd (void)
 {
     sprintf (pseudcmd, "%s%d%s\n", "%5d  %04X %-14s %-",
                                    NamLen + 2,
-                                   "s %-6s %s %s");
+                                   "s %-6s %-10s %s");
     sprintf (realcmd, "%s%d%s\n", "%5d  %04X %-04s %-9s %-",
                                   NamLen + 2,
-                                  "s %-6s %s %s");
+                                  "s %-6s %-10s %s");
 }
 
 void
@@ -84,10 +85,17 @@ OutputLine (char *pfmt, struct printbuf *pb)
     PrintFormatted (pfmt, pb);
 
     if (WrtSrc)
-        fprintf (outpath, "%s %s %s %s\n", pb->lbnm,
+    {
+        fprintf (outpath, "%s %s %s", pb->lbnm,
                                            pb->mnem,
-                                           pb->operand,
-                                           pb->comment  );
+                                           pb->operand  );
+        if (strlen (pb->comment))
+        {
+            fprintf (outpath, " %s", pb->comment);
+        }
+
+        fprintf (outpath, "\n");
+    }
 }
 
     /* Straighten/clean up - prepare for next line  */
@@ -254,6 +262,8 @@ UpPbuf (struct printbuf *pb)
 void
 PrintFormatted (char *pfmt, struct printbuf *pb)
 {
+    int _linlen;
+
     if ( ! PgLin || PgLin > (PgDepth - 6))
         StartPage ();
 
@@ -262,16 +272,35 @@ PrintFormatted (char *pfmt, struct printbuf *pb)
         UpPbuf (pb);
     }
 
+    /* make sure any non-initialized fields don't create Segfault */
+
+    if ( ! pb->instr)       strcpy(pb->instr, "");
+    if ( ! pb->lbnm)        strcpy(pb->lbnm, "");
+    if ( ! pb->mnem)        strcpy(pb->mnem, "");
+    if ( ! pb->mnem)        strcpy(pb->mnem, "");
+    if ( ! pb->operand)     strcpy(pb->operand, "");
+    if ( ! pb->comment)     pb->comment = "";
+
     if (pfmt == pseudcmd)
     {
-        printf (pfmt, LinNum, CmdEnt, pb->instr, pb->lbnm,
-                pb->mnem, pb->operand, pb->comment);
+        _linlen = snprintf (FmtBuf, PgWidth - 2, pfmt,
+                                    LinNum, CmdEnt, pb->instr, pb->lbnm,
+                                    pb->mnem, pb->operand, pb->comment);
     }
     else
     {
-        printf (pfmt, LinNum, CmdEnt, pb->instr, pb->opcod, pb->lbnm,
-                pb->mnem, pb->operand, pb->comment);
+        _linlen = snprintf (FmtBuf, PgWidth - 2, pfmt,
+                                LinNum, CmdEnt, pb->instr, pb->opcod, pb->lbnm,
+                                pb->mnem, pb->operand, pb->comment);
     }
+
+    if (_linlen >= PgWidth - 2)
+    {
+        FmtBuf[PgWidth - 4] = '\n';
+        FmtBuf[PgWidth - 3] = '\0';
+    }
+
+    printf ("%s", FmtBuf);
     fflush (stdout);
 }
 
@@ -621,9 +650,24 @@ WrtEmod ()
 void
 WrtEnds(void)
 {
-    strcpy (pbuf->mnem, "ends");
+    struct printbuf bf;
+    struct printbuf *pb = &bf;
+
+    memset (pb, 0, sizeof (struct printbuf));
+    strcpy (pb->mnem, "ends");
+
     BlankLine();
-    PrintLine (realcmd, pbuf, 'D', 0, 0);
+
+    PrintFormatted (realcmd, pb);
+
+    if (WrtSrc)
+    {
+        fprintf (outpath, "%s %s %s", pb->lbnm,
+                                           pb->mnem,
+                                           pb->operand  );
+        fprintf (outpath, "\n");
+    }
+
     BlankLine();
 }
 
