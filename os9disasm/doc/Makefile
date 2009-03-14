@@ -11,7 +11,8 @@
 HTMLDIR	=html
 VPATH	=$(HTMLDIR)
 STYLSHEET	= /usr/share/xml/docbook/stylesheet/ldp/html/tldp-sections.xsl
-index_SOURCES	=odcmd.xml odisinst.xml odrun.xml os9disasm.xml g09dis.xml
+index_SOURCES	= odcmd.xml odquick.xml odisinst.xml odrun.xml \
+				  os9disasm.xml g09dis.xml
 mkdir_p = mkdir -p --
 
 all: index.html

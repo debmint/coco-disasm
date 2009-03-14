@@ -29,25 +29,30 @@ char rdbuf[500];
 static void
 usage ()
 {
-    fprintf (stderr, "os9disasm V %s\n", VERSION);
+    fprintf (stderr, "\nos9disasm V %s\n", VERSION);
     fprintf (stderr, "    Disassembles 6809/6309 code, sending a formatted listing to stdout\n");
-    fprintf (stderr, "Syntax: os9dis [opts] <module filename> [opts]\n");
-    fprintf (stderr, " Options:\n");
+    fprintf (stderr, "\nSyntax: os9dis [opts] <module filename> [opts]\n");
+    fprintf (stderr, "\n Options:\n");
+    fprintf (stderr, "   PATHS\n");
     fprintf (stderr, "    -c[=]<command file>\n");
     fprintf (stderr,
              "    -d  -  define path to defs files  (default=$HOME/coco/defs)\n");
-    fprintf (stderr, "    -g  -  Output listing in tabbed format suitable for g09dis to interpret\n");
-    fprintf (stderr, "    -o[=]<source (.asm) filename\n");
-    fprintf (stderr, "    -ls -  short labels (6-char) default=8-char\n");
-    fprintf (stderr, "\n    -u  -  fold to uppercase\n");
-    fprintf (stderr, "    -pw[=]<page width>     default=80\n");
-    fprintf (stderr, "    -pd[=]<pagd depth>     default=66\n");
     fprintf (stderr, "    -s[=]<label file> - up to %d allowed\n", MAX_LBFIL);
-    fprintf (stderr, "    -x[=]<type> - Target OS\n");
+    fprintf (stderr, "    -o[=]<source (.asm) filename\n");
+    fprintf (stderr, "\n   OUTPUT OPTIONS\n");
+    fprintf (stderr, "    -ls -  short labels (6-char) default=8-char\n");
+    fprintf (stderr, "    -ll[=]<length> - Specify label length\n");
+    fprintf (stderr, "\n    -u  -  fold to uppercase\n");
     fprintf (stderr, "    -a    Specify all 8-bit indexes with \"<\"\n");
     fprintf (stderr, "                C=Coco (default = OS9)\n");
+    fprintf (stderr, "    -g  -  Output listing in tabbed format suitable for g09dis to interpret\n");
     fprintf (stderr,
              "    -z  -  Print zero register offset. (Default is \"no\"\n");
+    fprintf (stderr, "\n   PAGE SPECS\n");
+    fprintf (stderr, "    -pw[=]<page width>     default=80\n");
+    fprintf (stderr, "    -pd[=]<pagd depth>     default=66\n");
+    fprintf (stderr, "\n   TARGET CPU\n");
+    fprintf (stderr, "\n    -x[=]<type> - Target OS\n");
     fprintf (stderr, "    -3  -  target CPU is 6309 (accept 6309 opcodes)\n");
     return;
 }

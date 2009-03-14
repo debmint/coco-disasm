@@ -5,10 +5,10 @@
     and such when attempting to add entries to the <filename>command
     file</filename>, especially.
   </para>
-  <para>This is where a helper application can be quite helpful. This is just
-    what g09dis is. With it, you can add command lines to the <filename>command
-    file</filename> or the <filename>label file</filename>, depending upon the
-    content of the line upon which you are working.
+  <para>This is where a helper application can be beneficial. This is just what
+    g09dis is. With it, you can add command lines to the <filename>command
+      file</filename> or the <filename>label file</filename>, depending upon
+    the content of the line upon which you are working.
   </para>
   <section><title>Installing and Compiling G09dis</title>
     <para>The installation and compilation is in principle the same as the
@@ -29,7 +29,7 @@
         <varlistentry><term>Disassembler Options</term>
           <listitem>
             <para>This allows you to set the options passed to the
-              disassembler when disassembling the program.  When Tootips are
+              disassembler when disassembling the program.  When Tooltips are
               turned on, a short description for most is displayed when you
               hover the mouse over the title momentarily.  Note that to
               disassemble a program, an entry <emphasis>must</emphasis> be
@@ -111,7 +111,7 @@
         <caption><para>The <command>List Menu</command></para>
         </caption>
       </mediaobject>
-      <para>Of course <command>Load Listing</command> loads a specially
+      <para>Of course <command>Open Listing</command> loads a specially
         formatted listing from a file.  What we are now interested in
         are the editing functions.
       </para>

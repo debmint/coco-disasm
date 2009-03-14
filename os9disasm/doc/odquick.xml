@@ -15,9 +15,11 @@
           <title>Specify commandline options to pass to &odis;.</title>During
           the process of disassembling a program, you will undoubtedly have to
           run the disassembly several times.  To avoid the necessity of having
-          to pass the options to &odis; each time, the commanline options (see
-          <xref linkend="cmdoptions"/> for a desctiption of the options) by
-          beginning the line with <command>"+"</command>.
+          to repeatedly type out the options to &odis; each time, commandline
+          options which you wish to pass to &odis; can be specified by
+          including a <command>"+"</command> as the first character on the
+          line.  (See <xref linkend="cmdoptions"/> for a description of the
+          options.)
         </formalpara>
       </listitem>
       <listitem>
@@ -65,7 +67,7 @@
       the operand to be a certain type based upon the <emphasis>mode</emphasis>
       of the assembler command.  &odis; has a default label class to assign
       a certain addressing mode, depending upon the target system.  For
-      code in a program module, for example, &odis; will assume that, since
+      code in an OS9 program module, for example, &odis; will assume that, since
       register <emphasis>U</emphasis> usually points to the base of the
       data area, that something indexed by <emphasis>U</emphasis> refers
       to data, and will assign it class <emphasis>"D"</emphasis> (the default
@@ -76,101 +78,113 @@
     <para>Source code by itself is rather difficult to interpret.  Adding
       comments make things much easier to understand, especially for others
       who later view the code.  In addition, after a period of time, it's
-      often easy to forget exactly what you did several months, or even years
-      later.  Also, while disassembling a program, comments can be useful
+      often easy to forget exactly what you had done several months, or even
+      years later.  Also, while disassembling a program, comments can be useful
       in understanding just what is going on.
     </para>
     <para>To this end, comments can be added in two ways.
     </para>
-    <para id="appendcmpt">First, short notes can be appended to the end of the
-      command line.  This is done by inserting a line in the command file in
-      the following format:
-    </para>
-    <section>
+    <section id="inlinecmnt"><title>Inline Comments</title>
+      <para id="appendcmpt">First, short notes can be appended to the end of the
+        command line (inline commenting).  This is done by inserting a line in
+        the command file in the following format:
+      </para>
+      <section>
+        <para>
+          <computeroutput>' &lt;class&gt; &lt;hexadecimal address&gt;
+            &lt;text&gt;</computeroutput>
+        </para>
+      </section>
       <para>
-        <computeroutput>' &lt;class&gt; &lt;hexadecimal address&gt;
-          &lt;text&gt;</computeroutput>
+        Note that the first character is a <emphasis>single quote</emphasis>.
+        It must be the first character on the line.
+      </para>
+      <para>The <emphasis>class </emphasis> is the label class.  This
+        determines the area in the source output where the comment will be
+        placed, and would normally be either <emphasis>L</emphasis> or any of
+        the data classes used.  The data class for a regular program module
+        would be <emphasis>D</emphasis>, but for an <emphasis>ROF</emphasis>
+        module, it would be one of the four classes used.
+      </para>
+      <para>The address, like all addresses in the command file, is in
+        hexadecimal.  The text is any text of any length.  No delimiter is used
+        for this type of comment.
       </para>
     </section>
-    <para>
-      Note that the first character is a <emphasis>single quote</emphasis>.
-      It must be the first character on the line;  The <emphasis>class
-      </emphasis> is the label class.  This can be either <emphasis>
-      L</emphasis> or any of the data classes used.  The address, like
-      all addresses in the command file, is in hexadecimal.  The text is
-      any text of any length.  No delimiter is used for this type of comment.
-    </para>
-    <para id="alonecmnt">More detailed comments can be placed on their own
-      lines.  This is done by placing a <emphasis>double quote</emphasis>
-      as the first character on the line.  The format for this type comment
-      is identical to the appended comment, except that delimiters are used.
-    </para>
-    <para><note>
-        The address for inline comments must be specified as the entry
-        address for the line on which the comment is to appear.  For the
-        standalone comments, this address can be specified for any address
-        that is within the range of that command.
-    </note></para>
-    <para>
-      Any character is permissible to use as a delimiter, and this delimiter
-      can be used anywhere in the text.  The comments will continue and
-      include all text in the command file until the specified delimiter
-      is found as the <emphasis>last</emphasis> character on a line.  To
-      end the commenting, this delimiter must be <emphasis>immediately
-      </emphasis> followed by a newline character.  Any linebreak within
-      the comment span will generate a new line in the listing or source
-      file.
-    </para>
-    <para>
-      There is no way to generate a strictly blank line, but lines composed
-      of a single asterisk can be generated.  To generate an asterisk as
-      the first line of the comment, simply enter the double quote, class,
-      address, and delimiter immediately followed by a carriage return on
-      the first line.  To end with a line containing an asterisk, insert a
-      line with only the delimiter.  Empty lines within the comment range
-      can be generated with a completely blank (zero-length) line.
-    </para>
-    <para>
-      With standalone comments, after a comment has been created for a
-      particular address, additional lines can be created at a later place
-      in the command file.  If the addresses specified are the same, they
-      will be printed in the order they appear in the command file.  If
-      you first specify a comment for, say, the second byte of the command,
-      then later specify a comment with an address at the first byte, then,
-      of course, the later specification will appear first.
-    </para>
-    <para>For appended comments, if you specify one comment for an address,
-      and later specify a different comment for that address, the second
-      will simply overwrite the first.
-    </para>
-    <para>Appended comments are pretty straightforward, but an example for
-      standalone comments might be useful.
-    </para>
-    <para>Suppose you have the following lines in the command file
-      <screen>
-        " L 246b '
-        This is a line of comment
+    <section id="alonecmnt"><title>Multiline Comments</title>
+      <para>More detailed comments can be placed on their own lines.  This is
+        done by placing a <emphasis>double quote</emphasis> as the first
+        character on the line.  The format for this type comment is identical
+        to the appended comment, except that delimiters are used.  </para>
+      <para><note>
+          The address for inline comments must be specified as the entry
+          address for the line on which the comment is to appear.  For the
+          standalone comments, this address can be specified for any address
+          that is within the range of that command.
+      </note></para>
+      <para>
+        Any character is permissible to use as a delimiter, and this delimiter
+        can be used anywhere in the text as long as it is not the
+        <emphasis>final</emphasis>character on a line.  The comments will
+        continue and include all text in the command file until the specified
+        delimiter is found as the <emphasis>last</emphasis> character on a
+        line.  To end the commenting, this delimiter must be
+        <emphasis>immediately </emphasis> followed by a newline character.  Any
+        linebreak within the comment span will generate a new line in the
+        listing or source file.
+      </para>
+      <para>
+        There is no way to generate a strictly blank line, but lines composed
+        of a single asterisk can be generated.  To generate an asterisk as
+        the first line of the comment, simply enter the double quote, class,
+        address, and delimiter immediately followed by a carriage return on
+        the first line.  To end with a line containing an asterisk, insert a
+        line with only the delimiter.  Blank lines within the comment range,
+        containing only an asterisk can be generated with a completely blank
+        (zero-length) line.
+      </para>
+      <para>
+        With standalone comments, after a comment has been created for a
+        particular address, additional lines can be created at a later place
+        in the command file.  If the addresses specified are the same, they
+        will be printed in the order they appear in the command file.  If
+        you first specify a comment for, say, the second byte of the command,
+        then later specify a comment with an address at the first byte, then,
+        of course, the later specification will appear first.
+      </para>
+      <para>For inline comments, if you specify one comment for an address,
+        and later specify a different comment for that address, the second
+        will simply overwrite the first.
+      </para>
+      <para>Inline comments are pretty straightforward, but an example for
+        standalone comments might be useful.
+      </para>
+      <para>Suppose you have the following lines in the command file
+        <screen>
+          " L 246b '
+          This is a line of comment
 
-        This is another'
-      </screen>
-      And later you insert this line
-      <screen>
-        " L 246b e-----
-        Also we need to say this
-        e
-      </screen>
-    </para>
-    <para>
-      Then you will get the following lines in the code
-      <screen>
-        *
-        * This is a line of comment
-        *
-        * This is another
-        * -----
-        * Also we need to say this
-        *
-      </screen>
-    </para>
+          This is another'
+        </screen>
+        And later you insert this line
+        <screen>
+          " L 246b e-----
+          Also we need to say this
+          e
+        </screen>
+      </para>
+      <para>
+        Then you will get the following lines in the code
+        <screen>
+          *
+          * This is a line of comment
+          *
+          * This is another
+          * -----
+          * Also we need to say this
+          *
+        </screen>
+      </para>
+    </section>
   </section>
 </section>

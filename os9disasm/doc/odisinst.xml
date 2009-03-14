@@ -8,34 +8,27 @@
    issue the command
   </para>
   <para> for the <filename>tar.bz2</filename> extension </para>
-  <screen># tar -xjf &lt;path&gt; /os9disasm.tar.bz2</screen>
-  <para>OR,  for the <filename>tar.gz</filename> extension.</para>
-  <screen># tar -xzf &lt;path&gt; os9disasm.tar.gz</screen>
-  <note>
-    <para>The filename may vary depending upon whether you have the complete
-      package including both &odis; and <command>g09dis</command> or just
-      the separate packages.
-    </para>
-  </note>
+  <screen># tar -xjf &lt;path&gt;/.tar.bz2</screen>
+  <para>OR, for the <filename>tar.gz</filename> extension.</para>
+  <screen># tar -xzf &lt;path&gt;/os9disasm.tar.gz</screen>
   <para>In either case, a directory named
-   <filename>os9disasm</filename> or <filename>cocodis<emphasis>x.x</emphasis>
-   </filename> will be created in the current location, and all files will
-   be created under that directory.
+    <filename>cocodis<emphasis>x.x</emphasis></filename> will be created in
+    the current location, and all files will be created under that directory.
   </para>
  </section>
  <section><title>CVS os9tools download</title>
-  <para>If you have the CVS
-   download of the <filename>os9tools</filename> hierarchy, you already
-   have the necessary files in the <filename>os9disasm</filename> directory
-   under <filename>os9tools/</filename>.
+  <para>If you have the CVS download of the <filename>os9tools</filename>
+    hierarchy, you already have the necessary files in the
+    <filename>os9disasm</filename> directory under
+    <filename>os9tools/</filename>.
   </para>
  </section>
- <section><title>Building &amp; Installing the Package</title>
+ <section><title>Building and Installing the Package</title>
    <para>The packages now comes configured with <command>autotools</command>.
-     This means that the configure process should be able to detect under what
-     system the process is running and set some compile parameters to suit
-     your situation.  This should make it easier for the programs to be
-     compiled under differing systems.
+     This means that the configure process should be able to detect the
+     operating system under which the process is running and set some compile
+     parameters to suit your situation.  This should make it easier for the
+     programs to be compiled under differing systems.
    </para>
    <section><title>Running the <command>configure</command> script</title>
      <para>The first thing you need to do after cd'ing into the top level
@@ -73,8 +66,7 @@
        </para>
      </note>
      <section>
-       <title>Options passed to <computeroutput>configure</computeroutput>
-       </title>
+       <title>Options passed to <computeroutput>configure</computeroutput></title>
        <para>You can review the options accepted by <command>configure</command>
          by issuing the command <command>./configure --help</command>.  Most
          are the standard options that all <command>configure</command> scripts
@@ -84,13 +76,14 @@
          <varlistentry>
            <term><command>--with-g09dis</command></term>
            <listitem>
-             <para><command>G09dis</command> by default is not compiled with
-               &odis;.  In order to compile <command>g09dis</command>,
+             <para>&g09dis; by default is not compiled with
+               &odis;.  The reason for this is that &g09dis; requires the &gtk;
+               package to build and run.  In order to compile &g09dis;,
                <command>pkg-config</command> must be installed on the system.
                Since some systems might not have this, the configure process
                does not include <command>g09dis</command> in the compilation.
-               If this option is not included, the Makefile for <command>
-               g09dis</command> will be made, but will not be correct, and the
+               If this option is not included, the Makefile for &g09dis; will
+               be made, but will not be correct, and the
                <command>g09dis</command> directory will not be processed when
                the <command>make</command> command is issued.
              </para>
@@ -99,10 +92,11 @@
        </variablelist>
      </section>
    </section>
-   <section><title>Building the program(s)</title>
-     <para>After you <command>cd</command> into the top level of the
-       directory, issuing the command <command>make</command> will build the
-       program &odis;.  This will build the program, but won't install it.
+   <section id="buildprogs"><title>Building the program(s)</title>
+     <para>After running <command>configure</command> and <command>cd</command>
+       'ing into the directory level in which you wish to do your build,
+       issuing the command <command>make</command> will build your program,
+       but won't install it.
      </para>
      <note>
        <para>You are not required to build from the top-level directory.
@@ -144,9 +138,9 @@
        </para>
        <para>Note that these package names will be accompanied with a version
          number, also.  &gtk; and <command>glib</command> should be version 2
-         or greater.  Also rembember that each of the above runtime packages
+         or greater.  Also remember that each of the above runtime packages
          (except for <command>pkgconfig</command>) will have a "-dev"
-         counterpart that will be needed for compiling.
+         counterpart that will be needed for compiling ( but not for running).
        </para>
      </section>
    </section>
@@ -157,9 +151,7 @@
        recommend MinGW, available from sourceforge.net.  There is another
        interface, called Cygwin, but it must be present to run the
        programs, but, as I understand it, programs compiled under MinGW
-       can be run on a Windows system where MinGW is not installed.  Of
-       course, to run the program compiled on MinGW on another computer,
-       the runtimes for that program will have to be installed.
+       can be run on a Windows system where MinGW is not installed.
      </para>
      <para>The &gtk; interface is available for Windows, and &odis;, of
        course, can be run from the command line without &gtk; if you do
@@ -185,10 +177,11 @@
    <section><title>Installing the program(s)</title>
      <para>To install the program, you can issue the command <command>make
        install</command> (at any directory level you choose).  This can be done
-       either after the program has been built, or before.  If it hasn't been
-       built, issuing this command will cause it to be built before attempting
-       to do the install.  By default, this will install the &odis; binary in
-       the directory <filename>/usr/local/bin/</filename>.
+       whether the program has already been built or not.  If it hasn't been
+       built, issuing this command will cause anything that would need to be
+       done before installing to be done before attempting to do the install.
+       By default, this will install the &odis; binary in the directory
+       <filename>/usr/local/bin/</filename>.
      </para>
      <section><title>Installing in an alternate location</title>
        <para>
@@ -196,7 +189,7 @@
          the binary files to whatever destination you want after running the
          command <command>make</command>, or, if you wish to install the
          program(s) at a different location using <command>make
-         install</command>, the you can include the option
+         install</command>, then you can include the option
          <command>--prefix=&lt;alternate-location&gt; </command> when you run
          <command>configure</command>.
        </para>
@@ -281,19 +274,19 @@
      <para>Due to all the differences in systems, it has been decided at
        this time to not do an install of the documentation with a
        <command>make install</command> command from a higher directory.
-       In fact, at this time, nothing is done with the documentation by
-       makes from a higher level.  The html files are located in the
-       <command>doc/html</command> directory.  These can be manually copied
-       to any location you desire.  In addition, the xml source is available
-       in the <command>doc</command> directory, and fresh html documentation
-       can be created by issuing the command <command>make</command> in
-       the <command>doc</command> directory itself.
+       <!--       In fact, at this time, nothing is done with the documentation by
+       makes from a higher level.-->  The html files are already built and are
+       located in the <command>doc/html</command> directory.  These can be
+       manually copied to any location you desire.  In addition, the xml source
+       is available in the <command>doc</command> directory, and fresh html
+       documentation can be created by issuing the command
+       <command>make</command> in the <command>doc</command> directory itself.
      </para>
      <formalpara><title>Building your own documentation</title>
        <para>Since the source is available in the <command>doc</command>
          directory, you have the option of building the documentation in any
          format you desire.  Just run any docbook compiler on
-         <command>os9disasm.xml </command> and create any output you wish.  The
+         <command>os9disasm.xml</command> and create any output you wish.  The
          file <command>os9disasm.xml</command> will include all the rest of
          the files.
        </para>
@@ -303,9 +296,11 @@
     <para>In the top level directory, there is a directory named <filename>
      defs</filename>.  In this directory, you will find several files ending
      in "lbl".  These are the <command>standard label files</command>.  Copy
-     all these files into <filename>$HOME/coco/defs/</filename>.  This should
-     work well for a single user system, or on any system where only one person
-     is using this program.
+     all these files into <filename>$HOME/coco/defs/</filename> or wherever
+     you wish your "defs" directory to reside.  $HOME/coco/defs should work
+     well for a single user system, or on any system where only one person is
+     using this program.  $HOME/coco/defs is the default location, but you
+     can specify any path with the <command>-d</command> command-line option.
     </para>
   </section>
  </section>

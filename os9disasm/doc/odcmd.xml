@@ -210,9 +210,10 @@
       addresses separated by a minus sign
       (<literal>&lt;addr&gt;-&lt;addr&gt;</literal>) indicates that the
       specification is to be applied to all instructions within the indicated
-      address range which have the proper addressing mode.  </para> <para>Below
-      are some examples of label addressing mode specification lines, along
-      with example disassembed lines for each specification:
+      address range which have the proper addressing mode.
+    </para>
+    <para>Below are some examples of label addressing mode specification lines,
+      along with example disassembed lines for each specification:
     </para>
     <note>
       <para>Spacing is not critical in any of these.  It's possible to jumble
@@ -224,57 +225,64 @@
         hexadecimal.
       </para>
     </note>
-    <informaltable>
-      <tgroup cols="2">
-        <tbody>
-          <row>
-            <entry><command>&gt; #X L</command></entry>
-            <entry><simplelist>
-              <member><command>LDX #L0100</command></member>
-            </simplelist></entry>
-          </row>
-          <row>
-            <entry><command>&gt; D D 0-FFFF; E X</command></entry>
-            <entry><simplelist>
-              <member><command>ADDA D0012</command></member>
-              <member>STA X1234</member>
-            </simplelist></entry>
-          </row>
-          <row>
-            <entry><command>&gt; #1 ^ 1000</command></entry>
-            <entry><simplelist>
-              <member><command>LDA #CR</command> (instruction at address $1000)
-              </member>
-            </simplelist></entry>
-          </row>
-          <row>
-            <entry><command>&gt; X Q (*) 2000-27FF</command></entry>
-            <entry><simplelist>
-              <member><command>CLR Q3000-*</command> (instruction between
-                $2000-$27FF
-              </member>
-            </simplelist></entry>
-          </row>
-          <row>
-            <entry><command>&gt; S &amp; ; U A (*) ; X B (+X1000) ;
-              Y C (*-$1000)</command>
-            </entry>
-            <entry><simplelist>
-              <member><command>NEGB 4,S</command></member>
-              <member><command>NEGB A0005-*,u</command></member>
-              <member><command>NEGB BF005*X1000,X</command></member>
-              <member><command>NEGB C1005-*-$1000,Y</command></member>
-            </simplelist></entry>
-          </row>
-          <row>
-            <entry><command>&gt; #1^(-&amp;10)</command></entry>
-            <entry><simplelist>
-              <member><command>LDB #'A-16</command></member>
-            </simplelist></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    <para>
+      <informaltable>
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry><command>&gt; #X L</command></entry>
+              <entry><simplelist>
+                <member><computeroutput>LDX #L0100</computeroutput></member>
+              </simplelist></entry>
+            </row>
+            <row>
+              <entry><command>&gt; D D 0-FFFF; E X</command></entry>
+              <entry><simplelist>
+                <member><computeroutput>ADDA D0012</computeroutput></member>
+                <member><computeroutput>STA X1234</computeroutput></member>
+              </simplelist></entry>
+            </row>
+            <row>
+              <entry><command>&gt; #1 ^ 1000</command></entry>
+              <entry><simplelist>
+                  <member>
+                    <computeroutput>LDA #CR</computeroutput> (instruction at
+                    address $1000)
+                  </member>
+              </simplelist></entry>
+            </row>
+            <row>
+              <entry><command>&gt; X Q (*) 2000-27FF</command></entry>
+              <entry><simplelist>
+                <member><computeroutput>CLR Q3000-*</computeroutput>
+                  (instruction between $2000-$27FF
+                </member>
+              </simplelist></entry>
+            </row>
+            <row>
+              <entry><command>&gt; S &amp; ; U A (*) ; X B (+X1000) ;
+                Y C (*-$1000)</command>
+              </entry>
+              <entry><simplelist>
+                <member><computeroutput>NEGB 4,S</computeroutput></member>
+                <member><computeroutput>NEGB A0005-*,u</computeroutput></member>
+                <member><computeroutput>NEGB
+                    BF005*X1000,X</computeroutput>
+                </member>
+                <member><command>NEGB C1005-*-$1000,Y</command>
+                </member>
+              </simplelist></entry>
+            </row>
+            <row>
+              <entry><command>&gt; #1^(-&amp;10)</command></entry>
+              <entry><simplelist>
+                <member><computeroutput>LDB #'A-16</computeroutput></member>
+              </simplelist></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
     <para>The default label class for each addressing mode depends on the
       object code format chosen. For the OS/9 and Motorola formats (options
       <computeroutput>MO</computeroutput> or
@@ -286,11 +294,12 @@
       <member><command>&gt; X &amp;;Y &amp;;U D;S &amp;;D D;E X;R L
       </command></member>
     </simplelist></para>
-    <para>Note that the <computeroutput>U</computeroutput> indexed and direct
-      page addressing modes are assigned to the same label class. This reflects
-      the standard usage of the <computeroutput>U</computeroutput> register
-      under the OS/9 operating system, in which
-      <computeroutput>U</computeroutput> points to the start of the data area.
+    <para>Note that the <command>U indexed</command> and
+      <command>direct page</command> addressing modes are assigned to the same
+      label class. This reflects the standard usage of the
+      <computeroutput>U</computeroutput> register under the OS/9 operating
+      system, in which <computeroutput>U</computeroutput> points to the start
+      of the data area.
     </para>
     <note>
       <para>For <literal>OS9</literal> programs compiled by the C compiler,
@@ -396,7 +405,7 @@
       '<computeroutput>d</computeroutput>' for direct page, or
       '<computeroutput>n</computeroutput>' for non-dp data.
     </para>
-    <para>The <type>type</type> is the code for the data area type, which
+    <para>The <literal>type</literal> is the code for the data area type, which
       is one of the characters '<computeroutput>A</computeroutput>',
       '<computeroutput>B</computeroutput>',
       '<computeroutput>C</computeroutput>',
@@ -424,6 +433,7 @@
       address (which must be well-defined), and the ending address may take any
       of four forms (some not available for<literal>=</literal> mode):
     </para>
+    <para>
       <informaltable>
         <tgroup cols="2">
           <tbody>
@@ -455,6 +465,7 @@
           </tbody>
         </tgroup>
       </informaltable>
+    </para>
     <note><para>
         As previously said, only some modes are available with
         <literal>=</literal>mode.  The available modes are
@@ -705,40 +716,40 @@
         <tgroup cols="2"><colspec colwidth="1.0in"/>
           <tbody valign="top">
             <row>
-              <entry><computeroutput>!</computeroutput></entry>
+              <entry><command>!</command></entry>
               <entry>Reserved for system calls</entry>
             </row>
             <row>
-              <entry><computeroutput>D</computeroutput></entry>
+              <entry><command>D</command></entry>
               <entry>Data area for OS9 module - ROF Uninit dp data</entry>
             </row>
             <row>
-              <entry><computeroutput>L</computeroutput></entry>
+              <entry><command>L</command></entry>
               <entry>This should probably <emphasis>never</emphasis> be used.
                 It's for &odis;'s classification of <literal>program area
                 labels</literal>
               </entry>
             </row>
             <row>
-              <entry><computeroutput>B</computeroutput></entry>
+              <entry><command>B</command></entry>
               <entry><computeroutput>ROF only</computeroutput>
                 Uninitialized non-dp data
               </entry>
             </row>
             <row>
-              <entry><computeroutput>G</computeroutput></entry>
+              <entry><command>G</command></entry>
               <entry><computeroutput>ROF only</computeroutput>
                 Initialized non-dp data
               </entry>
             </row>
             <row>
-              <entry><computeroutput>H</computeroutput></entry>
+              <entry><command>H</command></entry>
               <entry><computeroutput>ROF only</computeroutput>
                 Initialized dp data
               </entry>
             </row>
             <row>
-              <entry><computeroutput>X</computeroutput></entry>
+              <entry><command>X</command></entry>
               <entry>Don't define anything as this.  This is &odis;'s
                 classification for references to labels
                 <literal>outside</literal> of the program area (besides data
@@ -834,44 +845,50 @@
   </section>
   <section><title>Disassembly Particulars</title>
     <para>&odis; is a two-pass disassembler. On the first pass, the object code
-      is searched for all label references, and they are classifled. As
-      detailed under other sections, the production of labels is governed by
-      the use of label classes assigned to addressing modes. With this ability,
-      it is possible to generate every label in the program. For instance,
-      there are times when immediate loads of the <literal>X register</literal>
-      should be disassembled as data, and times when they should be
-      disassembled as labels.  Proper adjustment of label classes to the
-      <literal>immediate X addressing mode</literal> will separate the data
-      loads from the true label loads.
+      is searched for all label references, they are classifled, and recorded
+      with the raw, &lt;class&gt;address names. As detailed under other
+      sections, the production of labels is governed by the use of label
+      classes assigned to addressing modes. With this ability, it is possible
+      to generate every label in the program. For instance, there are times
+      when immediate loads of the <literal>X register</literal> should be
+      disassembled as data, and times when they should be disassembled as
+      labels.  Proper adjustment of label classes to the <literal>immediate X
+        addressing mode</literal> will separate the data loads from the true
+      label loads.
     </para>
     <simpara>After the first pass is completed and all labels are identified
       and clasified, all label files are read and values are assigned. One
       caveat is that no check is made to determine if a label has already been
       assigned a standard label name. If a name has been given to a certain
-      label in a class, if this is redefined later in the same or a subsequent
-      label file, then that name is replaced by the latter.
+      label in a class and then redefined later in the same or a subsequent
+      label file, then that original name is replaced by the latter.
     </simpara>
     <simpara>The second pass creates the actual disassembly code, both the disk
       file (if applicable) and the output listing.
     </simpara>
     <para>The code produced by &odis; should always reassemble into code which
-      is identical with the original source file
+      is identical with the original module, regardless of how much or little
+      has been done with command and label files..
       <footnote>
         <simpara>Once in a while, it won't come out exactly the same.  On
           occasion, a given assembler won't generate exactly the same mode,
           although, unless something is wrong with one of the assemblers, the
-          code will do the same thing.
+          code should do the same thing.  Often this is a case of &odis;
+          disassembling the code without forcing the the operand to the
+          bit-length mode using the "&lt;" or "&gt;".
         </simpara>
       </footnote>
     </para>
     <formalpara><title>Forcing the addressing mode</title>
-      Some addressing modes, though, can generate either 8 bit references or 16
-      bit references, especially on the 6809. To ensure that such references
-      will assemble to code with the same reference bit length, &odis; will
-      generate forced addressing when required to produce the code being
-      disassembled.  Some assemblers don't always generate the same result,
-      however. This can be done only for the 6809, and is compatible with the
-      forced addressing method expected by many assemblers.
+      Some addressing modes, though, can generate either 8 bit or 16 bit
+      references, especially on the 6809. To ensure that such references will
+      assemble to code with the same reference bit length, &odis; will generate
+      forced addressing when required to produce the code being disassembled.
+      Some assemblers don't always generate the same result, however. This can
+      be done only for the 6809, and is compatible with the forced addressing
+      method expected by many assemblers.  It may be possible to force the
+      source to "do the right thing" by specifying the "<command>-a</command>"
+      option.
     </formalpara>
     <note>
       <simpara>Actually, &odis; generates forced mode on all 8-bit

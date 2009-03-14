@@ -2,11 +2,12 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
 <!ENTITY odis "<command>OS9Disasm</command>">
 <!ENTITY gtk "<command>GTK</command>">
+<!ENTITY g09dis "<command>G09Dis</command>">
 <!ENTITY odinst SYSTEM "odisinst.xml">
 <!ENTITY odquick SYSTEM "odquick.xml">
 <!ENTITY odrun SYSTEM "odrun.xml">
 <!ENTITY odcmd SYSTEM "odcmd.xml">
-<!ENTITY g09dis SYSTEM "g09dis.xml">
+<!ENTITY g09disxml SYSTEM "g09dis.xml">
 ]>
 <article><title>Os9Disasm - A Cross Disassembler for the m6809</title>
   <para>This documentation is to be used to instruct users in the use of
@@ -45,37 +46,41 @@
         the code and hand-disassemble the whole thing, but unless it were an
         extremely short program, this could get quite tedious.
       </para>
-      <para>But fortunately for us, we do have some very handy tools to
-        work with.  They are called disassemblers, and they are roughly the
-        opposite of an assembler.   Where an assembler takes assembly source
-        code and assembles it into binary code, the disassembler takes binary
-        code and attempts to reproduce the source code that originally
-        generated this code.
+      <para>But fortunately for us, we do have some very handy tools to make
+        take a lot of the tedium out of the process.  They are called
+        disassemblers, and they are roughly the opposite of an assembler.
+        Where an assembler takes assembly source code and assembles it into
+        binary code, the disassembler takes binary code and attempts to
+        reproduce the source code that originally generated this code.
       </para>
     </section>
     <section><title>Disassembler Operations</title>
       <para>There is a wide range of capabilities of various disassemblers.
-        Some merely reproduce a code that will reproduce the binary with no
+        Some merely produce a code that will reproduce the binary with no
         capability of making the code readable or understandable.  Their only
         goal is to produce source that will reassemble correctly and that is
         all.  This is well and good, but it's often very helpful if the
         disassembler will generate labels that will be meaningful and give some
         insight into what the subroutine or particular label is designed to do.
       </para>
-      <para>Other useful features might
-        be the disassembling of opcodes into offsets from another area or
-        value, and the additional ability to give some value different label
-        names depending upon the context and usage.
+      <para>Other useful features might be the disassembling of opcodes into
+        offsets from another area or value, and the additional ability to
+        give some value different label names depending upon the context and
+        usage.
       </para>
-      <para>&odis; can do all these things.  
-        Admittedly, it <emphasis>does</emphasis> require some effort on the
-        part of the user to get this "neat" output.  The disassembly file must
-        be inspected and various characteristics need to be defined, but it
-        results in a very readable and meaningful output.  The level of detail
-        is ultimately dependent upon the desires and effort of the user.
-        However, &odis; <emphasis>should</emphasis> produce code that will
-        reassemble into exactly identical code to that from which it was
-        obtained.
+      <para>Of course, these could be calculated or otherwise accomplished by
+        hand, after the disassembly is done, but the ability to do these things
+        automatically can make things much easier.
+      </para>
+      <para>&odis; can do all these things.  Admittedly, it
+        <emphasis>does</emphasis> require some effort on the part of the user
+        to get this "neat" output.  The disassembly file must be inspected and
+        various characteristics need to be defined, but it results in a very
+        readable and meaningful output.  The level of detail is ultimately
+        dependent upon the desires and effort of the user.  However, &odis;
+        <emphasis>should</emphasis> produce code that will reassemble into
+        code exactly identical to that from which it was obtained, with or
+        without any specifications as to the format of the code.
       </para>
       <note><formalpara><title>Assembler Quirks</title>
         <para>Although <filename>Os9Disasm</filename>'s code is 
@@ -83,21 +88,24 @@
           possible that at times, it can boo-boo) there are times when the
           assembler used doesn't produce the same code as the assembler whch
           generated the original code.  If you do get a discrepancy,  look into
-          this possibility as well as  what OS9Disasm is doing.
+          this possibility as well as what OS9Disasm is doing.  One possible
+          cause for these discrepancies might be that the original assembler
+          generates 8-bit codes where &odis; is producing 16-bit code or
+          vice-versa.
         </para>
       </formalpara></note>
     </section>
     <section><title>Origin of OS9Disasm</title>
-      <para>&odis; is an attempt to mimic the features
-        of <filename>dynamite+</filename>, written by Philip Lamardo.
+      <para>&odis; is an attempt to mimic the features of
+        <filename>dynamite+</filename>, written by Philip Lamardo.
         <filename>Dynamite+</filename> was written to run on 6809 and other
-        Motorola CPU's, and had the capability of disassembling OS9, Flex,
-        Coco Basic, and Motorola format code.  I found the features of this
-        program to be quite to my liking, and I'd mulled over the idea of
-        possibly writing a cross disassembler of this nature to run on an 
-        OSK machine, but upon discussing the OS9Tools project with Boisy
-        Pitrie, I decided to do this project, but concentrate on compiling
-        the code under Linux rather than OSK.
+        Motorola CPU's, and had the capability of disassembling OS9, Flex, Coco
+        Basic, and Motorola format code.  I found the features of this program
+        to be quite to my liking, and I'd mulled over the idea of possibly
+        writing a cross disassembler of this nature to run on an OSK machine,
+        but upon discussing the OS9Tools project with Boisy Pitre, I decided
+        to do this project, but concentrate on compiling the code under Linux
+        rather than OSK.
         <footnote>
           <para>Although &odis; is targeted for Linux and Windows, and I've
             not tested this, it should compile on an OSK system without
@@ -107,43 +115,42 @@
       </para>
       <para>At present, &odis; does a large portion of what
         <filename>dynamite+</filename> is capable of doing.  However,
-        as of now, &odis; disassembles only OS9 and RS-DOS code. no
+        as of now, &odis; disassembles only OS9 and RS-DOS code. No
         command-line options for setting Addressing Mode or Bounaries
         are implemented, and neither have some of the disassembly options
         been implemented. Actually, some seem unnecessary given the tools
-        we have to work with.  However, the program does  disassemble valid
+        we have to work with.  However, the program does disassemble valid
         code, and (hopefully) very few bugs remain.
       </para>
     </section>
     <section><title>Structure of this package</title>
         <para>The &odis; package is comprised of actually two parts.  The
-            <computeroutput>os9disasm</computeroutput> portion and the
-            <computeroutput>g09dis</computeroutput> part.
+          <computeroutput>os9disasm</computeroutput> portion and the
+          <computeroutput>g09dis</computeroutput> part.
         </para>
         <section><title>The os9disasm package</title>
-            <para>The files under the <computeroutput>os9disasm</computeroutput>
-                directory comprise the disassembler portion of the package.
-                It is a stand-alone product in that this is the part that does
-                all the disassembly work.  This is the command-line interface
-                and it is called by command-line options.  See
-                <xref linkend="cmdoptions"/> for details on the individual
-                command-line options that &odis; uses.
-            </para>
+          <para>The files under the <computeroutput>os9disasm</computeroutput>
+            directory comprise the disassembler portion of the package.  It is
+            a stand-alone product in that this is the part that does all the
+            disassembly work.  This is the command-line interface and it is
+            called by command-line options.  See <xref linkend="cmdoptions"/>
+            for details on the individual command-line options that &odis;
+            uses.  </para>
         </section>
         <section><title>The g09dis package</title>
-            <para>The files under the <computeroutput>g09dis</computeroutput>
-                directory make up the GUI portion of the package.  Although
-                it is not necessary for the compilation, it can make it easier
-                to get a good output without getting as deeply involved with
-                the disassembler itself.  The interface hopefully makes the
-                process more intuitive.
-            </para>
-            <para>Remember that by default, the package is built
-                <emphasis>without</emphasis> including this portion, and that,
-                when configuring, you need to include the option
-                <emphasis>--with-g09dis</emphasis> with the
-                <emphasis>configure</emphasis> command.
-            </para>
+          <para>The files under the <computeroutput>g09dis</computeroutput>
+            directory make up the GUI portion of the package.  Although it is
+            not necessary for the compilation, it can make it easier to get a
+            good output without getting as deeply involved with having to learn
+            the commands for the disassembler itself.  The interface hopefully
+            makes the process more intuitive.
+          </para>
+          <para>Remember that by default, the package is built
+            <emphasis>without</emphasis> including this portion, and that, when
+            configuring, you need to include the option
+            <emphasis>--with-g09dis</emphasis> with the
+            <emphasis>configure</emphasis> command.
+          </para>
         </section>
     </section>
   </section>
@@ -151,7 +158,7 @@
   &odinst;
   &odrun;
   &odcmd;
-  &g09dis;
+  &g09disxml;
   <section><title>TODO LIST</title>
     <formalpara><title>Improve 6309 workings</title><para>
       As of this release, the 6309 capability is sort of a hack.  More

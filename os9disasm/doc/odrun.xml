@@ -43,95 +43,135 @@
         be more fully explained later.  The options cannot be grouped, and must
         be preceded by a minus sign (-).
       </para>
-      <informaltable frame="none">
-        <tgroup cols="2"><colspec colwidth='1.0in'/>
-          <tbody>
-            <row>
-              <entry><command>c[=]&lt;command-file&gt;</command></entry>
-              <entry>Use &lt;command-file&gt; for disassembly commands.  This
-                is the only option that cannot be specified in the command file
-                (which would be itself).  Only one <computeroutput>command
-                file</computeroutput> is accepted - the first one encountered.
-                Any subsequent <command>-c</command> options encountered are
-                ignored - with an error message to the <computeroutput>standard
-                error</computeroutput> path.
-              </entry>
-            </row>
-            <row>
-              <entry><command>s[=]&lt;label-file&gt;</command></entry>
-              <entry>Use &lt;label-file&gt; for label assignments.  More than
-                one label file can be specified, and these will be read one
-                after the other, in order that they are entered.
-              </entry>
-            </row>
-            <row>
-              <entry><command>o[=]&lt;asm-source-filename&gt;</command></entry>
-              <entry>Output assembly source code to filename (off by
-                default)
-              </entry>
-            </row>
-            <!--<row>
-              <entry><command>r</command></entry>
-              <entry>Disassemble a <computeroutput>ROF</computeroutput> file.
-              </entry>
-            </row>-->
-            <row>
-              <entry><command>ls</command></entry>
-              <entry>Generate short (6-char) labels (Default is 8 chars)</entry>
-            </row>
-            <row>
-              <entry><command>u</command></entry>
-              <entry>Fold output to upper-case</entry>
-            </row>
-            <row>
-              <entry><command>pw[=]&lt;pagewidth&gt;</command></entry>
-              <entry>Set page width for listing output (Default=80)</entry>
-            </row>
-            <row>
-              <entry><command>pd[=]&lt;pagedepth&gt;</command></entry>
-              <entry>Set page depth for listing output (Default=80)</entry>
-            </row>
-            <row>
-              <entry><command>d</command></entry>
-              <entry>Define path to defs.  This is the directory under which the
-                default label files are found.  The default is
-                <filename>$HOME/coco/defs</filename>
-              </entry>
-            </row>
-            <row>
-              <entry><command>x[=]&lt;OS&gt;</command></entry>
-              <entry>Program is for &lt;OS&gt;.  By default, &odis; assumes
-                the file to be an OS9 Module.  Currently the only option is
-                "C" (Coco RSDOS).
-              </entry>
-            </row>
-            <row>
-              <entry><command>g</command></entry>
-              <entry>Output <command>Listing</command> using a <command>tab
-                </command> rather than spaces to separate fields.  This is not
-                an ideal mode for printouts. See <xref linkend="gmode"/>
-                for further details.
-              </entry>
-            </row>
-            <row>
-              <entry><command>3</command></entry>
-              <entry>Disassemble for 6309 CPU.  By default, &odis; assumes 6809
-                code and ignores 6309 mnemonics, usually generating 
-                <command>fcb</command>'s for these commands.
-              </entry>
-            </row>
-            <row>
-             <entry><command>?</command></entry>
-             <entry>Print a brief help screen.</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <section id="cmdfilespec"><title>Files</title>
+        <informaltable frame="none">
+          <tgroup cols="2"><colspec colwidth='2.0in'/>
+            <tbody valign="top">
+              <row>
+                <entry><command>c[=]&lt;command-file&gt;</command>
+                </entry>
+                <entry>Use &lt;command-file&gt; for disassembly commands.  This
+                  is the only option that cannot be specified in the command
+                  file (which would be itself).  Only one
+                  <computeroutput>command file</computeroutput> is accepted -
+                  the first one encountered.  Any subsequent
+                  <command>-c</command> options encountered are ignored - with
+                  an error message to the <computeroutput>standard
+                    error</computeroutput> path.
+                </entry>
+              </row>
+              <row>
+                <entry><command>s[=]&lt;label-file&gt;</command>
+                </entry>
+                <entry>Use &lt;label-file&gt; for label assignments.  More than
+                  one label file can be specified, and these will be read one
+                  after the other, in order that they are entered.
+                </entry>
+              </row>
+              <row>
+                <entry><command>o[=]&lt;asm-source-filename&gt;
+                </command></entry>
+                <entry>Output assembly source code to filename (off by
+                  default)
+                </entry>
+              </row>
+              <row>
+                <entry><command>d</command></entry>
+                <entry>Define path to defs.  This is the directory under which
+                  the default label files are found.  The default is
+                  <filename>$HOME/coco/defs</filename>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+      <section id="cmdoutput"><title>Output specifications</title>
+        <informaltable frame="none">
+          <tgroup cols="2"><colspec colwidth='1.0in'/>
+            <tbody valign="top">
+              <!--<row>
+                <entry><command>r</command></entry>
+                <entry>Disassemble a <computeroutput>ROF</computeroutput> file.
+                </entry>
+              </row>-->
+              <row>
+                <entry><command>ls</command></entry>
+                <entry>Generate short (6-char) labels (Default is 8 chars)
+                  (Obsolete see <command>"ll"</command> below.)
+                </entry>
+              </row>
+              <row>
+                <entry><command>ll[=]&lt;length&gt;</command></entry>
+                <entry>Generate labels with &lt;length&gt; max length.
+                  (Default is 8 chars).
+                </entry>
+              </row>
+              <row>
+                <entry><command>u</command></entry>
+                <entry>Fold output to upper-case</entry>
+              </row>
+              <row>
+                <entry><command>g</command></entry>
+                <entry>Output <command>Listing</command> using a <command>tab
+                  </command> rather than spaces to separate fields.  This is
+                  not an ideal mode for printouts but is included for use by
+                  &g09dis;.  See <xref linkend="gmode"/> for further details.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+      <section id="cmdpgspec"><title>Page specifications</title>
+        <informaltable frame="none">
+          <tgroup cols="2"><colspec colwidth='1.0in'/>
+            <tbody valign="top">
+              <row>
+                <entry><command>pw[=]&lt;pagewidth&gt;</command>
+                </entry>
+                <entry>Set page width for listing output (Default=80)</entry>
+              </row>
+              <row>
+                <entry><command>pd[=]&lt;pagedepth&gt;</command>
+                </entry>
+                <entry>Set page depth for listing output (Default=66)</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+      <section id="cmdcpu"><title>CPU specifications</title>
+        <informaltable frame="none">
+          <tgroup cols="2"><colspec colwidth='1.0in'/>
+            <tbody valign="top">
+              <row>
+                <entry><command>x[=]&lt;OS&gt;</command></entry>
+                <entry>Program is for &lt;OS&gt;.  By default, &odis; assumes
+                  the file to be an OS9 Module.  Currently the only option is
+                  "C" (Coco RSDOS).
+                </entry>
+              </row>
+              <row>
+                <entry><command>3</command></entry>
+                <entry>Disassemble for 6309 CPU.  By default, &odis; assumes
+                  6809 code and ignores 6309 mnemonics, usually generating
+                  <command>fcb</command>'s for these commands.
+                </entry>
+              </row>
+              <row>
+               <entry><command>?</command></entry>
+               <entry>Print a brief help screen.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
       <para>Most of the above command options are self-explanatory. Briefly,
         you can (and ought to) use a single <filename>command file</filename>.
         This file provides all the disassembly details.  Any of the above
-        commands (except for the <command>c</command> can be embedded in
-        the <filename>command file</filename>.  It defines the class by
+        commands (except for the <command>-c</command> option can be embedded
+        in the <filename>command file</filename>.  It defines the class by
         which a label is defined at a given location, it defines data
         (non-code) regions in the program, and also can specify command-line
         options whereby you are not required to insert them on the command line
@@ -188,11 +228,16 @@
        places. Without some direction, &odis; blindly disassembles all byte
        sequences as machine code.  Most programs have non-code areas - string
        data, lookup tables, and other data - which, if parsed as machine code,
-       produces nothing but gibberish from an assembly perspective. Often the
-       data being disassembled in this way will not work out to end at the
-       actual end of the data area, and genuine machine code which follows will
-       be obliterated, also. This is where the <filename>command
-       file</filename> comes into play.
+       produces nothing but gibberish from an assembly perspective.
+     </para>
+     <para>  &odis; will attempt to disassemble this area as assembly code -
+       which should be <command>fcb</command>, <command>fdb</command>,
+       <command>fcc</command>, or the like.  In most cases the data being
+       disassembled in this way will not work out to end at the actual end of
+       the data area, and will run on into the following genuine machine code
+       for several bytes until it happens to get back into sync, thus
+       obliterating several commands.  This is where the
+       <filename>command file</filename> comes into play.
      </para>
      <section id="databounds">
        <title>Data bounds</title>
@@ -203,11 +248,17 @@
          numeric constants. These blocks of data code can be specified in one
          of six ways
        </para>
-       <informaltable frame="none">
+       <informaltable>
          <tgroup cols="2"><colspec colwidth='1.5in'/>
+           <thead>
+             <row>
+               <entry>Type</entry>
+               <entry>Result</entry>
+             </row>
+           </thead>
            <tbody valign="top">
              <row>
-               <entry id="asciis"><command>A</command></entry>
+               <entry id="asciis" align="center"><command>A</command></entry>
                <entry><command>ASCII data</command>
                  <para>
                    will generate <computeroutput>FCB</computeroutput>,
@@ -223,7 +274,7 @@
                </entry>
              </row>
              <row>
-               <entry><command>=</command></entry>
+               <entry align="center"><command>=</command></entry>
                <entry><command>ROF Data ASCII specification</command>
                  <para>This is for use only with ROF disassemblies, and
                    is for Initialized data.  Its usage is similar to the
@@ -234,7 +285,7 @@
                </entry>
              </row>
              <row>
-               <entry><command>W</command></entry>
+               <entry align="center"><command>W</command></entry>
                <entry><command>Word data</command>
                  <para>will produce <computeroutput>FDB</computeroutput>'s
                    of hex data double bytes.  This is equivalent to
@@ -244,7 +295,7 @@
                </entry>
              </row>
              <row>
-               <entry><command>B</command></entry>
+               <entry align="center"><command>B</command></entry>
                <entry><command>Byte data</command>
                  <para>will produce <computeroutput>FCB</computeroutput>'s
                    of hex data byte.  This is equivalent to <command>Short
@@ -254,7 +305,7 @@
                </entry>
              </row>
              <row>
-               <entry><command>L</command></entry>
+               <entry align="center"><command>L</command></entry>
                <entry><command>Long Label Data</command>
                  <para>will produce <computeroutput>FDB</computeroutput>'s
                    of label references to the program.  Many programs have
@@ -265,7 +316,7 @@
                </entry>
              </row>
              <row>
-               <entry><command>S</command></entry>
+               <entry align="center"><command>S</command></entry>
                <entry><command>Short label</command>
                  <para>data areas are the 8-bit equivalent of <command>Long
                    labels</command>.  These will produce
@@ -372,84 +423,86 @@
           or as the standard names, used by the OS/9 operating system in the
           OS9 opcode, or binary:
         </para>
-      <informaltable frame="none">
-       <tgroup cols="2"><colspec colwidth='1.0in'/>
+      <informaltable frame="none" tabstyle="widetab">
+        <tgroup cols="2"><colspec colwidth='2.0in'/>
+        <thead>
+          <row>
+            <entry>Class</entry>
+            <entry>Result</entry>
+          </row>
+        </thead>
         <tbody valign="top">
-         <row>
-          <entry><command>$</command></entry>
-          <entry><emphasis>Generates a hexadeciamal constant </emphasis>
-            &odis; will generate a data value consisting of a dollar sign,
-            '$', followed by either a four digit or a two digit hexadecimal
-            number.The two digit form will be used, when possible, in operands
-            which are one byte long (for instance, <computeroutput>
-            LDA #$12)</computeroutput>.
-           </entry>
-         </row>
-         <row>
-          <entry><command>&amp;</command></entry>
-          <entry><emphasis>Generates a decimal constant.</emphasis>
-            &odis; will generate a signed decimal number. Only full 16 bit
-            values with the highest bit set will be generated as negative
-            numbers (negative indexed offsets will be sign extended).
-           </entry>
-         </row>
-         <row>
-          <entry><command>@</command></entry>
-          <entry><emphasis>Generates a decimal or hex constant </emphasis>
-             If the value is between -9 and 9, then &odis; will generate a
-             decimal constant, otherwise, it will generate a hexadecimal
-             constant.  Note that this differs from the original
-             <filename>dynamite+</filename> in that with it, only positive
-             values between 0 and 9 would generate a decimal constant.
-             However, it seems more logical to include the same range of
-             negative values in the same class.
-           </entry>
-         </row>
-         <row>
-           <entry><command>^</command></entry>
-           <entry><emphasis>Generates an ASCII constant. </emphasis>
-             The particular form which &odis; will generate depends upon the
-             value of the constant.
-             <itemizedlist>
+          <row>
+            <entry></entry>
+          </row>
+          <row>
+            <entry align="center"><command>$</command></entry>
+            <entry><command>Generates a hexadecimal constant </command>
+              &odis; will generate a data value consisting of a dollar sign,
+              '$', followed by either a four digit or a two digit hexadecimal
+              number.The two digit form will be used, when possible, in
+              operands which are one byte long (for instance, <computeroutput>
+              LDA #$12)</computeroutput>.
+            </entry>
+          </row>
+          <row>
+            <entry align="center"><command>&amp;</command></entry>
+            <entry><command>Generates a decimal constant.</command>
+              &odis; will generate a signed decimal number. Only full 16 bit
+              values with the highest bit set will be generated as negative
+              numbers (negative indexed offsets will be sign extended).
+            </entry>
+          </row>
+          <row>
+            <entry align="center"><command>@</command></entry>
+            <entry><command>Generates a decimal or hex constant </command> If
+              the value is between -9 and 9, then &odis; will generate a
+              decimal constant, otherwise, it will generate a hexadecimal
+              constant.  Note that this differs from the original
+              <filename>dynamite+</filename> in that with it, only positive
+              values between 0 and 9 would generate a decimal constant.
+              However, it seems more logical to include the same range of
+              negative values in the same class.  </entry>
+          </row>
+          <row>
+            <entry align="center"><command>^</command></entry>
+            <entry><command>Generates an ASCII constant. </command> The
+              particular form which &odis; will generate depends upon the value
+              of the constant.
+              <itemizedlist>
                 <listitem>
-                  <simpara>For a one byte value from $00 to $20, or
-                    $7F, &odis; will generate the standard name of the control
-                    character (<computeroutput>SPACE</computeroutput> for $20,
-                    <computeroutput>DEL</computeroutput> for $7f).
+                  <simpara>For a one byte value from $00 to $20, or $7F, &odis;
+                    will generate the standard name of the control character
+                    (<computeroutput>SPACE</computeroutput> for $20,
+                    <computeroutput>DEL</computeroutput> for $7f).  </simpara>
+                    </listitem> <listitem><simpara>For a one byte value from $21
+                    to $7E, &odis; will generate an ASCII constant consisting of
+                    an apostrophe (') followed by the ASCII graphic for that
+                    particular code value.
                   </simpara>
                 </listitem>
-                <listitem><simpara>For a one byte value from $21 to $7E, &odis;
-                    will generate an ASCII constant consisting of an apostrophe
-                    (') followed by the ASCII graphic for that particular code
-                    value.
-                </simpara></listitem>
-                <listitem><simpara>For a one
-                    byte value from $80 to $FF, &odis; will generate the proper
-                    form for the value without the high bit set, appending an
-                    offset of +$80.
+                <listitem>
+                  <simpara>For a one byte value from $80 to $FF, &odis;
+                    will generate the proper form for the value without the high
+                    bit set, appending an offset of +$80.
                   </simpara>
-                  <simpara><computeroutput>LDA #$C1</computeroutput>
-                    disassebles as <computeroutput>LDA
-                    #'A+$80</computeroutput>.
-                </simpara></listitem>
-                <listitem><simpara>For two byte values to be disassembled as an
-                    ASCII constant, &odis; will break the value apart into the
-                    two separate bytes, and generate each as a one byte ASCII
-                    constant, taking into account the possible presence of a
-                    parity bit on each byte.
+                  <simpara><computeroutput>LDA #$C1</computeroutput> disassebles
+                    as <computeroutput>LDA #'A+$80</computeroutput>.
+                    </simpara></listitem> <listitem><simpara>For two byte values
+                    to be disassembled as an ASCII constant, &odis; will break
+                    the value apart into the two separate bytes, and generate
+                    each as a one byte ASCII constant, taking into account the
+                    possible presence of a parity bit on each byte.
                   </simpara>
-                  <simpara>As an option, if both bytes are
-                    the codes for ASCII graphic characters, &odis; can generate
-                    a double ASCII constant consisting of a double quote (")
-                    followed by the two characters.
-                  </simpara>
-                  <simpara>Some examples:
+                  <simpara>As an option, if both bytes are the codes for ASCII
+                    graphic characters, &odis; can generate a double ASCII
+                    constant consisting of a double quote (") followed by the
+                    two characters.  </simpara> <simpara>Some examples:
                   </simpara>
                   <simplelist>
-                    <member>
-                      <computeroutput>LDD #$8D3F</computeroutput> is
-                      disassembled
-                      as <computeroutput>LDD #CR*256+'?+$8000</computeroutput>
+                    <member> <computeroutput>LDD #$8D3F</computeroutput> is
+                      disassembled as <computeroutput>LDD
+                      #CR*256+'?+$8000</computeroutput>
                     </member>
                     <member><computeroutput>LDD #$4142</computeroutput> is
                       disassembled as <computeroutput>LDD #"AB</computeroutput>
@@ -460,31 +513,31 @@
                     </member>
                   </simplelist>
                 </listitem>
-             </itemizedlist>
-           </entry>
-         </row>
-         <row>
-          <entry><command>!</command></entry>
-          <entry><emphasis>Generates a system function name. </emphasis>
-            When disassembling OS/9 code, &odis; will automatically use a
-            standard name in the OS9 opcode. Thus, <command>SWI2</command>,
-            <command>FCB $06</command> is disassembled as <command>OS9
-            F$Exit</command>. With the '<command>!</command>' label class, odis
-            will generate this standard system name (e.g.
-            <command>F$Exit</command> for $06) if such a standard name exists.
-            If no standard system function name exists, then &odis; will
-            generate a hexadecimal constant for the value.
-           </entry>
-         </row>
-         <row>
-          <entry><command>%</command></entry>
-          <entry><emphasis>Generate a binary representation.</emphasis>  This
-            will generate a binary representation of the value of the operand.
-            For example,<programlisting>lda #$f3</programlisting> would generate
-            <programlisting>lda #%11110011</programlisting>  It works with
-            either 8-bit or 16-bit numbers.
-          </entry>
-         </row>
+              </itemizedlist>
+            </entry>
+          </row>
+          <row>
+            <entry align="center"><command>!</command></entry>
+            <entry><command>Generates a system function name. </command> When
+              disassembling OS/9 code, &odis; will automatically use a standard
+              name in the OS9 opcode. Thus, <command>SWI2</command>,
+              <command>FCB $06</command> is disassembled as <command>OS9
+                F$Exit</command>. With the '<command>!</command>' label class,
+              odis will generate this standard system name (e.g.
+              <command>F$Exit</command> for $06) if such a standard name
+              exists.  If no standard system function name exists, then &odis;
+              will generate a hexadecimal constant for the value.
+            </entry>
+          </row>
+          <row>
+          <entry align="center"><command>%</command></entry>
+            <entry><command>Generate a binary representation.</command>  This
+              will generate a binary representation of the value of the
+              operand.  For example,<programlisting>lda #$f3</programlisting>
+              would generate <programlisting>lda #%11110011</programlisting>
+              It works with either 8-bit or 16-bit numbers.
+            </entry>
+          </row>
         </tbody>
        </tgroup>
       </informaltable>
@@ -520,67 +573,80 @@
        </para>
        <para>These 13 addressing modes are (with examples of each):
        </para>
-       <informaltable>
+       <informaltable frame="none" tabstyle="widetab">
          <tgroup cols="2">
+           <thead>
+             <row>
+               <entry>Addressing Mode</entry>
+               <entry>Example</entry>
+             </row>
+           </thead>
            <tbody>
              <row>
-               <entry>1 byte immediate</entry>
-               <entry><command>LDA #$12</command>; <command>ORCC #$FE</command>
+               <entry></entry>
+             </row>
+             <row>
+               <entry align="right"><command>1 byte immediate</command></entry>
+               <entry><computeroutput>LDA #$12; ORCC #$FE</computeroutput>
                </entry>
              </row>
              <row>
-               <entry>D immediate</entry>
-               <entry><command>ADDD #$1234</command></entry>
+               <entry align="right"><command>D immediate</command></entry>
+               <entry><computeroutput>ADDD #$1234</computeroutput></entry>
              </row>
              <row>
-               <entry>X immediate</entry>
-               <entry><command>LDX #$0000</command></entry>
+               <entry align="right"><command>X immediate</command></entry>
+               <entry><computeroutput>LDX #$0000</computeroutput></entry>
              </row>
              <row>
-              <entry>Y immediate</entry>
-              <entry><command>CMPY #$A5A5</command></entry>
+              <entry align="right"><command>Y immediate</command></entry>
+              <entry><computeroutput>CMPY #$A5A5</computeroutput></entry>
              </row>
              <row>
-              <entry>U immediate</entry>
-              <entry><command>CMPU #$5678</command></entry>
+              <entry align="right"><command>U immediate</command></entry>
+              <entry><computeroutput>CMPU #$5678</computeroutput></entry>
              </row>
              <row>
-              <entry>S immediate</entry>
-              <entry><command>LDS #$C000</command></entry>
+              <entry align="right"><command>S immediate</command></entry>
+              <entry><computeroutput>LDS #$C000</computeroutput></entry>
              </row>
              <row>
-              <entry>X indexed</entry>
-              <entry><command>STA 5,X; CLR ,X</command></entry>
+              <entry align="right">X indexed</entry>
+              <entry><computeroutput>STA 5,X; CLR ,X</computeroutput></entry>
              </row>
              <row>
-              <entry>Y indexed</entry>
-              <entry><command>LDB $1234,Y</command></entry>
+              <entry align="right"><command>Y indexed</command></entry>
+              <entry><computeroutput>LDB $1234,Y</computeroutput></entry>
              </row>
              <row>
-              <entry>U indexed</entry>
-              <entry><command>CMPD -52,U</command></entry>
+              <entry align="right"><command>U indexed</command></entry>
+              <entry><computeroutput>CMPD -52,U</computeroutput></entry>
              </row>
              <row>
-              <entry>S indexed</entry>
-              <entry><command>LEAS -20,S</command></entry>
+              <entry align="right"><command>S indexed</command></entry>
+              <entry><computeroutput>LEAS -20,S</computeroutput></entry>
              </row>
              <row>
-              <entry>direct page</entry>
-              <entry><command>STX $20</command></entry>
+              <entry align="right"><command>direct page</command></entry>
+              <entry><computeroutput>STX $20</computeroutput></entry>
              </row>
              <row>
-              <entry>extended</entry>
-              <entry><command>LDY $1234</command>; 
-                <command>JMP [$0030]</command></entry>
+              <entry align="right"><command>extended</command></entry>
+              <entry><computeroutput>LDY $1234; JMP [$0030]</computeroutput>
+              </entry>
              </row>
              <row>
-              <entry>relative</entry>
-              <entry><command>LBRA $1000</command>; 
-                <command>LEAX $0FF0,PCR</command></entry>
+              <entry align="right"><command>relative</command></entry>
+              <entry><computeroutput>LBRA $1000; LEAX $0FF0,PCR
+                </computeroutput>
+              </entry>
              </row>
            </tbody>
          </tgroup>
        </informaltable>
+       <para>For the syntax for the above modes, please refer to
+         <xref linkend="laddrmod"/>
+       </para>
        <para>Note that the relative addressing mode, for purposes of label
          generation, includes both branch instructions (<command>BRA</command>,
          <command>LBSR</command>, etc.) and <command>PC</command> relative
@@ -589,7 +655,9 @@
        </para>
        <para>Note further the example, under the <command>X</command> indexed
          addressing mode, of a zero offset indexed instruction.  Normally, no
-         offset should be printed in such an instruction.
+         offset is not printed in such an instruction.  However, this zero
+         offset <emphasis>can</emphasis> be printed if the
+         <command>-z</command> option is specified.
        </para>
        <para>There are occasions, though, in which you might want a named
          offset, which is assembled to the zero offset form. For instance,
@@ -607,14 +675,16 @@
          <orderedlist>
            <listitem>The assignment can be made globally, so that all
              instructions with a particular addressing mode encountered in the
-             object code are disassembled with one label class.
+             object code are disassembled with one label class.  This is done
+             by assigning a label class to an addressing mode with no address
+             or address range..
            </listitem>
            <listitem>The assignment can be made for a range of program
              addresses. This is especially useful for indexed addressing
              modes. Often, an index register will point to a particular data
-             structure only within a certain subroutines in a program, and
+             structure only within a certain subroutine in a program, and
              the assignment of a label class for that structure should only
-             be made for those subroutines.
+             be made for that subroutine.
            </listitem>
            <listitem>The assignment can be made for a single instruction in
              the object code. This will often be used with the 1 byte
@@ -706,7 +776,9 @@
         generated for the value $1000 instead of the value $0FFF. To do this,
         &odis; allows the use of offsets, so that an instruction may be
         disassembled as, say <computeroutput>LEAX L1000-1,PCR</computeroutput>
-        instead of <computeroutput>LEAX L0FFF,PCR</computeroutput>.
+        instead of <computeroutput>LEAX L0FFF,PCR</computeroutput>.  Of course
+        this has no effect whatsoever on the program function, but it can
+        make it much clearer to anyone reading the program what is being done.
       </para>
       <para>
         There are times when a positive offset is also useful. Suppose a two
@@ -739,7 +811,7 @@
           instruction would be <computeroutput>ORCC
           #FIRQM+IRQM</computeroutput>.
         </para>
-        <note><para>That the label class of the operand value and that of the
+        <note><para>The label class of the operand value and that of the
           offset need not be the same. Thus, it is possible to disassemble the
           instruction <computeroutput>LDA #40</computeroutput> as
           <computeroutput>LDA #'A-1</computeroutput> by specifying an operand
@@ -784,63 +856,83 @@
         addition, to these basic types, you may specify both PC and constant
         offsets to be applied to the data.
       </para>
-      <para>
-       ASCII data areas are those which contain ASCII characters, and should be
-       disassembled using <command>FCC</command> or <command>FCS</command>
-       statements, if possible. Graphic ASCII characters are collected together
-       and output in <command>FCC</command> or <command>FCS</command>
-       statements, with a double quote (") delimiter as the preferred
-       delimiter, but a delimiter will be chosen such that it does not occur in
-       the string.  The <command>FCS</command> statement
-       will be used, if enabled (it can be optionally disabled), whenever a
-       character with the high bit set.  Nongraphic ASCII characters, which
-       include the control characters, <command>DEL</command> ($7F), and
-       characters with the high bit set (if <command>FCS</command> is disabled),
-       will be output in <command>FCB</command> statements, with the same format
-       as that described in the ASCII label class.
-     </para>
-     <para>Byte data areas are disassembled using <command>FCB</command>
-       statements, with two digit
-       hexadecimal operands.  Byte data areas are equivalent to short label data
-       areas with a label class of '<command>$</command>' (hexadecimal).
-     </para>
-     <para>Long label data areas are disassembled using <command>FDB
-       </command> statements, with operands whose form depends on the label
-       class to be used.  Thus, when specifying long label areas, you must also
-       specify which of the 31 label classes is desired. Long label data is
-       often used, with class <command>L</command>, to hold addresses of
-       routines within a program, for multiple direction jumps. These tables
-       will also often use PC offsets or a constant class <command>L</command>
-       offset (<command>FDB L1234-*</command> or <command>FDB
-       L1234-L1000</command>).
-     </para>
-     <para>Short label data areas are disassembled using <command>FCB
-       </command> statements, and also require a label class to be specified.
-       Short labels are less often used for program labels, but are often used
-       for direct page labels, code values, or bit masks. It is also possible,
-       using the ASCII label class, to set up ASCII constants separated out
-       letter by letter. For instance, a four byte long ASCII data area may be
-       disassembled as <computeroutput>FCS "ABCD"</computeroutput>, while the
-       same four bytes disassembled as short labels with label class ASCII
-       would be disassembled as <command>FCB 'A, 'B, 'C, 'D+$80</command>. This
-       is occasionally useful.
-     </para>
-     <para>Word data areas are disassembled using <command>FDB</command>
-       statements, with four digit hexadecimal operands.  Word data areas are
-       equivalent to long label data areas with a label class or
-       '<command>$</command>' (hexadecimal).
-      </para>
+      <orderedlist>
+        <listitem>
+          <para><command>ASCII data areas</command> are those which contain
+            ASCII characters, and should be disassembled using
+            <computeroutput>FCC</computeroutput> or
+            <computeroutput>FCS</computeroutput> statements, if possible.
+            Graphic ASCII characters are collected together and output in
+            <computeroutput>FCC</computeroutput> or
+            <computeroutput>FCS</computeroutput> statements, with a double
+            quote (") delimiter as the preferred delimiter, but &odis; will
+            choose a delimiter such that it does not occur in the string.  The
+            <command>FCS</command> statement will be used, if enabled (it can
+            be optionally disabled), whenever a character with the high bit
+            set.  Nongraphic ASCII characters, which include the control
+            characters, <computeroutput>DEL</computeroutput> ($7F), and
+            characters with the high bit set (if
+            <computeroutput>FCS</computeroutput> is disabled), will be output
+            in <computeroutput>FCB</computeroutput> statements, with the same
+            format as that described in the ASCII label class.
+          </para>
+        </listitem>
+        <listitem>
+          <para><command>Long label data areas</command> are disassembled
+            using <computeroutput>FDB </computeroutput> statements, with
+            operands whose form depends on the label class to be used.  Thus,
+            when specifying long label areas, you must also specify which of
+            the 31 label classes is desired. Long label data is often used,
+            with class <command>L</command>, to hold addresses of routines
+            within a program, for multiple direction jumps. These tables will
+            also often use PC offsets or a constant class <command>L</command>
+            offset (<computeroutput>FDB L1234-*</computeroutput> or
+            <computeroutput>FDB L1234-L1000</computeroutput>).
+          </para>
+        </listitem>
+        <listitem>
+          <para><command>Short label data areas</command> are disassembled
+            using <computeroutput>FCB </computeroutput> statements, and also
+            require a label class to be specified.  Short labels are less often
+            used for program labels, but are often used for direct page labels,
+            code values, or bit masks. It is also possible, using the ASCII
+            label class, to set up ASCII constants separated out letter by
+            letter.  For instance, a four byte long ASCII data area may be
+            disassembled as <computeroutput>FCS "ABCD"</computeroutput>, while
+            the same four bytes disassembled as short labels with label class
+            ASCII would be disassembled as <computeroutput>FCB 'A, 'B, 'C,
+            'D+$80</computeroutput>. This is occasionally useful.
+          </para>
+        </listitem>
+        <listitem>
+          <para><command>Word data areas</command> are disassembled using
+            <computeroutput>FDB</computeroutput> statements, with four digit
+            hexadecimal operands.
+          </para>
+          <note><para>Word data areas are equivalent to long label data areas
+            with a label class or '<command>$</command>' (hexadecimal).
+          </para></note>
+        </listitem>
+        <listitem>
+          <para><command>Byte data areas</command> are disassembled using
+            <computeroutput>FCB</computeroutput> statements, with two digit
+            hexadecimal operands.
+          </para>
+          <note><para>Byte data areas are equivalent to short label data areas
+            with a label class of '<command>$</command>' (hexadecimal).
+          </para></note>
+        </listitem>
+      </orderedlist>
       <para>Obviously, the proper selection of all the many forms of label
         classes, standard labels, offsets, and data areas can be quite
         difficult.  It requires a careful examination of the disassembled
         output, so that at least two complete disassemblies are required (often
         more). In return, though, it is possible to disassemble a large
-        program, and have as output a file requiring no extensive editing,
-        except for the adding of your own comments. A thorough use of standard
-        labels and label class specifications will result in output filled with
-        meaningful operands, so that the real work of understanding a
-        disassembled program, that of deciphering the algorithms used instead
-        of the opcodes used, is much easier.
+        program, and have as output a file requiring no extensive editing . A
+        thorough use of standard labels and label class specifications will
+        result in output filled with meaningful operands, so that the real work
+        of understanding a disassembled program, that of deciphering the
+        algorithms used instead of the opcodes used, is much easier.
       </para>
     </section>
   </section>
