@@ -1,0 +1,9 @@
+.note {
+    padding-left: 8;
+    border: solid thin blue;
+    background: #DFDFDF
+}
+
+.widetab td {
+    padding: 0 20px
+}
