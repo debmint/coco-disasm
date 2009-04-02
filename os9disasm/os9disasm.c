@@ -20,9 +20,22 @@
 
 #include "odis.h"
 
-int doingcmds = 0;              /* Flag: set if doing cmd file */
-static char *DefDir;
+	/* ascii names for control characters */
+static const char *CtrlCod[] =
+{
+	"nul", "soh", "stx", "etx",
+	"eot", "enq", "ack", "bel",
+	"bs", "ht", "lf", "vt",
+	"ff", "cr", "so", "si",
+	"dle", "dcl", "dc2", "dc3",
+	"dc4", "nak", "syn", "etb",
+	"can", "em", "sub", "esc",
+	"fs", "gs", "rs", "us",
+	"space"
+};
 
+static int doingcmds = 0;              /* Flag: set if doing cmd file */
+static char *DefDir;
 static char *myhome;            /* pointer to HOME environment name */
 char rdbuf[500];
 
@@ -44,7 +57,6 @@ usage ()
     fprintf (stderr, "    -ll[=]<length> - Specify label length\n");
     fprintf (stderr, "\n    -u  -  fold to uppercase\n");
     fprintf (stderr, "    -a    Specify all 8-bit indexes with \"<\"\n");
-    fprintf (stderr, "                C=Coco (default = OS9)\n");
     fprintf (stderr, "    -g  -  Output listing in tabbed format suitable for g09dis to interpret\n");
     fprintf (stderr,
              "    -z  -  Print zero register offset. (Default is \"no\"\n");
@@ -53,9 +65,14 @@ usage ()
     fprintf (stderr, "    -pd[=]<pagd depth>     default=66\n");
     fprintf (stderr, "\n   TARGET CPU\n");
     fprintf (stderr, "\n    -x[=]<type> - Target OS\n");
+    fprintf (stderr, "                C=Coco (default = OS9)\n");
     fprintf (stderr, "    -3  -  target CPU is 6309 (accept 6309 opcodes)\n");
     return;
 }
+
+/* **************************************************** *
+ * pass_eq() - move pointer past equal sign, if present *
+ * **************************************************** */
 
 static char *
 pass_eq (char *pr)
@@ -63,15 +80,14 @@ pass_eq (char *pr)
     return (*pr == '=' ? ++pr : pr);
 }
 
-/* **************************************************** *
- * build_path()  - locate a filename and build a full   *
- *                 pathlist.                            *
- * Passed:    the filename                              *
- * Returned:  return ptr to full pathname               *
- * Note:  fullname is only a temporary buffer,          *
- *        Unless fname is unaltered, the returned       *
- *        pointer is one to a newly created string      *
- * **************************************************** */
+/* ************************************************************ *
+ * build_path()  - locate a filename and build a full pathlist  *
+ * Passed:    the filename                                      *
+ * Returned:  return ptr to full pathname                       *
+ * Note:  fullname is only a temporary buffer,                  *
+ *        Unless fname is unaltered, the returned pointer is    *
+ *        one to a newly created string                         *
+ * ************************************************************ */
 
 static char *
 build_path (char *fname, char *fullname, int nsize)
@@ -101,7 +117,6 @@ build_path (char *fname, char *fullname, int nsize)
         strncpy (fullname, myhome, nsize);
         nsize -= strlen (fullname);
         strncat (fullname, &fname[1], nsize);
-        //realname = strdup (fullname);
         realname = fullname;
     }
 
@@ -138,11 +153,12 @@ build_path (char *fname, char *fullname, int nsize)
     return realname;
 }
 
-/* ************************************** *
- * do_opt() - Searches for match of char  *
- *      pointed to by c and does whatever *
- *      setup processing is needed        *
- * ************************************** */
+/* **************************************************** *
+ * do_opt() - Searches for match of char pointed to by  *
+ *      c and does whatever setup processing is needed  *
+ *      This is used for both command-line opts and     *
+ *      opts found in the command file.                 *
+ * **************************************************** */
 
 void
 do_opt (char *c)
@@ -156,8 +172,12 @@ do_opt (char *c)
         break;
     case 'o':                  /* output asm src file */
         asmfile = pass_eq (pt);
+
         if ( ! (outpath = fopen (asmfile, "wb")))
+        {
             nerrexit ("Cannot open output file\n");
+        }
+        
         WrtSrc = 1;
         break;
     case 'x':
@@ -183,17 +203,11 @@ do_opt (char *c)
         if (LblFilz < MAX_LBFIL)
         {
             if ( ! doingcmds)
+            {
                 LblFNam[LblFilz] = pass_eq (pt);
+            }
             else
             {
-                /*LblFNam[LblFilz]=malloc(strlen(pt)+2);
-                   pt=pass_eq(pt);
-                   if( !LblFNam[LblFilz] ) {
-                   fprintf(stderr,
-                   "Cannot allocate memory for Label filename\n");
-                   exit(1);
-                   }
-                   strcpy(LblFNam[LblFilz],pt); */
                 pt = pass_eq (pt);
 
                 if ( ! (LblFNam[LblFilz] = strdup (pt)))
@@ -277,7 +291,6 @@ do_opt (char *c)
         }
         else
         {
-            /*DefDir = malloc(strlen(pt)+2); */
             pt = pass_eq (pt);
 
             if ( ! (DefDir = strdup (pt)))
@@ -285,8 +298,8 @@ do_opt (char *c)
                 fprintf (stderr, "Cannot allocate memory for Defs dirname\n");
                 exit (1);
             }
-            /*strcpy(DefDir,pt); */
         }
+
         break;
     case 'z':
         dozeros = 1;
@@ -299,6 +312,13 @@ do_opt (char *c)
         exit (1);
     }
 }
+
+/* **************************************************************** *
+ * pass1() - Do setup procedures.  Processes header, depending upon *
+ *          OSType.  For OS9 type (default), determines if it's a   *
+ *          program module or ROF and then processes header.        *
+ *          Process command dfile (if we have one).                 *
+ * **************************************************************** */
 
 static void
 pass1 ()
@@ -322,8 +342,10 @@ pass1 ()
 
             firstword = o9_fgetword (progpath);
 
-            if (firstword == 0x62cd)
+            if (firstword == 0x62cd)    /* First half or ROF sync bytes? */
             {
+                /* If so, get second 16 bytes */
+
                 firstword = firstword << 16 | o9_fgetword (progpath);
 
                 if ( firstword == 0x62cd2387)
@@ -367,13 +389,22 @@ pass1 ()
     }
 }
 
+/* ******************************************************************** *
+ * RdLblFile() - Reads a label file and stores label values into        *
+ *      label tree if value (or address) is present in tree             *
+ *      Path to file has already been opened and is stored in "inpath"  *
+ * ******************************************************************** */
+
 static void
 RdLblFile ()
 {
-    char labelname[30], clas, eq[10], strval[8];
+    char labelname[30],
+         clas,
+         eq[10],
+         strval[8],
+        *lbegin;
     int address;
     struct nlist *nl;
-    char *lbegin;
 
     while ( ! feof (inpath))
     {
@@ -421,19 +452,20 @@ RdLblFile ()
     }
 }
 
-/* ********************************************* *
- * GetLabels() - Set up label definitions        *
- *      Set up defaults and read all label files *
- * ********************************************* */
+/* ******************************************************** *
+ * GetLabels() - Set up all label definitions               *
+ *      Reads in all default label files and then reads     *
+ *      any files specified by the '-s' option.             *
+ * ******************************************************** */
 
 static void
 GetLabels ()                    /* Read the labelfiles */
 {
     register int x;
     register struct nlist *nl;
-    char *stdlbl = "dynalbl";
-    char filename[500];
-    char *tmpnam;
+    char  filename[500],
+         *stdlbl = "dynalbl",
+         *tmpnam;
 
     /* First, get built-in ascii definitions.  Later, if desired,
      * they can be redefined */
@@ -465,8 +497,6 @@ GetLabels ()                    /* Read the labelfiles */
             RdLblFile ();
             fclose (inpath);
         }
-
-        //free (tmpnam);
     }
 
     /* and now the standard label file */
@@ -496,7 +526,6 @@ GetLabels ()                    /* Read the labelfiles */
         fclose (inpath);
     }
 
-    //free (tmpnam);
 
     /* Now read in label files specified on the command line */
 
@@ -514,10 +543,12 @@ GetLabels ()                    /* Read the labelfiles */
             fprintf (stderr, "ERROR! cannot open Label File %s for read\n",
                      tmpnam);
         }
-
-        //free (tmpnam);
     }
 }
+
+/* ************************************************************ *
+ * InitDefaults() - Null out all SymLst entries at tree base    *
+ * ************************************************************ */
 
 static void
 InitDefaults ()
@@ -579,7 +610,7 @@ main (int argc, char **argv)
         }
         else
         {
-            if (!modfile)
+            if ( ! modfile)
                 modfile = pt;
             else
             {
@@ -620,24 +651,20 @@ main (int argc, char **argv)
         exit (errno);
     }
 
+    /* Do Pass 1 */
+
     pass1 ();
+    progdis ();
 
-/*    if (IsROF)
-    {
-        rofhdr ();
-    }
-    else
-    {*/
-        progdis ();
-/*    }*/
-
-    GetLabels ();               /* Read in Label files */
+    GetLabels ();       /* Read in Label files before doing second pass */
     Pass2 = 1;
     rewind (progpath);
 
+   /* If we're doing RSDOS, reset header pointers to first header */
+
     if (OSType == OS_Coco)
     {
-        rsdoshdr();   /* Reset header pointers to first header */
+        rsdoshdr();
     }
 
     progdis ();

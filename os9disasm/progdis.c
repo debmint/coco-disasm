@@ -25,12 +25,15 @@
 #define ADRMOD 2
 #define NOIDXINDIR if(c&0x20) return 0
 
-char *RegReg[] =
+char *RegReg[] =        /* 6809 registers */
     { "d", "x", "y", "u", "s", "pc", "", "", "a", "b", "cc", "dp" };
-char *RegR03[] =
+
+char *RegR03[] =        /* 6309 registers */
     { "d", "x", "y", "u", "s", "pc", "w", "v", "a", "b", "cc", "dp",
     "0", "", "e", "f"
 };
+
+/* Register order for push, pull for regS and reg U */
 char *PshPuls[] = { "cc", "a", "b", "dp", "x", "y", "u", "pc" };
 char *PshPulu[] = { "cc", "a", "b", "dp", "x", "y", "s", "pc" };
 char RegOrdr[] = "xyus";
@@ -39,8 +42,6 @@ char RegOrdr[] = "xyus";
 extern char pseudcmd[], realcmd[];
 
 char CmdBuf[10];                /* buffer to hold bytes of cmd code */
-int UnkCount;                   /* Count of unknowns now being held */
-int cofset;
 
 struct databndaries *curbnd;
 struct databndaries *amodes[sizeof (lblorder)];
@@ -48,17 +49,20 @@ struct lkuptbl *tabl;
 struct printbuf *pbuf = &PBuf;
 
 extern struct rof_extrn *xtrn_ndp[],
-       *xtrn_dp[],
-       *xtrn_code;
+                        *xtrn_dp[],
+                        *xtrn_code;
 extern struct rof_hdr *rofptr;
 
 int CodEnd;                     /* End of executable code (ModSize-3 for OS9 */
+
+/* ************************************************************* *
+ * MovBytes() -
+ * ************************************************************* */
 
 static void
 MovBytes (struct databndaries *db)
 {
     char tmps[20];
-    /*int leftbit, rightbit;*/
     int valu;
 
     CmdEnt = Pc;
@@ -66,14 +70,13 @@ MovBytes (struct databndaries *db)
     while (Pc <= db->b_hi)
     {
         tmps[0] = '\0';
-        /*leftbit*/valu = fgetc (progpath);
+        valu = fgetc (progpath);
 
         if (PBytSiz == 2)
         {
-            /*rightbit = fgetc (progpath);
-            LblCalc (tmps, ((leftbit << 8) + rightbit), AMode);*/
             valu = (valu << 8) + fgetc (progpath);
         }
+
         LblCalc (tmps, valu, AMode);
 
         if (Pass2)
@@ -113,7 +116,7 @@ MovBytes (struct databndaries *db)
         Pc += PBytSiz;
     }
 
-    if (strlen (pbuf->operand))
+    if (Pass2 && strlen (pbuf->operand))
     {
         strcpy (pbuf->mnem, PBytSiz == 1 ? "fcb" : "fdb");
         PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc);

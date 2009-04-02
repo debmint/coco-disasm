@@ -38,6 +38,9 @@
  * ************************************************************************ */
 
 #include "odis.h"
+            /* Print format for printing byte/integer output */
+char *OpCodFmt[] = { "", /* Placeholder, bytesize=1 or =2 */ "%02x","%04x" };
+
 #include "amodes.h"
 
 /* ************************************************** *
@@ -170,20 +173,20 @@ ClasHere (struct databndaries *bp, int adrs)
 }
 
 
-/* ********************************************** *
- * LblCalc() - Calculate the Label for a location *
- *    Passed: dst - pointer to character string   *
- *                  to APPEND result to           *
- *            adr - the address of the label      *
- *            amod - the AMode desired            *
- * ********************************************** */
+/* ******************************************************** *
+ * LblCalc() - Calculate the Label for a location           *
+ *    Passed: dst - pointer to character string to APPEND   *
+ *                  result onto                             *
+ *            adr - the address of the label                *
+ *            amod - the AMode desired                      *
+ * ******************************************************** */
 
 int
 LblCalc (char *dst, int adr, int amod)
 {
-    int raw = adr /*& 0xffff */ ;    /* Raw offset (postbyte) - was unsigned */
-    char mainclass,             /* Class for this location */
-         oclass = 0;            /* Class for offset (if present) */
+    int raw = adr /*& 0xffff */ ;   /* Raw offset (postbyte) - was unsigned */
+    char mainclass,                 /* Class for this location */
+         oclass = 0;                /* Class for offset (if present) */
 
     struct databndaries *kls = 0;
     struct nlist *mylabel = 0;
@@ -343,6 +346,7 @@ LblCalc (char *dst, int adr, int amod)
 
         }
     }
+
     return 1;
 }
 
@@ -429,6 +433,10 @@ PrintLbl (char *dest, char clas, int adr, struct nlist *dl)
         strcpy (dest, dl->sname);
     }
 }
+
+/* **************************************************************** *
+ * movchr() - Store a char in the desired printable format to dst   *
+ * **************************************************************** */
 
 void
 movchr (char *dst, unsigned char ch)

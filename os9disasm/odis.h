@@ -182,31 +182,4 @@ GLOBAL struct databndaries *dbounds;
 GLOBAL struct commenttree *Comments[33];
 GLOBAL struct apndcmnt *CmntApnd[33];
 
-	/* ascii names for control characters */
-GLOBAL const char *CtrlCod[]
-#ifdef MAIN
-= {
-	"nul", "soh", "stx", "etx",
-	"eot", "enq", "ack", "bel",
-	"bs", "ht", "lf", "vt",
-	"ff", "cr", "so", "si",
-	"dle", "dcl", "dc2", "dc3",
-	"dc4", "nak", "syn", "etb",
-	"can", "em", "sub", "esc",
-	"fs", "gs", "rs", "us",
-	"space"
-}
-#endif
-;
-
-/* Print format for printing byte/integer output */
-GLOBAL char *OpCodFmt[]
-#ifdef MAIN
-= {
-	"",	/* Placeholder, bytesize=1 or =2 */
-	"%02x","%04x"
-}
-#endif
-;
-
 #include "proto.h"	/* Place last so all structs will be defined */
