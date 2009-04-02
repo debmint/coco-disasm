@@ -1081,8 +1081,35 @@ GetCmd ()
             return 1;           /* done */
         case 2:
             offset = o9_fgetword (progpath);
+
+            /* Note:  This has the added(?) benefit of making negative
+             * immediate offsets show up as decimal values.
+             * Reminder: should o9_fgetword() return a signed value
+             * all the time???
+             */
+
+            if (offset & 0x1000)        /* Sign extend */
+            {
+                offset |= (-1) ^ 0xffff;
+            }
+
             sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, offset & 0xffff);
             Pc += 2;
+            
+            /* Force 16-bit mode to match original code */
+            /* NOTE: We may wish to add an option to turn this funcion
+             * on to optimize the code.  This is in order to obtain
+             * identical code for comparison.
+             */
+
+            if (AMode == AM_EXT)
+            {
+                if ((offset < 0x80) && (offset >= -128))
+                {
+                    sprintf (pbuf->operand, ">");
+                }
+            }
+
             break;
         default:
             /* Go through byte_offset to get signed stuff working */
