@@ -22,11 +22,11 @@ struct ofile_widgets
 };
 
 
-/* ************************************** *
- * newspin1() - create a new spin button  *
- *    Passed: default value for button    *
- *    Returns: the spin button widget ptr *
- * ************************************** */
+/* ************************************************ *
+ * newspin1() - create a new spin button            *
+ *    Passed: default value for button              *
+ *    Returns: the spin button widget ptr           *
+ * ************************************************ */
 
 GtkWidget *
 newspin1 (int defval)
@@ -39,13 +39,13 @@ newspin1 (int defval)
     return spin;
 }
 
-/* ************************************* *
- * browse_files() - get a filename using *
- *                  selectfile_open ()   *
- *   Passed: The button pressed          *
- *           the associated entry        *
- *   Returns: nothing                    *
- * ************************************* */
+/* ******************************************************** *
+ * browse_files() - get a filename using selectfile_open () *
+ *                                                          *
+ *   Passed: (1) - The button pressed                       *
+ *           (2) - The associated entry                     *
+ *   Returns: nothing                                       *
+ * ******************************************************** */
 
 static void
 browse_files (GtkButton * button, GtkWidget * entry)
@@ -60,10 +60,10 @@ browse_files (GtkButton * button, GtkWidget * entry)
     free_filename_to_return (&(O9Dis.filename_to_return));
 }
 
-/* ************************************** *
- * browse_dirs() - same as browse_files() *
- *    except that it returns a directory  *
- * ************************************** */
+/* ************************************************ *
+ * browse_dirs() - same as browse_files() except    *
+ *                 that it returns a directory      *
+ * ************************************************ */
 
 static void
 browse_dirs (GtkButton * button, GtkWidget * entry)
@@ -79,16 +79,15 @@ browse_dirs (GtkButton * button, GtkWidget * entry)
 }
 
 
-/* ****************************************** *
- * build_entry_frame () - build a frame and   *
- *              a vbox inside it              *
- *                                            *
- *    Passed:   title for dialog              *
- *              parent box for this new widget*
- *              address to store frame ptr    *
- *    Returns:  ptr to the entry box          *
- *                                            *
- * ****************************************** */
+/* ************************************************************ *
+ * build_entry_frame () - build a frame with a vbox inside it   *
+ *                                                              *
+ *    Passed:   (1) title for dialog parent box for this new    *
+ *                  widget                                      *
+ *              (2) address to store frame ptr                  *
+ *    Returns:  ptr to the entry box                            *
+ *                                                              *
+ * ************************************************************ */
 
 static GtkWidget *
 build_entry_frame (gchar * title, GtkWidget * main_box, GtkWidget ** m_frame)
@@ -108,16 +107,15 @@ build_entry_frame (gchar * title, GtkWidget * main_box, GtkWidget ** m_frame)
     return entry_box;
 }
 
-/* ********************************************* *
- * build_entry_entry() - create an entry widget  *
- *               and pack it inside the provided *
- *               v/h-box                         *
- *    Passed:  Container (v/h-box) to hold entry *
- *             text (if not NULL) to place into  *
- *                   entry                       *
- *    Returns: the entry widget ptr              *
- *                                               *
- * ********************************************* */
+/* ************************************************************ *
+ * build_entry_entry() - create an entry widget  and pack it    *
+ *                       inside the provided v/h-box            *
+ *    Passed:  (1) - Container (v/h-box) to hold entry text (if *
+ *                   not NULL) to place into entry.             *
+ *             (2) - Filename                                   *
+ *    Returns: the entry widget ptr                             *
+ *                                                              *
+ * ************************************************************ */
 
 static GtkWidget *
 build_entry_entry (GtkWidget * entry_box, gchar * filnam)
@@ -137,15 +135,15 @@ build_entry_entry (GtkWidget * entry_box, gchar * filnam)
     return entry;
 }
 
-/* *********************************************** *
- * build_browse_button () - create a browse button *
- *           and connect a callback for "clicked"  *
- *     Passed: the container into which to pack it *
- *             The entry widget to pass to callback*
- *                 as data                         *
- *             TRUE if browsing files, FALSE if dir*
- *     Returns: The browse button widget           *
- * *********************************************** */
+/* ************************************************************ *
+ * build_browse_button () - create a browse button and connect  *
+ *                          a callback for "clicked"            *
+ *     Passed: (1) - The container into which to pack it        *
+ *             (2) - The entry widget to pass to callback       *
+ *                   as data                                    *
+ *             (3) - TRUE if browsing files, FALSE if dir       *
+ *     Returns: The browse button widget                        *
+ * ************************************************************ */
 
 static GtkWidget *
 build_browse_button (GtkWidget * entry_box,
@@ -153,9 +151,13 @@ build_browse_button (GtkWidget * entry_box,
                      gboolean IsFile)
 {
     GtkWidget *browse_button;
+    GtkWidget *alignment;
 
     browse_button = gtk_button_new_with_label ("Browse");
-    gtk_box_pack_end (GTK_BOX (entry_box), browse_button, FALSE, FALSE, 2);
+    gtk_widget_set_size_request(browse_button, -1, -1);
+    alignment = gtk_alignment_new(1, 0.5, 0, 0);
+    gtk_container_add(GTK_CONTAINER(alignment), browse_button);
+    gtk_box_pack_end (GTK_BOX (entry_box), alignment, FALSE, FALSE, 2);
 
     if (IsFile)
     {
@@ -171,16 +173,16 @@ build_browse_button (GtkWidget * entry_box,
     return browse_button;
 }
 
-/* ****************************************************** *
- * build_entry_box () - build a frame with an entry box   *
- *               and a browse button inside               *
- *      Passed:  label for frame                          *
- *               container to hold frame                  *
- *               filname to insert into entry (if != NULL)*
- *               storage for frame widget                 *
- *                                                        *
- *      Returns: entry widget                             *
- * ****************************************************** */
+/* ************************************************************ *
+ * build_entry_box () - build a frame with an entry box and     *
+ *                      a browse button inside                  *
+ *      Passed:  (1) - Label for frame                          *
+ *               (2) - Cntainer to hold fram                    *
+ *               (3) - Filname to insert into entry (if != NULL)*
+ *               (4) - Storage for frame widget                 *
+ *                                                              *
+ *      Returns: entry widget                                   *
+ * ************************************************************ */
 
 static GtkWidget *
 build_entry_box (gchar * title, GtkWidget * main_box,
@@ -268,18 +270,16 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
      *                        *
      * ********************** */
 
-    /* ************************************** *
-     * Create a table into which to place two *
+    /* Create a table into which to place two *
      * entry boxes side by side               *
-     * ************************************** */
+     */
 
     table = gtk_table_new( 4, 2, FALSE );
     gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
                        table, FALSE, FALSE, 2);
     
-    /* ******************************* *
-     * Program file to be disassembled *
-     * ******************************* */
+    /* Program file to be disassembled *
+     */
     
     bin_entry = build_entry_box ("Program to Disassemble",
                                  table, bin_file, &m_frame);
@@ -288,10 +288,7 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
                                 0, 0,
                                 5, 2);
 
-    /* ************* *
-     * Command file  *
-     * ( -c option ) *
-     * ************* */
+     /* Command file  */
     
     cmd_entry = build_entry_box ("Command File",
                                   table, cmd_cmd, &m_frame);
@@ -300,10 +297,7 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
                       0, 0,
                       5, 2);
 
-    /* ************* *
-     *  output file  *
-     * ( -o option ) *
-     * ************* */
+     /*  output file ( -o option ) */
 
     entry_box = build_entry_frame ("Assembly Source File",
                                    table, &m_frame);
@@ -361,10 +355,7 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
     on_ofile_tgle (GTK_TOGGLE_BUTTON (defs_toggle), &defspath);
     gtk_widget_show_all (m_frame);
     
-    /* ******************** *
-     * send Listing to file *
-     * ( > filename )       *
-     * ******************** */
+    /* send Listing to file ( > filename ) */
 
     entry_box = build_entry_frame("Formatted File Listing ",
                                   table,
@@ -442,9 +433,7 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
     
     gtk_widget_show_all(table);
 
-    /* **************** *
-     * Begin page setup *
-     * **************** */
+    /* Begin page setup */
     
     w_frame = gtk_frame_new ("Page Width");
     w_spin = newspin1 (pgwdth);
@@ -471,9 +460,7 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
     
     /* ***** end page setup ***** */
 
-    /* ********************* *
-     * Now do toggle buttons *
-     * ********************* */
+    /* Now do toggle buttons */
     
     hsep1 = gtk_hseparator_new ();  /* between page setup and toggle btns */
     
@@ -493,7 +480,7 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
                                   (gboolean) cputype);
     gtk_widget_show (CPU_toggle);
 
-    /* "Fold to uppercase */
+    /* Fold to uppercase */
     
     UpCase_toggle = gtk_check_button_new_with_label ("Fold to Upper Case");
     gtk_tooltips_set_tip (optips, UpCase_toggle,
@@ -516,11 +503,9 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
                                   (gboolean) isrsdos);
     gtk_widget_show (OS_toggle);
     
-    /* ********************************* *
-     * all widgets are now set up, now   *
-     * run dialog and after return, set  *
-     * all options according to states   *
-     * ********************************* */
+    /* all widgets are now set up, now run dialog
+     * after return, set all options according to states
+     */
     
     switch (result = gtk_dialog_run (GTK_DIALOG (dialog)))
     {
