@@ -19,6 +19,7 @@
 #define MAIN
 
 #include "odis.h"
+#include <libgen.h>
 
 	/* ascii names for control characters */
 static const char *CtrlCod[] =
@@ -204,20 +205,63 @@ do_opt (char *c)
         {
             if ( ! doingcmds)
             {
-                LblFNam[LblFilz] = pass_eq (pt);
+                LblFNam[LblFilz++] = pass_eq (pt);
             }
             else
             {
                 pt = pass_eq (pt);
 
-                if ( ! (LblFNam[LblFilz] = strdup (pt)))
+                if ( ! access(pt, R_OK))
                 {
-                    fprintf (stderr, "Cannot strdup() Label filename %s\n",
-                                      pt);
+                    if ( ! (LblFNam[LblFilz] = strdup (pt)))
+                    {
+                        fprintf (stderr, "Cannot strdup() Label filename %s\n",
+                                          pt);
+                    }
+                }
+                else if ( pt[0] != '/')
+                {
+                    char *cmdpth, *cmdcpy, *lblpart, *lblcpy;
+                    char *lbl;
+
+                    cmdcpy = strdup(cmdfilename);
+                    lblcpy = strdup(pt);
+                    cmdpth = dirname(cmdcpy);
+                    lblpart = basename(lblcpy);
+                    lbl = malloc(strlen(cmdpth) + strlen(lblpart) + 3);
+
+                    if ( ! lbl)
+                    {
+                        fprintf(stderr,
+                                "Cannot allocate memory for label file %s\n",
+                                pt);
+                    }
+
+                    strcpy (lbl, cmdpth);
+                    strcat (lbl, "/");
+                    strcat (lbl, lblpart);
+
+                    if ( access (lbl, R_OK))
+                    {
+                        fprintf(stderr,
+                                "Cannot access Label file %s - skipping\n",
+                                lbl);
+                    }
+                    else
+                    {
+                        LblFNam[LblFilz++] = lbl;
+                    }
+
+                    free(lblpart);
+                    free(cmdpth);
+                }
+                else
+                {
+                    fprintf(stderr,
+                            "Cannot access Label file %s - skipping\n",
+                            pt);
                 }
             }
-
-            ++LblFilz;
         }
         else
         {
