@@ -477,7 +477,8 @@ regput (int pbyte, char *op1, int pcrel)
                         ofst += Pc;
                     }
 
-                    if ((ofst != 0) || (dozeros))
+                    /*if ((ofst != 0) || (dozeros))*/   /* don't want xx+0 */
+                    if ((ofst != 0))
                     {
                         sprintf (&(op1[strlen(op1)]), "%+d", ofst);
                     }
