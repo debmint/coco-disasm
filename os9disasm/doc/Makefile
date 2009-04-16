@@ -17,7 +17,7 @@ mkdir_p = mkdir -p --
 
 all: index.html
 
-index.html: $(index_SOURCES)
+index.html: $(index_SOURCES) Makefile
 	xsltproc -o html/ $(STYLSHEET) os9disasm.xml
 
 clean:

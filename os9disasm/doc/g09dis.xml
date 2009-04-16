@@ -20,7 +20,13 @@
     <para>Operation of <command>g09dis</command> is relatively
       straightforward.  A few notes are in order.
     </para>
-    <section><title>The Options Menu</title>
+    <section id="gdisfilesmenu"><title>The Files Menu</title>
+      FIXME!
+    </section>
+    <section id="gdistoolsmenu"><title>The Tools Menu></title>
+      FIXME!
+    </section>
+    <section id="gdisoptionmenu"><title>The Options Menu</title>
       <para>The Options menu allows you manipulate options both for the
         disassembler and for preferences in the operation of
         <command>g09dis</command>.
@@ -51,6 +57,10 @@
               from File".  Note that any of the options can still be changed
               during the session.  Of course if you want to save these changes,
               you will need to resave them.
+            </para>
+            <para>Of course, for many of these options, if it is something
+              you wish to be permanent, they can simply be embedded in the
+              command file.
             </para>
           </listitem>
         </varlistentry>

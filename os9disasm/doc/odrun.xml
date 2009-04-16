@@ -76,7 +76,7 @@
                 </entry>
               </row>
               <row>
-                <entry><command>d</command></entry>
+                <entry><command>d[=]&lt;path-to-defsdir&gt;</command></entry>
                 <entry>Define path to defs.  This is the directory under which
                   the default label files are found.  The default is
                   <filename>$HOME/coco/defs</filename>
@@ -117,6 +117,16 @@
                   </command> rather than spaces to separate fields.  This is
                   not an ideal mode for printouts but is included for use by
                   &g09dis;.  See <xref linkend="gmode"/> for further details.
+                </entry>
+              </row>
+              <row>
+                <entry><command>z</command></entry>
+                <entry>Display zero register offsets.  Normally, if the
+                  offset from a register is zero, it's simply output as
+                  <filename>,R</filename>, but this option causes these
+                  offsets to be printed as <filename>0,R</filename>.  This
+                  is useful if trying to match code compiled with the C
+                  compiler, for example, and is strictly aesthetic.
                 </entry>
               </row>
             </tbody>
@@ -570,133 +580,133 @@
         operand consisting of a value, and therefore require a label
         class assignment to specify the proper form of label or data value to
         generate.
-       </para>
-       <para>These 13 addressing modes are (with examples of each):
-       </para>
-       <informaltable frame="none" tabstyle="widetab">
-         <tgroup cols="2">
-           <thead>
-             <row>
-               <entry>Addressing Mode</entry>
-               <entry>Example</entry>
-             </row>
-           </thead>
-           <tbody>
-             <row>
-               <entry></entry>
-             </row>
-             <row>
-               <entry align="right"><command>1 byte immediate</command></entry>
-               <entry><computeroutput>LDA #$12; ORCC #$FE</computeroutput>
-               </entry>
-             </row>
-             <row>
-               <entry align="right"><command>D immediate</command></entry>
-               <entry><computeroutput>ADDD #$1234</computeroutput></entry>
-             </row>
-             <row>
-               <entry align="right"><command>X immediate</command></entry>
-               <entry><computeroutput>LDX #$0000</computeroutput></entry>
-             </row>
-             <row>
-              <entry align="right"><command>Y immediate</command></entry>
-              <entry><computeroutput>CMPY #$A5A5</computeroutput></entry>
-             </row>
-             <row>
-              <entry align="right"><command>U immediate</command></entry>
-              <entry><computeroutput>CMPU #$5678</computeroutput></entry>
-             </row>
-             <row>
-              <entry align="right"><command>S immediate</command></entry>
-              <entry><computeroutput>LDS #$C000</computeroutput></entry>
-             </row>
-             <row>
-              <entry align="right">X indexed</entry>
-              <entry><computeroutput>STA 5,X; CLR ,X</computeroutput></entry>
-             </row>
-             <row>
-              <entry align="right"><command>Y indexed</command></entry>
-              <entry><computeroutput>LDB $1234,Y</computeroutput></entry>
-             </row>
-             <row>
-              <entry align="right"><command>U indexed</command></entry>
-              <entry><computeroutput>CMPD -52,U</computeroutput></entry>
-             </row>
-             <row>
-              <entry align="right"><command>S indexed</command></entry>
-              <entry><computeroutput>LEAS -20,S</computeroutput></entry>
-             </row>
-             <row>
-              <entry align="right"><command>direct page</command></entry>
-              <entry><computeroutput>STX $20</computeroutput></entry>
-             </row>
-             <row>
-              <entry align="right"><command>extended</command></entry>
-              <entry><computeroutput>LDY $1234; JMP [$0030]</computeroutput>
+      </para>
+      <para>These 13 addressing modes are (with examples of each):
+      </para>
+      <informaltable frame="none" tabstyle="widetab">
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Addressing Mode</entry>
+              <entry>Example</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry></entry>
+            </row>
+            <row>
+              <entry align="right"><command>1 byte immediate</command></entry>
+              <entry><computeroutput>LDA #$12; ORCC #$FE</computeroutput>
               </entry>
-             </row>
-             <row>
-              <entry align="right"><command>relative</command></entry>
-              <entry><computeroutput>LBRA $1000; LEAX $0FF0,PCR
-                </computeroutput>
-              </entry>
-             </row>
-           </tbody>
-         </tgroup>
-       </informaltable>
-       <para>For the syntax for the above modes, please refer to
-         <xref linkend="laddrmod"/>
-       </para>
-       <para>Note that the relative addressing mode, for purposes of label
-         generation, includes both branch instructions (<command>BRA</command>,
-         <command>LBSR</command>, etc.) and <command>PC</command> relative
-         references. both of these forms usually refer to code within a single
-         program or module, and are thus grouped together.
-       </para>
-       <para>Note further the example, under the <command>X</command> indexed
-         addressing mode, of a zero offset indexed instruction.  Normally, no
-         offset is not printed in such an instruction.  However, this zero
-         offset <emphasis>can</emphasis> be printed if the
-         <command>-z</command> option is specified.
-       </para>
-       <para>There are occasions, though, in which you might want a named
-         offset, which is assembled to the zero offset form. For instance,
-         suppose an index register points to the start of a data structure,
-         each part of which should be given a label name. In that case, &odis;
-         should generate a label name for a reference to the zero entry in the
-         structure.  To take care of this problem, &odis; will automatically
-         generate a label name for zero offset indexing if the label class for
-         the instruction is one which generates a label ('A' to 'Z', '^', '!'),
-         and will generate no offset if the label class is one which generates
-         a data value ('$', '&amp;', '@').
-       </para>
-       <para>The assignment of label classes to addressing modes is
-         allowed by &odis; in three forms.
-         <orderedlist>
-           <listitem>The assignment can be made globally, so that all
-             instructions with a particular addressing mode encountered in the
-             object code are disassembled with one label class.  This is done
-             by assigning a label class to an addressing mode with no address
-             or address range..
-           </listitem>
-           <listitem>The assignment can be made for a range of program
-             addresses. This is especially useful for indexed addressing
-             modes. Often, an index register will point to a particular data
-             structure only within a certain subroutine in a program, and
-             the assignment of a label class for that structure should only
-             be made for that subroutine.
-           </listitem>
-           <listitem>The assignment can be made for a single instruction in
-             the object code. This will often be used with the 1 byte
-             immediate addressing mode, in which a single instruction refers
-             to an ASCII value or some mask value (as in the <command>ORCC
-             </command> instruction). The actual method used to specify label
-             classes by addressing modes is taken up under the discussion of
-             the command file later in this manual.  See <xref
-             linkend="laddrmod"/>.
-           </listitem>
-         </orderedlist>
-       </para>
+            </row>
+            <row>
+              <entry align="right"><command>D immediate</command></entry>
+              <entry><computeroutput>ADDD #$1234</computeroutput></entry>
+            </row>
+            <row>
+              <entry align="right"><command>X immediate</command></entry>
+              <entry><computeroutput>LDX #$0000</computeroutput></entry>
+            </row>
+            <row>
+             <entry align="right"><command>Y immediate</command></entry>
+             <entry><computeroutput>CMPY #$A5A5</computeroutput></entry>
+            </row>
+            <row>
+             <entry align="right"><command>U immediate</command></entry>
+             <entry><computeroutput>CMPU #$5678</computeroutput></entry>
+            </row>
+            <row>
+             <entry align="right"><command>S immediate</command></entry>
+             <entry><computeroutput>LDS #$C000</computeroutput></entry>
+            </row>
+            <row>
+              <entry align="right"><command>X indexed</command></entry>
+             <entry><computeroutput>STA 5,X; CLR ,X</computeroutput></entry>
+            </row>
+            <row>
+             <entry align="right"><command>Y indexed</command></entry>
+             <entry><computeroutput>LDB $1234,Y</computeroutput></entry>
+            </row>
+            <row>
+             <entry align="right"><command>U indexed</command></entry>
+             <entry><computeroutput>CMPD -52,U</computeroutput></entry>
+            </row>
+            <row>
+             <entry align="right"><command>S indexed</command></entry>
+             <entry><computeroutput>LEAS -20,S</computeroutput></entry>
+            </row>
+            <row>
+             <entry align="right"><command>direct page</command></entry>
+             <entry><computeroutput>STX $20</computeroutput></entry>
+            </row>
+            <row>
+             <entry align="right"><command>extended</command></entry>
+             <entry><computeroutput>LDY $1234; JMP [$0030]</computeroutput>
+             </entry>
+            </row>
+            <row>
+             <entry align="right"><command>relative</command></entry>
+             <entry><computeroutput>LBRA $1000; LEAX $0FF0,PCR
+               </computeroutput>
+             </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>For the syntax for the above modes, please refer to
+        <xref linkend="laddrmod"/>
+      </para>
+      <para>Note that the relative addressing mode, for purposes of label
+        generation, includes both branch instructions (<command>BRA</command>,
+        <command>LBSR</command>, etc.) and <command>PC</command> relative
+        references. both of these forms usually refer to code within a single
+        program or module, and are thus grouped together.
+      </para>
+      <para>Note further the example, under the <command>X</command> indexed
+        addressing mode, of a zero offset indexed instruction.  Normally, no
+        offset is not printed in such an instruction.  However, this zero
+        offset <emphasis>can</emphasis> be printed if the
+        <command>-z</command> option is specified.
+      </para>
+      <para>There are occasions, though, in which you might want a named
+        offset, which is assembled to the zero offset form. For instance,
+        suppose an index register points to the start of a data structure,
+        each part of which should be given a label name. In that case, &odis;
+        should generate a label name for a reference to the zero entry in the
+        structure.  To take care of this problem, &odis; will automatically
+        generate a label name for zero offset indexing if the label class for
+        the instruction is one which generates a label ('A' to 'Z', '^', '!'),
+        and will generate no offset if the label class is one which generates
+        a data value ('$', '&amp;', '@').
+      </para>
+      <para>The assignment of label classes to addressing modes is
+        allowed by &odis; in three forms.
+        <orderedlist>
+          <listitem>The assignment can be made globally, so that all
+            instructions with a particular addressing mode encountered in the
+            object code are disassembled with one label class.  This is done
+            by assigning a label class to an addressing mode with no address
+            or address range..
+          </listitem>
+          <listitem>The assignment can be made for a range of program
+            addresses. This is especially useful for indexed addressing
+            modes. Often, an index register will point to a particular data
+            structure only within a certain subroutine in a program, and
+            the assignment of a label class for that structure should only
+            be made for that subroutine.
+          </listitem>
+          <listitem>The assignment can be made for a single instruction in
+            the object code. This will often be used with the 1 byte
+            immediate addressing mode, in which a single instruction refers
+            to an ASCII value or some mask value (as in the <command>ORCC
+            </command> instruction). The actual method used to specify label
+            classes by addressing modes is taken up under the discussion of
+            the command file later in this manual.  See <xref
+            linkend="laddrmod"/>.
+          </listitem>
+        </orderedlist>
+      </para>
     </section>
     <section><title>Standard Labels</title>
      <para>
