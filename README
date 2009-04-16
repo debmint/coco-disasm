@@ -1,3 +1,15 @@
+IMPORTANT NOTE !!!!!
+-----------
+
+This is an ARCHIVAL COPY.  In this, we tried moving all the os9disasm options
+setup directly into the "Options"  menu setup, with several procedures as
+submenus branching off the main "Options" menu.  This is in contrast with
+the procedure where the options were all on a single dialog box.
+
+However, after getting to this stage, it seemed a bit tedious, so for the time
+being, we are abandoning it.  We are saving it so that, if we decide to go this
+route, we can recover the changes we have made.
+
 PACKAGE REQUIREMENTS
 -----------
 

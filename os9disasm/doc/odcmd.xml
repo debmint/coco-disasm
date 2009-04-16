@@ -537,47 +537,51 @@
         </simplelist></listitem>
       </varlistentry>
     </variablelist>
-    <para>Optionally the entire data area boundary specification line may be
-      started with a repeat count. This is a decimal number which specifies the
-      number of times the boundary specifications in the line are to be
-      repeated.This is indispensable when disassembling large data tables which
-      consistof individual entries made up of several different data types.
-    </para>
-    <para>For instance, suppose a table is made up of 25 entries, each of
-      which consists of a single byte to be output as a decimal value, three
-      ASCII characters, and two bytes to be output as a class 
-      <computeroutput>L</computeroutput> label, offset by
-      the program counter. The data elements in this complex form can be
-      specifiedwith the single line
-    </para>
-    <para><computeroutput>25 S &amp; ; A / 3 ; L L (*)</computeroutput>
-    </para>
-    <para>Some points become clear when examining such a line with a repeat
-     count. First, if a repeat count is used, then the ranges of all individual
-     specifications within the line may not use any absolute addresses. The
-     starting address may use only the null form, and the ending address may
-     only use the null form or the '<computeroutput>/length</computeroutput>'
-     form.  Second, some method is required to specify the actual address at
-     which the specifications are to be applied. This is where the
-     <computeroutput>C</computeroutput>, or <literal>Code</literal>, 'data'
-     type is useful. The table address may be supplied by preceding the table
-     specification line with a line declaring the byte just before the table as
-     code. The address can also be supplied by splitting up the specifications
-     into two lines, the first of which declares the first entry at a certain
-     address, the second of which declares the remainder of the table. Thus, if
-     the table under consideration starts at address $1000, the specification
-     may take the form:
-    </para>
-    <para><computeroutput>
-     C 0FFF      25 S &amp; ; A /3 ; L L (*)
-    </computeroutput></para>
-    <para>or it may take the form</para>
-    <para><computeroutput>
-     S &amp; 1000 ; A /3 ; L L (*)      24 S &amp; ; A /3 ; L L (*)
-    </computeroutput></para>
-    <para>When a repetitive pattern is encountered, the above-described
-     capability saves a lot of repetitious command entry.
-    </para>
+    <section id="repeatcount"><title>Repeating Patterns</title>
+      <para>Optionally the entire data area boundary specification line may be
+        started with a repeat count. This is a decimal number which specifies
+        the number of times the boundary specifications in the line are to be
+        repeated.This is indispensable when disassembling large data tables
+        which consistof individual entries made up of several different data
+        types.
+      </para>
+      <para>For instance, suppose a table is made up of 25 entries, each of
+        which consists of a single byte to be output as a decimal value, three
+        ASCII characters, and two bytes to be output as a class
+        <computeroutput>L</computeroutput> label, offset by the program
+        counter. The data elements in this complex form can be specifiedwith
+        the single line
+      </para>
+      <para><computeroutput>25 S &amp; ; A / 3 ; L L (*)</computeroutput>
+      </para>
+      <para>Some points become clear when examining such a line with a repeat
+        count. First, if a repeat count is used, then the ranges of all
+        individual specifications within the line may not use any absolute
+        addresses. The starting address may use only the null form, and the
+        ending address may only use the null form or the
+        '<computeroutput>/length</computeroutput>' form.  Second, some method
+        is required to specify the actual address at which the specifications
+        are to be applied. This is where the
+        <computeroutput>C</computeroutput>, or <literal>Code</literal>, 'data'
+        type is useful. The table address may be supplied by preceding the
+        table specification line with a line declaring the byte just before the
+        table as code. The address can also be supplied by splitting up the
+        specifications into two lines, the first of which declares the first
+        entry at a certain address, the second of which declares the remainder
+        of the table. Thus, if the table under consideration starts at address
+        $1000, the specification may take the form:
+      </para>
+      <para><computeroutput>
+       C 0FFF      25 S &amp; ; A /3 ; L L (*)
+      </computeroutput></para>
+      <para>or it may take the form</para>
+      <para><computeroutput>
+       S &amp; 1000 ; A /3 ; L L (*)      24 S &amp; ; A /3 ; L L (*)
+      </computeroutput></para>
+      <para>When a repetitive pattern is encountered, the above-described
+       capability saves a lot of repetitious command entry.
+      </para>
+    </section>
   </section>
     <section id="labelfile"><title>The Label File</title>
     <para>&odis; label files are used to supply the equivalence between label
@@ -597,7 +601,8 @@
       and label class. The text file is read, and any lines having the format
     </para></formalpara>
     <screen>
-      <literal>&lt;code&gt;</literal> EQU <literal>&lt;value&gt; &lt;class&gt;</literal>
+      <literal>&lt;code&gt;</literal> EQU
+      <literal>&lt;value&gt; &lt;class&gt;</literal>
     </screen>
     <para>-just like an assembler equate directive - are processed.
     </para>

@@ -11,6 +11,7 @@
 /*#include <unistd.h>*/
 #include <stdlib.h>
 #include <ctype.h>
+#include <libgen.h>
 
 #ifdef WIN32
 #define DIRSTR "\\"
@@ -36,7 +37,6 @@
  * *******************************************
  */
 
-gchar *dirname;                 /* ptr to current directory selected */
 
 /* *********************************************
  * ending_slash() append a "/" to the end of a *
@@ -135,11 +135,65 @@ onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
     return FALSE;
 }
 
-/* ********************* *
- * select a file to open *
- * ********************* */
+/* ************************************************************ *
+ * set_chooser_folder() - Sets the folder path in the           *
+ *               GtkFileChooser if appropriate.                 *
+ * Passed:  (1) - GtkFileChooser in which to set folder         *
+ *          (2) - glbls * hbuf in which to search for paths     *
+ * ************************************************************ */
+
 void
-selectfile_open (glbls * hbuf, gchar * type, gboolean IsFile)
+set_chooser_folder(GtkFileChooser *chooser, glbls *hbuf)
+{
+    gchar *path;
+
+    path = NULL;
+    
+    /* Try to guess a suitable path */
+
+    if (cmd_cmd)
+    {
+        path = cmd_cmd;
+//        fprintf (stderr,"\tcmd_cmd = %s\n",path);
+    }
+    else if ((hbuf->cmdfile).fname)
+    {
+        path = (hbuf->cmdfile).fname;
+//        fprintf (stderr,"\thbuf->cmdfile = %s\n",path);
+    }
+    else if ((hbuf->lblfile).fname)
+    {
+        path = (hbuf->lblfile).fname;
+//        fprintf(stderr,"\thbuf->lblfile = %s\n",path);
+    }
+    else if (bin_file)
+    {
+        path = bin_file;
+//        fprintf(stderr,"\tbin_file = %s\n",path);
+    }
+
+//    if(path) fprintf(stderr, "Path is %s\n",path);
+    if (path)
+    {
+        /* dup path - dirname trashes the original string */
+
+        path = dirname (g_strdup(path));
+        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER(chooser), path);
+        g_free (path);
+    }
+}
+
+/* **************************************************** *
+ * selectfile_open() - Select a file to open            *
+ * Passed:  (1) - ptr to appropriate glbls struct       *
+ *          (2) - Type (string for prompt               *
+ *          (3) - Boolean TRUE if file, FALSE if dir    *
+ *          (4) - Filename to display or NULL           *
+ * Runs gtk_file_chooser_dialog                         *
+ * Sets hbuf->filename_to_return to selected file       *
+ * **************************************************** */
+void
+selectfile_open (glbls * hbuf, gchar * type, gboolean IsFile, gchar *fnam)
 {
     GtkWidget *fsel;
     gchar *title = g_strconcat ("Select a ", type, NULL);
@@ -171,6 +225,15 @@ selectfile_open (glbls * hbuf, gchar * type, gboolean IsFile)
 
 /*	g_signal_connect (G_OBJECT (fsel), "destroy",
 			G_CALLBACK (gtk_main_quit), NULL);*/
+
+    if (fnam)
+    {
+        gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(fsel), fnam);
+    }
+    else
+    {
+        set_chooser_folder (GTK_FILE_CHOOSER(fsel), hbuf);
+    }
 
     if (gtk_dialog_run (GTK_DIALOG (fsel)) == GTK_RESPONSE_ACCEPT)
     {
@@ -210,6 +273,8 @@ selectfile_save (glbls * hbuf, gchar *cur_name, gchar * type)
     {
         gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fsel), cur_name);
     }
+
+    set_chooser_folder (GTK_FILE_CHOOSER(fsel), hbuf);
 
 /*	g_signal_connect (G_OBJECT (fsel), "destroy",
 			G_CALLBACK (gtk_main_quit), NULL);*/
@@ -829,6 +894,7 @@ run_disassembler (GtkAction * action, glbls * hbuf)
     {
         g_string_append (CmdL, " -x=c");
     }
+
     if (write_obj)
     {
         if (obj_file)
@@ -849,6 +915,11 @@ run_disassembler (GtkAction * action, glbls * hbuf)
     if (upcase)
     {
         g_string_append (CmdL, " -u");
+    }
+
+    if (showzeros)
+    {
+        g_string_append (CmdL, " -z");
     }
 
     if (pgwdth)
@@ -921,7 +992,19 @@ run_disassembler (GtkAction * action, glbls * hbuf)
 
     g_free (cmdline);
 }
-/*--------------- cut -----------*/
+
+/* Disassemble listing to file */
+void
+dasm_list_to_file_cb (GtkAction *action, glbls *hbuf)
+{
+    gint old_write = write_list;
+
+    selectfile_save (hbuf, listing_output, "File for Listing");
+    set_fname (hbuf, &listing_output);
+    write_list = LIST_FILE;
+    run_disassembler (action, hbuf);
+    write_list = old_write;
+}
 
 /* Clean up */
 void
@@ -965,7 +1048,7 @@ load_listing (GtkAction * action, glbls * hbuf)
 {
     FILE *infile;
 
-    selectfile_open (hbuf, "Prog Listing", TRUE);
+    selectfile_open (hbuf, "Prog Listing", TRUE, NULL);
 
     if (hbuf->filename_to_return != NULL)
     {                           /* Leak? */
@@ -995,10 +1078,27 @@ load_listing (GtkAction * action, glbls * hbuf)
 void
 load_cmdfile (GtkAction * action, glbls * hbuf)
 {
-    selectfile_open (hbuf, "Command file", TRUE);
-    if (hbuf->filename_to_return != NULL)       /* Leak? */
+    const gchar *acname = gtk_action_get_name(action);
+
+    selectfile_open (hbuf, "Command file", TRUE, cmd_cmd);
+    
+    if ((hbuf->filename_to_return != NULL)      &&       /* Leak? */
+            strlen(hbuf->filename_to_return))
     {
         load_text (&hbuf->cmdfile, list_win, &(hbuf->filename_to_return));
+
+        if ( ! strcmp (acname, "CmdfileUse"))
+        {
+            if (strlen((hbuf->cmdfile).fname))
+            {
+                if (cmd_cmd)
+                {
+                    g_free(cmd_cmd);
+                }
+
+                cmd_cmd = g_strdup((hbuf->cmdfile).fname);
+            }
+        }
     }
 
     free_filename_to_return (&hbuf->filename_to_return);
@@ -1007,7 +1107,7 @@ load_cmdfile (GtkAction * action, glbls * hbuf)
 void
 load_lblfile (GtkAction * action, glbls * hbuf)
 {
-    selectfile_open (hbuf, "Label File", TRUE);
+    selectfile_open (hbuf, "Label File", TRUE, NULL);
     
     if (hbuf->filename_to_return != NULL)       /* Leak? */
     {
@@ -1207,7 +1307,7 @@ void opts_load (GtkAction *action, glbls *hbuf)
     FILE *optfile;
     gchar buf[200];
     
-    selectfile_open (hbuf, "n Options File", TRUE);
+    selectfile_open (hbuf, "n Options File", TRUE, NULL);
     optfile = fopen(hbuf->filename_to_return, "rb");
     
     if (!optfile)
@@ -1293,3 +1393,76 @@ void opts_load (GtkAction *action, glbls *hbuf)
     }
 }
 
+/* ******************************************** *
+ * Callback functions for Options submenus      *
+ * ******************************************** */
+
+/* ************************************************************ *
+ * set_fname() - Generic filename setup, called by the          *
+ *               following file-selection callbacks.            *
+ *               Checks that filename is present, and if so,    *
+ *               clears and resets the filename ptr passed as a *
+ *               reference in "flag".                           *
+ * Passed : (1) - Ptr to the glbls structure                    *
+ *          (2) - Pointer to the appropriate filename ptr       *
+ * ************************************************************ */
+void
+set_fname (glbls *hbuf, gchar **flag)
+{
+    if (hbuf->filename_to_return)
+    {
+        if (strlen(hbuf->filename_to_return))
+        {
+            if (*flag != NULL)
+            {
+                g_free(*flag);
+            }
+
+            *flag = g_strdup(hbuf->filename_to_return);
+        }
+
+        g_free(hbuf->filename_to_return);
+        hbuf->filename_to_return = NULL;
+    }
+}
+
+/* module_select_cb() - Selects module to be disassembled */
+
+void
+module_select_cb (GtkAction *action, glbls *hbuf)
+{
+    selectfile_open (hbuf, "Program", TRUE, bin_file);
+
+    set_fname(hbuf, &bin_file);
+}
+
+/* ************************************************************ *
+ * cmdfile_use_cb() - Sets cmd_cmd to point to path to cmdfile  *
+ *              to use (with the os9disasm "-c" option.         *
+ *              It does NOT load the cmd file                   *
+ * ************************************************************ */
+
+void
+cmdfile_use_cb(GtkAction *action, glbls *hbuf)
+{
+    selectfile_open (hbuf, "Command", TRUE, cmd_cmd);
+
+    set_fname(hbuf, &cmd_cmd);
+}
+
+void
+asm_src_select_cb (GtkAction *action, glbls *hbuf)
+{
+    selectfile_save (hbuf, obj_file, "Asm Source Filename");
+    /*selectfile_open (hbuf, "Assembly Source", TRUE, obj_file);*/
+
+    set_fname(hbuf, &obj_file);
+}
+
+void
+alt_defs_select_cb (GtkAction *action, glbls *hbuf)
+{
+    selectfile_open (hbuf, "DEFS Path", FALSE, alt_defs_path);
+
+    set_fname(hbuf, &alt_defs_path);
+}

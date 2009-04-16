@@ -96,6 +96,7 @@ struct adr_widgets {
 GLOBAL gint pgwdth;
 GLOBAL gint pgdpth;
 GLOBAL gint cputype;
+GLOBAL gint showzeros;
 GLOBAL gboolean isrsdos;
 GLOBAL gint upcase;
 GLOBAL gchar *bin_file;

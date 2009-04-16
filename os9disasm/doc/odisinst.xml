@@ -294,14 +294,23 @@
    </section>
    <section><title>Installing the Standard Label Files</title>
     <para>In the top level directory, there is a directory named <filename>
-     defs</filename>.  In this directory, you will find several files ending
-     in "lbl".  These are the <command>standard label files</command>.  Copy
-     all these files into <filename>$HOME/coco/defs/</filename> or wherever
-     you wish your "defs" directory to reside.  $HOME/coco/defs should work
-     well for a single user system, or on any system where only one person is
-     using this program.  $HOME/coco/defs is the default location, but you
-     can specify any path with the <command>-d</command> command-line option.
+      defs</filename>.  In this directory, you will find several files ending
+      in "lbl".  These are the <command>standard label files</command>.
     </para>
+    <para>Copy all these files into whatever directory you wish your DEFS files
+      to reside.  The default is <filename>/dd/defs</filename>.  wish your
+      "defs" directory to reside.  <filename>/dd/defs</filename> is the default
+      location, but you can specify any path with the <command>-d</command>
+      command-line option.
+    </para>
+    <formalpara id="dd-dir">><title>Getting /dd on a unix-style system</title>
+      There are a couple of ways to get <filename>/dd</filename> to exist on
+      a unix-style system.  The first is simply to create a directory named
+      <filename>dd</filename> in the root directory.  However, I preferred to
+      have my coco files in my <filename>$HOME</filename> directory, so I
+      created a <filename>coco</filename> directory there and created a
+      symbolic link to that directory in the root directory.
+    </formalpara>
   </section>
  </section>
 </section>

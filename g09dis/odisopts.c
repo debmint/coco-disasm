@@ -27,7 +27,7 @@ struct ofile_widgets
  *    Passed: default value for button              *
  *    Returns: the spin button widget ptr           *
  * ************************************************ */
-
+/*
 GtkWidget *
 newspin1 (int defval)
 {
@@ -37,7 +37,7 @@ newspin1 (int defval)
     gtk_spin_button_set_value (GTK_SPIN_BUTTON (spin), (gdouble) defval);
 
     return spin;
-}
+}*/
 
 /* ******************************************************** *
  * browse_files() - get a filename using selectfile_open () *
@@ -50,7 +50,7 @@ newspin1 (int defval)
 static void
 browse_files (GtkButton * button, GtkWidget * entry)
 {
-    selectfile_open (&O9Dis, "Prog Listing", TRUE);
+    selectfile_open (&O9Dis, "Prog Listing", TRUE, NULL);
 
     if (O9Dis.filename_to_return)
     {
@@ -68,7 +68,7 @@ browse_files (GtkButton * button, GtkWidget * entry)
 static void
 browse_dirs (GtkButton * button, GtkWidget * entry)
 {
-    selectfile_open (&O9Dis, "Prog Listing", FALSE);
+    selectfile_open (&O9Dis, "Prog Listing", FALSE, NULL);
 
     if (O9Dis.filename_to_return)
     {
@@ -93,7 +93,6 @@ static GtkWidget *
 build_entry_frame (gchar * title, GtkWidget * main_box, GtkWidget ** m_frame)
 {
     GtkWidget *entry_box;
-    GtkWidget *alignment1;
 
     *m_frame = gtk_frame_new (title);
     gtk_container_set_border_width (GTK_CONTAINER (*m_frame), 3);

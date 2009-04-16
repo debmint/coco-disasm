@@ -9,7 +9,52 @@
 #include <string.h>
 #include "g09dis.h"
 
-    GtkTooltips *ttip;
+GtkTooltips *ttip;
+static GtkActionGroup *action_group;
+
+/* ************************************************************ *
+ * "Options" menu callbacks                                     *
+ * ************************************************************ */
+
+static void
+upcase_toggle_cb (GtkToggleAction *action, glbls *hbuf)
+{
+    upcase = (gint)gtk_toggle_action_get_active(action);
+}
+
+static void
+rsdos_toggle_cb (GtkToggleAction *action, glbls *hbuf)
+{
+    isrsdos = (gint)gtk_toggle_action_get_active(action);
+}
+
+static void
+cpu_toggle_cb (GtkToggleAction *action, glbls *hbuf)
+{
+    cputype = (gint)gtk_toggle_action_get_active(action);
+}
+
+static void
+show_zero_offset_cb (GtkToggleAction *action, glbls *hbuf)
+{
+    showzeros = (gint)gtk_toggle_action_get_active(action);
+}
+
+static void
+asm_src_write_cb (GtkToggleAction *action, glbls *hbuf)
+{
+    write_obj = gtk_toggle_action_get_active (action);
+    gtk_action_set_sensitive ( gtk_action_group_get_action ( action_group,
+                "AsmFileName"), write_obj);
+}
+
+static void
+alt_defs_cb (GtkToggleAction *action, glbls *hbuf)
+{
+    alt_defs = gtk_toggle_action_get_active (action);
+    gtk_action_set_sensitive ( gtk_action_group_get_action ( action_group,
+                "AltDefsName"), alt_defs);
+}
 
 static void
 hlp_about (GtkAction * action, glbls * hbuf)
@@ -71,6 +116,79 @@ lbl_new_cb (GtkAction * action, glbls * hbuf)
     list_store_empty(&(hbuf->lblfile));
 }
 
+/* ************************************************ *
+ * newspin1() - create a new spin button            *
+ *    Passed: default value for button              *
+ *    Returns: the spin button widget ptr           *
+ * ************************************************ */
+
+GtkWidget *
+newspin1 (int defval)
+{
+    GtkWidget *spin;
+
+    spin = gtk_spin_button_new_with_range ((gdouble) 40, (gdouble) 200, 1);
+    gtk_spin_button_set_value (GTK_SPIN_BUTTON (spin), (gdouble) defval);
+
+    return spin;
+}
+
+static void
+setpgsize_cb (GtkAction *action, glbls *hbuf)
+{
+    GtkWidget *dialog;
+    GtkWidget *w_spin, *d_spin,
+              *hbx,
+              *p_frame;
+    gint result;
+
+    dialog =
+        gtk_dialog_new_with_buttons ("Page Size",
+                                     GTK_WINDOW (window),
+                                     GTK_DIALOG_MODAL |
+                                     GTK_DIALOG_DESTROY_WITH_PARENT,
+                                     GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+                                     GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                                     NULL);
+    gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+
+    hbx = gtk_hbox_new (TRUE, 5);
+
+    p_frame = gtk_frame_new ("Page Width");
+    gtk_container_set_border_width (GTK_CONTAINER (p_frame), 5);
+
+    w_spin = newspin1 (pgwdth);
+    gtk_container_add (GTK_CONTAINER (p_frame), w_spin);
+    gtk_box_pack_start(GTK_BOX(hbx), p_frame, FALSE, FALSE, 2);
+    
+    p_frame = gtk_frame_new ("Page Depth");
+    gtk_container_set_border_width (GTK_CONTAINER (p_frame), 5);
+
+    d_spin = newspin1 (pgdpth);
+    gtk_container_add (GTK_CONTAINER (p_frame), d_spin);
+    gtk_box_pack_start(GTK_BOX(hbx), p_frame, FALSE, FALSE, 2);
+    
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), hbx, FALSE, FALSE, 2);
+
+    gtk_widget_show_all (dialog);
+
+    switch (result = gtk_dialog_run (GTK_DIALOG (dialog)))
+    {
+        case GTK_RESPONSE_OK:
+        case GTK_RESPONSE_ACCEPT:
+            pgdpth = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(d_spin));
+            pgwdth = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(w_spin));
+            break;
+        default:
+            break;
+
+    }
+
+    gtk_widget_destroy (dialog);
+    
+    /* ***** end page setup ***** */
+}
+
 static void
 tip_toggle(GtkToggleAction *ta, glbls *hbuf)
 {
@@ -89,6 +207,9 @@ tip_toggle(GtkToggleAction *ta, glbls *hbuf)
 
 /* Normal items */
 static GtkActionEntry entries[] = {
+
+    /* Top-level menu items */
+
     {"FileMenu", NULL, "_File"},
     {"ViewMenu", NULL, "_View"},
     {"ToolMenu", NULL, "_Tools"},
@@ -98,12 +219,17 @@ static GtkActionEntry entries[] = {
     {"File_New", GTK_STOCK_NEW, "_New"},
     {"OpenMenu", GTK_STOCK_OPEN, "_Open"},
     {"SaveAsMenu", GTK_STOCK_SAVE_AS, "Save _As"},
-    {"DisOptions", GTK_STOCK_EXECUTE, "Disassembler Options", NULL,
-        "Set disassembler options/parameters", G_CALLBACK (set_dis_opts_cb)},
+    /*{"DisOptions", GTK_STOCK_EXECUTE, "Disassembler Options", NULL,
+        "Set disassembler options/parameters", G_CALLBACK (set_dis_opts_cb)},*/
+
+    {"DisOptions", NULL, "Disassembler Options"},
     {"AModeListEdit", NULL, "Modify Amode List", NULL,
         "Change Addressing Mode List", G_CALLBACK (amode_list_edit_cb)},
-    {"DasmPrg", GTK_STOCK_EXECUTE, "Disassemble...", NULL,
+    {"DasmPrg", GTK_STOCK_EXECUTE, "Disassemble to GUI", NULL,
         "Disassemble program file", G_CALLBACK (run_disassembler)},
+    {"DasmToFile", GTK_STOCK_EXECUTE, "Disassemble to File", NULL,
+        "Disassemble, sending normal listing to file",
+        G_CALLBACK(dasm_list_to_file_cb)},
     {"LstngNew", GTK_STOCK_NEW, "_Listing", "<shft><ctl>L",
         NULL, G_CALLBACK(listing_new_cb)},
     {"CmdNew", GTK_STOCK_NEW, "_Command File", "<shft><ctl>C",
@@ -146,13 +272,52 @@ static GtkActionEntry entries[] = {
         "Properties of this label", G_CALLBACK (lbl_properties)},
     {"QuitProg", GTK_STOCK_QUIT, "_Quit", "<control>Q",
      "Quit program", G_CALLBACK(window_quit)},
-    {"HlpAbout", NULL, "About", NULL, NULL, G_CALLBACK (hlp_about)}
+    {"HlpAbout", NULL, "About", NULL, NULL, G_CALLBACK (hlp_about)},
+
+    /* "Options" submenus */
+
+    {"BinaryChoose", GTK_STOCK_EXECUTE, "Module to Disassemble", NULL,
+        "Select module to be disassbled",  G_CALLBACK(module_select_cb)},
+    {"CmdfileUse", GTK_STOCK_FILE, "Use command file", NULL,
+        "Select the command file (-c option) for os9disasm",
+        G_CALLBACK(cmdfile_use_cb)},
+    /* add output file (-o option) */
+    {"AsmOutMenu", NULL, "Asm Src Output"},
+    {"AsmFileName", GTK_STOCK_FILE, ".ASM file", NULL,
+        "Generate assembly source file \"-o\" option",
+        G_CALLBACK(asm_src_select_cb)},
+    /* add path to defs file */
+    {"AlternateDefs", NULL, "Alternate Defs Dir"},
+    {"AltDefsName", GTK_STOCK_FILE, "Alt Defs Path", NULL,
+        "Define path to alternate non-default DEFS dir",
+        G_CALLBACK(alt_defs_select_cb)},
+    /* add send Listing to file */
+    /* add page width/depth */
+    {"SetPgParms", NULL, "Set Page size", NULL,
+        "Set Page Width and Page Depth",
+        G_CALLBACK(setpgsize_cb)}
+
 };
 
 /* Toggle items */
 static GtkToggleActionEntry toggle_entries[] = {
     {"ShowTips", NULL, "Show Tooltips", NULL, "Show tooltips",
-        G_CALLBACK (tip_toggle), TRUE}
+        G_CALLBACK (tip_toggle), TRUE},
+    {"MnuUpCase", NULL, "Fold to Uppercase", NULL,
+        "Display all mnemonics in Upper-Case",
+        G_CALLBACK (upcase_toggle_cb), FALSE},
+    {"MnuRSDos", NULL, "RS-Dos Binary", NULL, "Program is an RS-Dos binary",
+        G_CALLBACK (rsdos_toggle_cb), FALSE},
+    {"MnuCPU6309", NULL, "CPU is 6309", NULL,
+        "Allow mnemonics for H6309 CPU", G_CALLBACK(cpu_toggle_cb), FALSE},
+    {"MnuGenSrc", NULL, "Generate .ASM srcfile", NULL,
+        "Generate an assembly source file \"-o\" option",
+         G_CALLBACK(asm_src_write_cb)},
+    {"MnuAltDefs", NULL, "DEFS Path", NULL,
+        NULL, G_CALLBACK(alt_defs_cb)},
+    {"MnuShowZeros", NULL, "Show Zero Offset", NULL,
+        "Show zero offset from a register\nUseful for matching C code",
+        G_CALLBACK(show_zero_offset_cb)}
 };
 
             /* Listing popup */
@@ -197,9 +362,28 @@ static const char *ui_description =
     "      <menuitem action='AModeListEdit'/>"
     "      <separator/>"
     "      <menuitem action='DasmPrg'/>"
+    "      <menuitem action='DasmToFile'/>"
     "    </menu>"
     "    <menu action='OptionMenu'>"
-    "      <menuitem action='DisOptions'/>"
+    "      <menu action='DisOptions'>"
+    "        <menuitem action ='BinaryChoose'/>"
+    "        <menuitem action = 'CmdfileUse'/>"
+    "        <menu action='AsmOutMenu'>"
+    "          <menuitem action='MnuGenSrc'/>"
+    "          <menuitem action='AsmFileName'/>"
+    "        </menu>"
+    "        <menu action='AlternateDefs'>"
+    "          <menuitem action='MnuAltDefs'/>"
+    "          <menuitem action='AltDefsName'/>"
+    "        </menu>"
+    "        <separator/>"
+    "        <menuitem action='MnuUpCase'/>"
+    "        <menuitem action='MnuShowZeros'/>"
+    "        <menuitem action='SetPgParms'/>"
+    "        <separator/>"
+    "        <menuitem action='MnuRSDos'/>"
+    "        <menuitem action='MnuCPU6309'/>"
+    "      </menu>"
     "      <separator/>"
     "      <menuitem action='OptsLoad'/>"
     "      <menuitem action='OptsSave'/>"
@@ -239,7 +423,6 @@ GtkWidget *
 get_menubar_menu (GtkWidget * main_window)
 {
     GtkWidget *mnubar;
-    GtkActionGroup *action_group;
     /*GtkActionGroup *list_action_grp;*/
     /*GtkUIManager *ui_manager;*/
     GtkAccelGroup *accel_group;
@@ -273,6 +456,15 @@ get_menubar_menu (GtkWidget * main_window)
         exit (EXIT_FAILURE);
     }
 
+    /* Set Options to correct values */
+
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION(gtk_action_group_get_action(action_group, "MnuUpCase")), (gboolean)upcase);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION(gtk_action_group_get_action(action_group, "MnuRSDos")), (gboolean)isrsdos);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION(gtk_action_group_get_action(action_group, "MnuCPU6309")), (gboolean)cputype);
+    gtk_action_set_sensitive (GTK_ACTION(gtk_action_group_get_action(action_group, "AsmFileName")), (gboolean)write_obj);
+    gtk_action_set_sensitive ( gtk_action_group_get_action ( action_group,
+                "AltDefsName"), alt_defs);
+
     /* add tooltips */
     ttip = gtk_tooltips_new();
     gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget( ui_manager,
@@ -290,9 +482,14 @@ get_menubar_menu (GtkWidget * main_window)
                          NULL);
 
     gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
+                         "/MainMenu/OptionMenu/DisOptions/CmdfileUse"),
+                         "Set command file for os9disasm to use\nDoes NOT load file into buffer",
+                         NULL);
+
+/*    gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
                          "/MainMenu/OptionMenu/DisOptions"),
                          "Set command-line options\n to pass to disassembler",
-                         NULL);
+                         NULL);*/
 
     gtk_tooltips_enable(ttip);
 

@@ -169,7 +169,7 @@ amode_add_from_string (gchar *ptr)
 static void
 amodes_from_file (GtkButton *button, glbls *fdat)
 {
-    selectfile_open (fdat, "Label Descriptor", TRUE);
+    selectfile_open (fdat, "Label Descriptor", TRUE, NULL);
 
     if (fdat->filename_to_return)
     {
@@ -610,7 +610,6 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
     if (gtk_tree_selection_get_selected(selection, &model, &iter))
     {
         GtkWidget *align,
-                  *vbox,
                   *frame,
                   *label;
 
