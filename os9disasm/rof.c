@@ -155,7 +155,7 @@ rofhdr (void)
 
     while (count--)
     {
-        char name[10];
+        char name[100];
         struct nlist *me;
         int adrs;
         int typ;
@@ -188,7 +188,7 @@ rofhdr (void)
 
     while (ext_count--)
     {
-        char _name[10];
+        char _name[100];
         int ncount;
 
         fstrncpy (_name, sizeof (_name), progpath);

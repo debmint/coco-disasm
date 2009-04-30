@@ -158,7 +158,7 @@ struct rof_hdr {
 /* Global definitions */
 
 struct rof_glbl {
-            char  name[10];
+            char  name[100];
             char  Type;
             int   Ofst;
 };
@@ -166,7 +166,7 @@ struct rof_glbl {
 /* External references */
 
 struct rof_extrn {
-            char  name[10];     /* External name */
+            char  name[100];     /* External name */
             char  Type;         /* Type Flag */
             int   Ofst;         /* Offset into code */
             int   Extrn;         /* Flag that it's an external ref */

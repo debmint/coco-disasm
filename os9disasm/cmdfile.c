@@ -137,6 +137,7 @@ do_cmd_file ()
  * No delimiter is used, all text to the end of the line is included        *
  * ************************************************************************ */
 
+int
 apndcmnt (char *lpos)
 {
     char lblclass;
@@ -219,12 +220,12 @@ apndcmnt (char *lpos)
 
     /* Get rid of newlines */
 
-    if (cline = strchr (lpos, '\n'))
+    if ((cline = strchr (lpos, '\n')))
     {
         *cline = '\0';
     }
 
-    if (cline = strchr (lpos, '\r'))
+    if ((cline = strchr (lpos, '\r')))
     {
         *cline = '\0';
     }
