@@ -82,24 +82,36 @@ pass_eq (char *pr)
 }
 
 /* ************************************************************ *
- * build_path()  - locate a filename and build a full pathlist  *
+ * build_path() - Try to build a valid pathname for a filename  *
+ *                provided.  Several attempts are made.  First, *
+ *                if the raw name is accessible, this name is   *
+ *                returned.  If not, successive attempts to     *
+ *                substute for "~/", trying for the same dir    *
+ *                in which the cmdfile is located, and finally  *
+ *                DefDir - where the defs are located.  On all  *
+ *                these, a string is dup-ed, and this string is *
+ *                returned.                                     *
  * Passed:    the filename                                      *
- * Returned:  return ptr to full pathname                       *
- * Note:  fullname is only a temporary buffer,                  *
- *        Unless fname is unaltered, the returned pointer is    *
- *        one to a newly created string                         *
+ * Returned:  return ptr to full pathname string. 0 on failure. *
  * ************************************************************ */
 
 static char *
-build_path (char *fname, char *fullname, int nsize)
+build_path (char *fname)
 {
     char *abslut[] = { "/", "./", "../", "" };
     char **pt;
     char *realname = NULL;
 
-    pt = &abslut[0];
+    /* If it's accessible in its raw state, then return that name */
 
+    if ( ! (access (fname, R_OK)))    /* Try in current directory */
+    {
+        return strdup(fname);
+    }
     /* is it an absolute pathame ? */
+    /* Hmmm... is this needed?  Didn't the above not take care of this? */
+
+    pt = &abslut[0];
 
     while (**pt)
     {
@@ -108,50 +120,94 @@ build_path (char *fname, char *fullname, int nsize)
             realname = fname;
             break;
         }
+
         ++pt;
     }
 
-    /* is it "~/xxx" ? */
+    /* Try for "~/" */
 
     if ( ! strncmp (fname, "~/", 2))
     {
-        strncpy (fullname, myhome, nsize);
-        nsize -= strlen (fullname);
-        strncat (fullname, &fname[1], nsize);
-        realname = fullname;
+        realname = malloc (strlen(myhome) + strlen(fname) + 1);
+        strcpy (realname, myhome);
+        strcat (realname, &fname[1]);
+        return realname;
     }
 
-    if ( ! realname)
+    /* Now try for the same directory as the cmdfile, if it's been set */
+    if (cmdfilename)
     {
-        /* If we get here, fname is simply a basename.. */
-        if ( ! (access (fname, R_OK)))    /* Try in current directory */
+        if ( ! (realname = malloc (strlen(cmdfilename) + strlen(fname) + 2)))
         {
-            realname = fname;
+            fprintf (stderr, "Cannot allocate memory for %s\n", fname);
+            return 0;
+        }
+
+        strcpy (realname, cmdfilename);
+        realname = dirname (realname);
+        strcat (realname, "/");
+        strcat (realname, fname);
+
+        if ( ! access (realname, R_OK))
+        {
+            return realname;
         }
         else
-        {              /* OK.. one last shot..  assume it's in Defdir */
-            if ( ! strncmp (DefDir, "~/", 2))
-            {
-                int tmpsize = nsize;
-
-                strncpy (fullname, myhome, nsize);
-                tmpsize -= strlen (fullname);
-
-                strncat (fullname, &DefDir[1], tmpsize);
-                nsize -= strlen (fullname);
-            }
-            else
-            {
-                strncpy (fullname, DefDir, nsize);
-                nsize -= strlen (fullname);
-            }
-
-            strncat (fullname, fname, nsize);
-            realname = fullname;
+        {
+            free (realname);
         }
     }
 
-    return realname;
+    if ( DefDir)
+    {
+        int lngth = 0;
+        int istilde = 0;
+
+        if ( ! strncmp (DefDir, "~/", 2))
+        {
+            lngth = strlen (myhome);
+            istilde = 1;
+        }
+
+        lngth += (strlen (DefDir) + strlen (fname) + 2);
+
+        if ( ! (realname = malloc (lngth)))
+        {
+            fprintf (stderr, "Cannot allocate memory for %s\n", fname);
+            return 0;
+        }
+
+        if (istilde)
+        {
+            strcpy (realname, myhome);
+            strcat (realname, &(DefDir[1]));
+        }
+        else
+        {
+            strcpy (realname, DefDir);
+        }
+
+        if (realname[strlen(realname) - 1] != '/')
+        {
+            strcat (realname, "/");
+        }
+
+        strcat (realname, fname);
+
+        fprintf (stderr, "\nDefDir access: trying '%s\n",realname);
+        if ( ! access (realname, R_OK))
+        {
+            return realname;
+        }
+        else
+        {
+            free (realname);
+        }
+    }
+
+    fprintf (stderr, "Could not find a path to \"%s\" ... skipping\n", fname);
+
+    return 0;
 }
 
 /* **************************************************** *
@@ -203,64 +259,11 @@ do_opt (char *c)
     case 's':                  /* Label file name       */
         if (LblFilz < MAX_LBFIL)
         {
-            if ( ! doingcmds)
+            pt = pass_eq (pt);
+
+            if ((LblFNam[LblFilz] = build_path (pt)))
             {
-                LblFNam[LblFilz++] = pass_eq (pt);
-            }
-            else
-            {
-                pt = pass_eq (pt);
-
-                if ( ! access(pt, R_OK))
-                {
-                    if ( ! (LblFNam[LblFilz] = strdup (pt)))
-                    {
-                        fprintf (stderr, "Cannot strdup() Label filename %s\n",
-                                          pt);
-                    }
-                }
-                else if ( pt[0] != '/')
-                {
-                    char *cmdpth, *cmdcpy, *lblpart, *lblcpy;
-                    char *lbl;
-
-                    cmdcpy = strdup(cmdfilename);
-                    lblcpy = strdup(pt);
-                    cmdpth = dirname(cmdcpy);
-                    lblpart = basename(lblcpy);
-                    lbl = malloc(strlen(cmdpth) + strlen(lblpart) + 3);
-
-                    if ( ! lbl)
-                    {
-                        fprintf(stderr,
-                                "Cannot allocate memory for label file %s\n",
-                                pt);
-                    }
-
-                    strcpy (lbl, cmdpth);
-                    strcat (lbl, "/");
-                    strcat (lbl, lblpart);
-
-                    if ( access (lbl, R_OK))
-                    {
-                        fprintf(stderr,
-                                "Cannot access Label file %s - skipping\n",
-                                lbl);
-                    }
-                    else
-                    {
-                        LblFNam[LblFilz++] = lbl;
-                    }
-
-                    free(lblpart);
-                    free(cmdpth);
-                }
-                else
-                {
-                    fprintf(stderr,
-                            "Cannot access Label file %s - skipping\n",
-                            pt);
-                }
+                ++LblFilz;
             }
         }
         else
@@ -277,9 +280,7 @@ do_opt (char *c)
         }
         else
         {
-            char tmpstr[500];
-
-            cmdfilename = build_path (pass_eq (pt), tmpstr, sizeof (tmpstr));
+            cmdfilename = build_path (pass_eq (pt));
         }
 
         break;
@@ -531,7 +532,7 @@ GetLabels ()                    /* Read the labelfiles */
 
     if ((OSType == OS_9) || (OSType == OS_Moto))
     {
-        tmpnam = build_path ("sysnames", filename, sizeof (filename));
+        tmpnam = build_path ("sysnames");
 
         if ( ! (inpath = fopen (tmpnam, "rb")))
             fprintf (stderr, "Error in opening Sysnames file..%s\n",
@@ -560,7 +561,7 @@ GetLabels ()                    /* Read the labelfiles */
         break;
     }
 
-    tmpnam = build_path (stdlbl, filename, sizeof (filename));
+    tmpnam = build_path (stdlbl);
 
     if ( ! (inpath = fopen (tmpnam, "rb")))
         fprintf (stderr, "Error in opening Sysnames file..%s\n", filename);
@@ -570,12 +571,11 @@ GetLabels ()                    /* Read the labelfiles */
         fclose (inpath);
     }
 
-
     /* Now read in label files specified on the command line */
 
     for (x = 0; x < LblFilz; x++)
     {
-        tmpnam = build_path (LblFNam[x], filename, sizeof (filename));
+        tmpnam = build_path (LblFNam[x]);
 
         if ((inpath = fopen (tmpnam, "rb")))
         {
