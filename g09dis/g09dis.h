@@ -81,6 +81,70 @@ typedef struct
 
 GLOBAL glbls O9Dis;
 
+typedef struct ofile_widgets
+{
+    GtkWidget *o_entry;
+    GtkWidget *browse_button;
+    gboolean is_dir;
+    const gchar *dialog_ttl;
+    gchar *fname;
+    gboolean is_read;       /* For file_chooser - if TRUE, search for read, */
+                            /* else search for saving                       */
+} FILE_WIDGET;
+
+GLOBAL FILE_WIDGET prog_prof
+#ifdef MAIN
+= {NULL, NULL, FALSE, "File to Disassemble", NULL, TRUE}
+#endif
+;
+
+GLOBAL FILE_WIDGET cmd_prof
+#ifdef MAIN
+= {NULL, NULL, FALSE, "Command File", NULL, TRUE}
+#endif
+;
+GLOBAL FILE_WIDGET asmout_prof
+#ifdef MAIN
+= {NULL, NULL, FALSE, "Asm Src File", "output.a", FALSE}
+#endif
+;
+GLOBAL FILE_WIDGET listing_prof
+#ifdef MAIN
+= {NULL, NULL, FALSE, "Listing Output", "output.List", FALSE}
+#endif
+;
+GLOBAL FILE_WIDGET defs_prof
+#ifdef MAIN
+= {NULL, NULL, FALSE, "Defs Path", "/dd/defs", TRUE}
+#endif
+;
+
+GLOBAL FILE_WIDGET *prog_wdg
+#ifdef MAIN
+= &prog_prof
+#endif
+;
+GLOBAL FILE_WIDGET *cmd_wdg
+#ifdef MAIN
+= &cmd_prof
+#endif
+;
+GLOBAL FILE_WIDGET *asmout_wdg
+#ifdef MAIN
+= &asmout_prof
+#endif
+;
+GLOBAL FILE_WIDGET *listing_wdg
+#ifdef MAIN
+= &listing_prof
+#endif
+;
+GLOBAL FILE_WIDGET *defs_wdg
+#ifdef MAIN
+= &defs_prof
+#endif
+;
+
 /* structure to pass to "response" callbacks for dialogs *
  * in dasmedit.c and amode.c                             */
 
@@ -96,6 +160,7 @@ struct adr_widgets {
 GLOBAL gint pgwdth;
 GLOBAL gint pgdpth;
 GLOBAL gint cputype;
+GLOBAL gint showzeros;
 GLOBAL gboolean isrsdos;
 GLOBAL gint upcase;
 GLOBAL gchar *bin_file;
@@ -112,6 +177,8 @@ GLOBAL GtkWidget *window;       /* The main, base, window */
 /* The following two are needed for define in menu.h, use in filestuff.c */
 GLOBAL GtkUIManager *ui_manager;
 /*GLOBAL GtkTreeSelection *list_selection;*/
+GLOBAL gchar *LastPath;      /* Last path - used for setting path in */
+                                    /*  file chooser dialog                 */
 
 /* This needs to be down here so that some defs above can be used */
 

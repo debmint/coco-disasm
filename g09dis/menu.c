@@ -53,6 +53,22 @@ hlp_about (GtkAction * action, glbls * hbuf)
     gtk_widget_destroy (dialog);
     g_string_free (msg, TRUE);
 }*/
+
+void
+menu_do_dis_sensitize(void)
+{
+    gint binstat;
+
+    binstat = (prog_wdg->fname) && (strlen(prog_wdg->fname) > 0);
+    
+    gtk_widget_set_sensitive(gtk_ui_manager_get_widget(ui_manager,
+                             "/MainMenu/ToolMenu/DasmPrg"),
+                             binstat);
+    gtk_widget_set_sensitive(gtk_ui_manager_get_widget(ui_manager,
+                             "/MainMenu/ToolMenu/DasmToFile"),
+                             binstat);
+    
+}
 static void
 listing_new_cb (GtkAction * action, glbls * hbuf)
 {
@@ -102,8 +118,11 @@ static GtkActionEntry entries[] = {
         "Set disassembler options/parameters", G_CALLBACK (set_dis_opts_cb)},
     {"AModeListEdit", NULL, "Modify Amode List", NULL,
         "Change Addressing Mode List", G_CALLBACK (amode_list_edit_cb)},
-    {"DasmPrg", GTK_STOCK_EXECUTE, "Disassemble...", NULL,
+    {"DasmPrg", GTK_STOCK_EXECUTE, "Disassemble to GUI", NULL,
         "Disassemble program file", G_CALLBACK (run_disassembler)},
+    {"DasmToFile", GTK_STOCK_EXECUTE, "Disassemble to File", NULL,
+        "Disassemble, sending normal listing to file",
+        G_CALLBACK(dasm_list_to_file_cb)},
     {"LstngNew", GTK_STOCK_NEW, "_Listing", "<shft><ctl>L",
         NULL, G_CALLBACK(listing_new_cb)},
     {"CmdNew", GTK_STOCK_NEW, "_Command File", "<shft><ctl>C",
@@ -197,6 +216,7 @@ static const char *ui_description =
     "      <menuitem action='AModeListEdit'/>"
     "      <separator/>"
     "      <menuitem action='DasmPrg'/>"
+    "      <menuitem action='DasmToFile'/>"
     "    </menu>"
     "    <menu action='OptionMenu'>"
     "      <menuitem action='DisOptions'/>"
@@ -300,6 +320,7 @@ get_menubar_menu (GtkWidget * main_window)
      * Insensitize select menu items *
      * ***************************** */
 
+    menu_do_dis_sensitize();
 /*    gtk_widget_set_sensitive(gtk_ui_manager_get_widget(ui_manager,
                                  "/MainMenu/FileMenu/SaveAsMenu/CmdSaveAs"),
                              FALSE);

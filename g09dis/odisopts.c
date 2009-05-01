@@ -14,14 +14,6 @@
 #include <string.h>
 #include "g09dis.h"
 
-struct ofile_widgets
-{
-    GtkWidget *o_entry;
-    GtkWidget *browse_button;
-    gboolean is_dir;
-};
-
-
 /* ************************************************ *
  * newspin1() - create a new spin button            *
  *    Passed: default value for button              *
@@ -43,18 +35,36 @@ newspin1 (int defval)
  * browse_files() - get a filename using selectfile_open () *
  *                                                          *
  *   Passed: (1) - The button pressed                       *
- *           (2) - The associated entry                     *
+ *           (2) - The associated FILE_WIDGET *             *
  *   Returns: nothing                                       *
  * ******************************************************** */
 
 static void
-browse_files (GtkButton * button, GtkWidget * entry)
+browse_files (GtkButton * button, FILE_WIDGET *wp)
 {
-    selectfile_open (&O9Dis, "Prog Listing", TRUE);
-
-    if (O9Dis.filename_to_return)
+    if (wp->is_read)
     {
-        gtk_entry_set_text (GTK_ENTRY (entry), O9Dis.filename_to_return);
+        selectfile_open ( &O9Dis, wp->dialog_ttl, TRUE,
+                          gtk_entry_get_text (GTK_ENTRY(wp->o_entry)));
+    }
+    else
+    {
+        selectfile_save ( &O9Dis,
+                          gtk_entry_get_text(GTK_ENTRY(wp->o_entry)),
+                          wp->dialog_ttl);
+    }
+
+
+    if ((O9Dis.filename_to_return && strlen (O9Dis.filename_to_return)))
+    {
+        gtk_entry_set_text (GTK_ENTRY(wp->o_entry), O9Dis.filename_to_return);
+        
+        if (LastPath)
+        {
+            g_free (LastPath);
+        }
+
+        LastPath = g_strdup(O9Dis.filename_to_return);
     }
 
     free_filename_to_return (&(O9Dis.filename_to_return));
@@ -66,45 +76,41 @@ browse_files (GtkButton * button, GtkWidget * entry)
  * ************************************************ */
 
 static void
-browse_dirs (GtkButton * button, GtkWidget * entry)
+browse_dirs (GtkButton * button, FILE_WIDGET *wp)
 {
-    selectfile_open (&O9Dis, "Prog Listing", FALSE);
+    selectfile_open (&O9Dis, wp->dialog_ttl, FALSE, NULL);
 
     if (O9Dis.filename_to_return)
     {
-        gtk_entry_set_text (GTK_ENTRY (entry), O9Dis.filename_to_return);
+        gtk_entry_set_text (GTK_ENTRY (wp->o_entry), O9Dis.filename_to_return);
     }
 
     free_filename_to_return (&(O9Dis.filename_to_return));
 }
 
 
-/* ************************************************************ *
- * build_entry_frame () - build a frame with a vbox inside it   *
- *                                                              *
- *    Passed:   (1) title for dialog parent box for this new    *
- *                  widget                                      *
- *              (2) address to store frame ptr                  *
- *    Returns:  ptr to the entry box                            *
- *                                                              *
- * ************************************************************ */
+/* **************************************************************** *
+ * build_entry_frame () - Build a frame with a vbox inside it       *
+ *                                                                  *
+ *    Passed:   (1) title for dialog parent box for this new widget *
+ *              (2) address to store frame ptr                      *
+ *    Returns:  ptr to the entry vbox                               *
+ *                                                                  *
+ * **************************************************************** */
 
 static GtkWidget *
-build_entry_frame (gchar * title, GtkWidget * main_box, GtkWidget ** m_frame)
+build_entry_frame (gchar *title, GtkWidget **m_frame)
 {
-    GtkWidget *entry_box;
-    GtkWidget *alignment1;
+    GtkWidget *entry_vbox;
 
     *m_frame = gtk_frame_new (title);
-    gtk_container_set_border_width (GTK_CONTAINER (*m_frame), 3);
-    /*alignment1 = gtk_alignment_new (0.5, 0.5, 1, 1);*/
-    entry_box = gtk_vbox_new (TRUE, 3);        /* VBox to hold entry widgets */
-    /*gtk_container_add (GTK_CONTAINER (*m_frame), alignment1);
-    gtk_alignment_set_padding (GTK_ALIGNMENT (alignment1), 0, 0, 5, 5);
-    gtk_container_add (GTK_CONTAINER (alignment1), entry_box);*/
-    gtk_container_add (GTK_CONTAINER (*m_frame), entry_box);
+    gtk_container_set_border_width (GTK_CONTAINER (*m_frame), 10);
 
-    return entry_box;
+    entry_vbox = gtk_vbox_new (TRUE, 3);    /* VBox to hold entry widgets */
+    gtk_container_set_border_width(GTK_CONTAINER(entry_vbox), 10);
+    gtk_container_add (GTK_CONTAINER (*m_frame), entry_vbox);
+
+    return entry_vbox;
 }
 
 /* ************************************************************ *
@@ -135,23 +141,26 @@ build_entry_entry (GtkWidget * entry_box, gchar * filnam)
     return entry;
 }
 
-/* ************************************************************ *
- * build_browse_button () - create a browse button and connect  *
- *                          a callback for "clicked"            *
- *     Passed: (1) - The container into which to pack it        *
- *             (2) - The entry widget to pass to callback       *
- *                   as data                                    *
- *             (3) - TRUE if browsing files, FALSE if dir       *
- *     Returns: The browse button widget                        *
- * ************************************************************ */
+/* ******************************************************************** *
+ * build_browse_button () - create a browse button inside an alignment  *
+ *                          to the right, placed inside the provided    *
+ *                          entry_box, and connect a callback for       *
+ *                          "clicked".                                  *
+ *     Passed: (1) - The container into which to pack new button        *
+ *             (2) - The entry widget to pass to callback as data.      *
+ *             (3) - TRUE if browsing files, FALSE if dir               *
+ *     Returns: The browse button widget                                *
+ * ******************************************************************** */
 
 static GtkWidget *
 build_browse_button (GtkWidget * entry_box,
-                     GtkWidget * entry,
+                     FILE_WIDGET *wp,
                      gboolean IsFile)
 {
     GtkWidget *browse_button;
     GtkWidget *alignment;
+
+    /* entry_box[alignment[browse_button]] */
 
     browse_button = gtk_button_new_with_label ("Browse");
     gtk_widget_set_size_request(browse_button, -1, -1);
@@ -162,42 +171,39 @@ build_browse_button (GtkWidget * entry_box,
     if (IsFile)
     {
         g_signal_connect (G_OBJECT (browse_button), "clicked",
-                          G_CALLBACK (browse_files), entry);
+                          G_CALLBACK (browse_files), wp);
     }
     else
     {
         g_signal_connect (G_OBJECT (browse_button), "clicked",
-                          G_CALLBACK (browse_dirs), entry);
+                          G_CALLBACK (browse_dirs), wp);
     }
 
     return browse_button;
 }
 
-/* ************************************************************ *
- * build_entry_box () - build a frame with an entry box and     *
- *                      a browse button inside                  *
- *      Passed:  (1) - Label for frame                          *
- *               (2) - Cntainer to hold fram                    *
- *               (3) - Filname to insert into entry (if != NULL)*
- *               (4) - Storage for frame widget                 *
- *                                                              *
- *      Returns: entry widget                                   *
- * ************************************************************ */
+/* **************************************************************** *
+ * build_entry_box () - build a frame with an entry box and a       *
+ *                      browse button inside                        *
+ *      Passed:  (1) - Label for frame                              *
+ *               (2) - Container into which new frame is stored     *
+ *               (3) - Filname to insert into entry (if != NULL)    *
+ *               (4) - Ptr to place to store the new frame          *
+ *                                                                  *
+ *      Returns: The GtkWidget for the entry box (for future ref)   *
+ * **************************************************************** */
 
 static GtkWidget *
-build_entry_box (gchar * title, GtkWidget * main_box,
-                 gchar * filnam, GtkWidget **m_frame)
+build_entry_box (FILE_WIDGET *wp, GtkWidget * main_box, GtkWidget **m_frame)
 {
     GtkWidget *entry_box;
     GtkWidget *entry;
 
-    entry_box = build_entry_frame (title, main_box, m_frame);
-    entry = build_entry_entry (entry_box, filnam);
-    build_browse_button (entry_box, entry, TRUE);
+    entry_box = build_entry_frame (wp->dialog_ttl, m_frame);
+    wp->o_entry = build_entry_entry (entry_box, wp->fname);
+    wp->browse_button = build_browse_button (entry_box, wp, TRUE);
 
-    gtk_widget_show_all (*m_frame);
-
-    return entry;
+    return wp->o_entry;
 }
 
 /* ************************************************************ *
@@ -230,27 +236,30 @@ on_ofile_tgle (GtkToggleButton * tbutton, struct ofile_widgets *srcf)
  * ********************************************************** */
 
 void
-set_dis_opts_cb (GtkAction * action, glbls * hbuf)
+set_dis_opts_cb (GtkAction *action, glbls *hbuf)
 {
     GtkWidget *dialog,
               *table,
               *bin_entry, *cmd_entry,
               *w_frame, *d_frame,
               *w_spin, *d_spin,
-              *CPU_toggle, *UpCase_toggle, *OS_toggle,
+              *CPU_toggle, *UpCase_toggle, *OS_toggle, *Zero_toggle,
               *ofile_toggle, *defs_toggle,
               *listing_box,
+              *notebk,
+              *entry_box, *m_frame,
               *list_radio_file, *list_radio_gtk, *list_radio_none,
-              *vbx;
-    GtkWidget *hsep1;
+              *aprbx,
+              *hbx, *vbx, *frame, *lbl;       /* Generic temporary widgets */
+    /*GtkWidget *hsep1;*/
     GSList * list_radio_group = NULL;
     gint result;
     GtkTooltips *optips;
+    int files_page, misc_page;  /* Save page numbers */
 
-    GtkWidget *entry_box, *m_frame;
-    struct ofile_widgets srcfile,
+    /*struct ofile_widgets srcfile,
                          lstfile,
-                         defspath;
+                         defspath;*/
 
     dialog =
         gtk_dialog_new_with_buttons ("Command Line options for os9disasm",
@@ -270,19 +279,30 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
      *                        *
      * ********************** */
 
+    /* **************************************** *
+     * Create the "Files" Page entries          *
+     * **************************************** */
+
+    notebk = gtk_notebook_new();
+    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+                       notebk, FALSE, FALSE, 2);
+
     /* Create a table into which to place two *
      * entry boxes side by side               *
      */
 
     table = gtk_table_new( 4, 2, FALSE );
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                       table, FALSE, FALSE, 2);
+
+    if ((files_page = gtk_notebook_append_page(GTK_NOTEBOOK(notebk),
+                                               table,
+                                               gtk_label_new("Files"))) == -1)
+    {
+    }
     
     /* Program file to be disassembled *
      */
     
-    bin_entry = build_entry_box ("Program to Disassemble",
-                                 table, bin_file, &m_frame);
+    bin_entry = build_entry_box (prog_wdg, table, &m_frame);
     gtk_table_attach( GTK_TABLE(table), m_frame,
                                 0, 1, 0, 1,
                                 0, 0,
@@ -290,8 +310,7 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
 
      /* Command file  */
     
-    cmd_entry = build_entry_box ("Command File",
-                                  table, cmd_cmd, &m_frame);
+    cmd_entry = build_entry_box (cmd_wdg, table, &m_frame);
     gtk_table_attach( GTK_TABLE(table), m_frame,
                       1, 2, 0, 1,
                       0, 0,
@@ -299,8 +318,7 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
 
      /*  output file ( -o option ) */
 
-    entry_box = build_entry_frame ("Assembly Source File",
-                                   table, &m_frame);
+    entry_box = build_entry_frame ("Assembly Source File", &m_frame);
     gtk_table_attach( GTK_TABLE(table), m_frame,
                       0, 1, 1, 2,
                       0, 0,
@@ -312,25 +330,24 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
            "Generate a source file that (should) assemble into a valid binary",
            NULL);
     gtk_box_pack_start (GTK_BOX (entry_box), ofile_toggle, FALSE, FALSE, 2);
-    srcfile.o_entry = build_entry_entry (entry_box, obj_file);
-    srcfile.browse_button = build_browse_button (entry_box,
-                                                 srcfile.o_entry,
+    asmout_wdg->o_entry = build_entry_entry (entry_box, asmout_wdg->fname);
+    asmout_wdg->browse_button = build_browse_button (entry_box,
+                                                 asmout_wdg,
                                                  TRUE);
 
     g_signal_connect (G_OBJECT (ofile_toggle), "toggled",
-                      G_CALLBACK (on_ofile_tgle), &srcfile);
+                      G_CALLBACK (on_ofile_tgle), asmout_wdg);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ofile_toggle),
                                   write_obj);
     
-    on_ofile_tgle (GTK_TOGGLE_BUTTON (ofile_toggle), &srcfile);
+    on_ofile_tgle (GTK_TOGGLE_BUTTON (ofile_toggle), asmout_wdg);
     gtk_widget_show_all (m_frame);
 
     /* 
      * path to defs files
      */
 
-    entry_box = build_entry_frame ("\"Defs\" files",
-                                   table, &m_frame);
+    entry_box = build_entry_frame ("\"Defs\" files", &m_frame);
     gtk_table_attach( GTK_TABLE(table), m_frame,
                       0, 1, 2, 3,
                       0, 0,
@@ -339,50 +356,50 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
     defs_toggle = gtk_check_button_new_with_label (
                                     "Specify (alternate) path");
     gtk_box_pack_start (GTK_BOX (entry_box), defs_toggle, FALSE, FALSE, 2);
-    defspath.o_entry = build_entry_entry (entry_box, alt_defs_path);
-    defspath.browse_button = build_browse_button (entry_box,
-                                                  defspath.o_entry,
+    defs_wdg->o_entry = build_entry_entry (entry_box, defs_wdg->fname);
+    defs_wdg->browse_button = build_browse_button (entry_box,
+                                                  defs_wdg,
                                                   FALSE);
     gtk_tooltips_set_tip (optips, defs_toggle,
            "Secify the path to where your standard label files are stored.",
            NULL);
 
     g_signal_connect (G_OBJECT (defs_toggle), "toggled",
-                      G_CALLBACK (on_ofile_tgle), &defspath);
+                      G_CALLBACK (on_ofile_tgle), defs_wdg);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (defs_toggle),
                                   alt_defs);
     
-    on_ofile_tgle (GTK_TOGGLE_BUTTON (defs_toggle), &defspath);
+    on_ofile_tgle (GTK_TOGGLE_BUTTON (defs_toggle), defs_wdg);
     gtk_widget_show_all (m_frame);
     
     /* send Listing to file ( > filename ) */
 
-    entry_box = build_entry_frame("Formatted File Listing ",
-                                  table,
-                                  &m_frame);
+    entry_box = build_entry_frame("Formatted File Listing ", &m_frame);
     gtk_table_attach( GTK_TABLE(table), m_frame,
                       1, 2, 1, 3,
                       0, GTK_FILL,
                       5, 2);
     
+    gtk_widget_show_all(m_frame);
     vbx = gtk_vbox_new (FALSE, 2);
+    
     gtk_widget_set_size_request(vbx,300,-1);
     list_radio_file = gtk_radio_button_new_with_label (NULL,
                                                        "Output to file/stdout");
     list_radio_group = gtk_radio_button_get_group (
                          GTK_RADIO_BUTTON(list_radio_file));
     g_signal_connect (G_OBJECT (list_radio_file), "toggled",
-                      G_CALLBACK (on_ofile_tgle), &lstfile);
+                      G_CALLBACK (on_ofile_tgle), listing_wdg);
 
     /* set tooltip for list_radio_file label */
     
     gtk_tooltips_set_tip (optips, list_radio_file,
-                          "Write output to file\nor stdout if filename is blank",
+                          "Write the formatted listing to file\nor stdout if filename is blank.\nThis is the regular, space-separated listing",
                           NULL);
     listing_box = gtk_vbox_new (FALSE, 2);
-    lstfile.o_entry = build_entry_entry (listing_box, listing_output);
-    lstfile.browse_button = build_browse_button (listing_box,
-                                                 lstfile.o_entry,
+    listing_wdg->o_entry = build_entry_entry (listing_box, listing_wdg->fname);
+    listing_wdg->browse_button = build_browse_button (listing_box,
+                                                 listing_wdg,
                                                  TRUE);
     
     list_radio_none = gtk_radio_button_new_with_label_from_widget (
@@ -420,93 +437,128 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
     
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_file, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX(vbx), listing_box, FALSE, FALSE, 2);
-    hsep1 = gtk_hseparator_new ();
-    gtk_box_pack_start (GTK_BOX (vbx), hsep1,
+    gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
                         FALSE, FALSE, 4);
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_gtk, FALSE, FALSE, 2);
-    hsep1 = gtk_hseparator_new ();
-    gtk_box_pack_start (GTK_BOX (vbx), hsep1,
+    gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
                         FALSE, FALSE, 4);
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_none, FALSE, FALSE, 2);
     gtk_container_add(GTK_CONTAINER(entry_box), vbx);
     gtk_widget_show_all (m_frame);
     
-    gtk_widget_show_all(table);
+    /*gtk_widget_show_all(table);*/
 
-    /* Begin page setup */
-    
+    /* **************************************************** *
+     * Now create the "Appearance" page  - First with a     *
+     * vbox to contain all the elements                     *
+     * **************************************************** */
+
+    aprbx = gtk_vbox_new(0, 5);     /* Main vbox for appearance page */
+    gtk_container_set_border_width(GTK_CONTAINER(aprbx), 10);
+    vbx = gtk_vbox_new(0,5);       /* Vbox for Page Setup widgets   */
+
+    /* Begin page setup
+     * First, create an hbox to set the page width/depth side by side
+     */
+
+    hbx = gtk_hbox_new(0, 2);
+
+    /* Page Width */
+
     w_frame = gtk_frame_new ("Page Width");
+    gtk_container_set_border_width (GTK_CONTAINER (w_frame), 5);
     w_spin = newspin1 (pgwdth);
 
-    gtk_table_attach( GTK_TABLE(table), w_frame,
-                      0, 1, 3, 4,
-                      0, 0,
-                      10, 5);
-    
-    gtk_container_set_border_width (GTK_CONTAINER (w_frame), 5);
     gtk_container_add (GTK_CONTAINER (w_frame), w_spin);
-    gtk_widget_show_all (w_frame);
+    gtk_box_pack_start(GTK_BOX(hbx), w_frame, FALSE, FALSE, 5);
+
+    /* Page Depth */
 
     d_frame = gtk_frame_new ("Page Depth");
-    d_spin = newspin1 (pgdpth);
-    gtk_table_attach( GTK_TABLE(table), d_frame,
-                      1, 2, 3, 4,
-                      0, 0,
-                      5, 2);
-    
     gtk_container_set_border_width (GTK_CONTAINER (d_frame), 5);
+    d_spin = newspin1 (pgdpth);
+
     gtk_container_add (GTK_CONTAINER (d_frame), d_spin);
-    gtk_widget_show_all (d_frame);
-    
+    gtk_box_pack_start(GTK_BOX(hbx), d_frame, FALSE, FALSE, 5);
+
+    gtk_box_pack_start(GTK_BOX(vbx), hbx, FALSE, FALSE, 5);
+
     /* ***** end page setup ***** */
-
-    /* Now do toggle buttons */
-    
-    hsep1 = gtk_hseparator_new ();  /* between page setup and toggle btns */
-    
-    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hsep1,
-                        FALSE, FALSE, 4);
-    gtk_widget_show (hsep1);
-
-    /* do CPU type */
-    
-    CPU_toggle = gtk_check_button_new_with_label ("CPU = 6309");
-    gtk_tooltips_set_tip (optips, CPU_toggle,
-          "Disassemble 6309 instructions.\nIn normal mode, 6309-only instructions are not accepted\nand rendered as data",
-                          NULL);
-    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), CPU_toggle,
-                        FALSE, FALSE, 2);
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (CPU_toggle),
-                                  (gboolean) cputype);
-    gtk_widget_show (CPU_toggle);
 
     /* Fold to uppercase */
     
     UpCase_toggle = gtk_check_button_new_with_label ("Fold to Upper Case");
     gtk_tooltips_set_tip (optips, UpCase_toggle,
-                          "Labels, mnemonics, in source and listing are output in upper-case",
-                          NULL);
-    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), UpCase_toggle,
-                        FALSE, FALSE, 2);
+          "Labels, mnemonics, in source and listing are output in upper-case",            NULL);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (UpCase_toggle),
                                   (gboolean) upcase);
-    gtk_widget_show (UpCase_toggle);
+    gtk_box_pack_start (GTK_BOX(vbx), UpCase_toggle, FALSE, FALSE, 2);
+
+    /* Show zero offsets */
+
+    Zero_toggle = gtk_check_button_new_with_label ("Show Zero Offsets");
+    gtk_tooltips_set_tip (optips, Zero_toggle,
+            "Show \"0,R\" in operand rather than \",R\"", NULL);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (Zero_toggle),
+                                  (gboolean)showzeros);
+    gtk_box_pack_start (GTK_BOX(vbx), Zero_toggle, FALSE, FALSE, 2);
+
+    /*gtk_box_pack_start(GTK_BOX(vbx), gtk_hseparator_new(), FALSE, FALSE, 5);*/
+    
+    /* Frame to hold Appearance spinbuttons
+     * Add Appearance vbx to frame, then frame to main aprbx */
+
+    frame = gtk_frame_new(0);
+    lbl = gtk_label_new(0);
+    gtk_label_set_markup(GTK_LABEL(lbl), "<span face=\"Roman\"foreground=\"blue\" size=\"large\" weight=\"bold\">Appearance</span>");
+    gtk_frame_set_label_widget(GTK_FRAME(frame), lbl);
+    
+    gtk_container_add(GTK_CONTAINER(frame), vbx);
+    gtk_box_pack_start(GTK_BOX(aprbx), frame, FALSE, FALSE, 5);
+
+    /* ******************************** *
+     * Types options                    *
+     * ******************************** */
+
+    vbx = gtk_vbox_new(0,5);       /* Vbox for Types widgets   */
+
+    /* do CPU type */
+    CPU_toggle = gtk_check_button_new_with_label ("CPU = 6309");
+    gtk_tooltips_set_tip (optips, CPU_toggle,
+          "Disassemble 6309 instructions.\nIn normal mode, 6309-only instructions are not accepted\nand rendered as data",
+                          NULL);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (CPU_toggle),
+                                  (gboolean) cputype);
+    gtk_box_pack_start (GTK_BOX(vbx), CPU_toggle, FALSE, FALSE, 2);
 
     /* Disassemble RS-DOS code */
     
     OS_toggle = gtk_check_button_new_with_label ("RS-DOS binary");
     gtk_tooltips_set_tip (optips, OS_toggle,
 		          "The file is an RS-DOS binary instead of OS9", NULL);
-    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), OS_toggle,
-                        FALSE, FALSE, 2);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (OS_toggle),
                                   (gboolean) isrsdos);
-    gtk_widget_show (OS_toggle);
+    gtk_box_pack_start (GTK_BOX(vbx), OS_toggle, FALSE, FALSE, 2);
     
+    frame = gtk_frame_new(0);
+    lbl = gtk_label_new(0);
+    gtk_label_set_markup(GTK_LABEL(lbl), "<span face=\"Roman\"foreground=\"blue\" size=\"large\" weight=\"bold\">Types</span>");
+    gtk_frame_set_label_widget(GTK_FRAME(frame), lbl);
+    
+    gtk_container_add(GTK_CONTAINER(frame), vbx);
+    gtk_box_pack_start(GTK_BOX(aprbx), frame, FALSE, FALSE, 5);
+
     /* all widgets are now set up, now run dialog
      * after return, set all options according to states
      */
     
+    if ((misc_page = gtk_notebook_append_page(GTK_NOTEBOOK(notebk),
+                                    aprbx,
+                                    gtk_label_new("Appearance"))) == -1)
+    {
+    }
+
+    gtk_widget_show_all(dialog);
     switch (result = gtk_dialog_run (GTK_DIALOG (dialog)))
     {
     case GTK_RESPONSE_OK:
@@ -514,30 +566,32 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
         pgdpth = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (d_spin));
         pgwdth = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (w_spin));
 
-        if (bin_file != NULL)
+        if (prog_wdg->fname != NULL)
         {
-            g_free (bin_file);
+            g_free (prog_wdg->fname);
         }
         
-        bin_file = g_strdup (gtk_entry_get_text (GTK_ENTRY (bin_entry)));
+        prog_wdg->fname = g_strdup (gtk_entry_get_text (GTK_ENTRY (bin_entry)));
 
-        if (!strlen(bin_file))
+        if ((prog_wdg->fname) && !(strlen(prog_wdg->fname)))
         {
-            g_free(bin_file);
-            bin_file = NULL;
+            g_free(prog_wdg->fname);
+            prog_wdg->fname = NULL;
         }
 
-        if (cmd_cmd != NULL)
+        menu_do_dis_sensitize ();
+
+        if (cmd_wdg->fname != NULL)
         {
-            g_free (cmd_cmd);
+            g_free (cmd_wdg->fname);
         }
 
-        cmd_cmd = g_strdup (gtk_entry_get_text (GTK_ENTRY (cmd_entry)));
+        cmd_wdg->fname = g_strdup (gtk_entry_get_text (GTK_ENTRY (cmd_entry)));
 
-        if (!strlen(cmd_cmd))
+        if (!strlen(cmd_wdg->fname))
         {
-            g_free(cmd_cmd);
-            cmd_cmd = NULL;
+            g_free(cmd_wdg->fname);
+            cmd_wdg->fname = NULL;
         }
 
         cputype = (gint)
@@ -546,27 +600,29 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
             gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (UpCase_toggle));
         isrsdos = (gboolean)
             gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (OS_toggle));
+        showzeros = (gboolean)
+            gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (Zero_toggle));
 
         if ((write_obj =
              gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ofile_toggle))))
         {
-            if (obj_file != NULL)
+            if (asmout_wdg->fname != NULL)
             {
-                g_free (obj_file);
+                g_free (asmout_wdg->fname);
             }
-            obj_file =
-                g_strdup (gtk_entry_get_text (GTK_ENTRY (srcfile.o_entry)));
+            asmout_wdg->fname =
+                g_strdup (gtk_entry_get_text (GTK_ENTRY (asmout_wdg->o_entry)));
         }
 
         if ((alt_defs =
              gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (defs_toggle))))
         {
-            if (alt_defs_path != NULL)
+            if (defs_wdg->fname != NULL)
             {
-                g_free (alt_defs_path);
+                g_free (defs_wdg->fname);
             }
-            alt_defs_path =
-                g_strdup (gtk_entry_get_text (GTK_ENTRY (defspath.o_entry)));
+            defs_wdg->fname =
+                g_strdup (gtk_entry_get_text (GTK_ENTRY (defs_wdg->o_entry)));
         }
 
         /* Handle listing output */
@@ -574,12 +630,13 @@ set_dis_opts_cb (GtkAction * action, glbls * hbuf)
         if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(list_radio_file)))
         {
             write_list = LIST_FILE;
-            if(listing_output != NULL)
+
+            if(listing_wdg->fname != NULL)
             {
-                g_free(listing_output);
+                g_free(listing_wdg->fname);
             }
-            listing_output =
-                g_strdup (gtk_entry_get_text (GTK_ENTRY (lstfile.o_entry)));
+            listing_wdg->fname =
+                g_strdup (gtk_entry_get_text (GTK_ENTRY(listing_wdg->o_entry)));
         }
         else {
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(list_radio_gtk))) 

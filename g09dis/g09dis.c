@@ -211,6 +211,7 @@ new_lbl_win (GtkWidget **view)
 static void
 odis_init (void)
 {
+    LastPath = NULL;
     pgwdth = 80;
     pgdpth = 66;
 }
