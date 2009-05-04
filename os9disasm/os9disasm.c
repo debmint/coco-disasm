@@ -194,7 +194,6 @@ build_path (char *fname)
 
         strcat (realname, fname);
 
-        fprintf (stderr, "\nDefDir access: trying '%s\n",realname);
         if ( ! access (realname, R_OK))
         {
             return realname;
