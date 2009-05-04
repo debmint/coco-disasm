@@ -65,7 +65,10 @@
                 </entry>
                 <entry>Use &lt;label-file&gt; for label assignments.  More than
                   one label file can be specified, and these will be read one
-                  after the other, in order that they are entered.
+                  after the other, in order that they are entered.  Label files
+                  are explained in <xref linkend="labelfile"/>.  &odis; tries very
+                  hard to resolve the path to the label file.  Please see
+                  <xref linkend="pathresolution"/> to see how it works.
                 </entry>
               </row>
               <row>
@@ -76,7 +79,7 @@
                 </entry>
               </row>
               <row>
-                <entry><command>d[=]&lt;path-to-defsdir&gt;</command></entry>
+                <entry id="defspath"><command>d[=]&lt;path-to-defsdir&gt;</command></entry>
                 <entry>Define path to defs.  This is the directory under which
                   the default label files are found.  The default is
                   <filename>$HOME/coco/defs</filename>
@@ -226,6 +229,42 @@
         </simpara>
       </note>
     </section>
+  </section>
+  <section id="pathresolution"><title>How &odis; resolves paths</title>
+    <para>&odis; tries to resolve paths to files in a logical manner.  It
+      attempts to come up with meaningful schemes to try to find the file.
+      Thus, it is not always necessary to specify a full pathname for a
+      file.  This is particularly helpful for label files and the standard
+      label files.
+    </para>
+    <para>The order in which &odis; tries to resolve paths is as follows:
+    </para>
+    <orderedlist>
+      <listitem>The first location to search is exactly as the filename is
+        written.  This will work if the pathname as written is relative
+        to the current <filename>$PWD</filename>, or if it is an absolute
+        path specification.
+      </listitem>
+      <listitem>Next, the user's <filename>$HOME</filename> directory it
+        tried.  (Actually, this might ought to be tried later, but it is
+        in this position for now.)
+      </listitem>
+      <listitem>If a command file has already been specified, the path to
+        this directory is attempted.
+      </listitem>
+      <listitem>Finally, the directory where &odis; believes the
+        <filename>DEFS</filename> files are stored (see
+        <link linkend="defspath">Defs Path Option</link>).  You probably won't
+        have any user-defined labels stored here, but this is especially
+        helpful for the standard label files.  You can simply write a filename
+        for the standard label file and don't have to include the full path to
+        this file.
+      </listitem>
+      <listitem>If all the above fails, a message reporting that the search
+        failed is printed to <filename>stderr</filename> and this file is
+        skipped.
+      </listitem>
+    </orderedlist>
   </section>
   <section id="cmdfile"><title>The command file</title>
      <para>If you simply issue the command <command>os9disasm

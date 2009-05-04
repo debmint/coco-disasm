@@ -72,10 +72,12 @@
        <listitem>
          <para>An option line is a line with a plus (+) sign in column one,
            followed by a list of option parameters. These options are the sames
-           as those you would use on the command line. Any will work here exept,
-           of course, the <command>c</command> option. The reason for this is
-           that this option would have to have been used to be reading this file
-           in the first place, and only one command file is permitted.
+           as those you would use on the command line.  These options are all
+           explained in <xref linkend ="cmdoptions"/>.  Any will work here
+           exept, of course, the <command>c</command> option. The reason for
+           this is that this option would have to have been used to be reading
+           this file in the first place, and only one command file is
+           permitted.
          </para>
          <para>It's quite useful to embed options into this file in order to
            eliminate the need to include them on the shell command line each
