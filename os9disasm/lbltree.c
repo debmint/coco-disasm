@@ -280,7 +280,7 @@ LblCalc (char *dst, int adr, int amod)
         }
         else
         {                       /* Special case for these */
-            if (index ("^$@&%", mainclass))
+            if (strchr ("^$@&%", mainclass))
             {
                 PrintLbl (tmpname, mainclass, raw, mylabel);
                 strcat (dst, tmpname);
@@ -326,7 +326,7 @@ LblCalc (char *dst, int adr, int amod)
             }
             else
             {                   /* Special case for these */
-                if (index ("^$@&", c))
+                if (strchr ("^$@&", c))
                 {
                     PrintLbl (tmpname, c, kls->dofst->of_maj, mylabel);
                     strcat (dst, tmpname);
@@ -489,12 +489,12 @@ addlbl (int loc, char C)
 
     /* (for now, at least), don't add labels for class '@', '$', or '&' */
 
-    if (index ("@$&", C))
+    if (strchr ("@$&", C))
     {
         return 0;
     }
 
-    if ( ! index (lblorder, C))
+    if ( ! strchr (lblorder, C))
     {                           /* Nonexistant label class      */
         fprintf (stderr,
                  "Illegal label Class '\\%x' for location %04x Pc = %04x\n",

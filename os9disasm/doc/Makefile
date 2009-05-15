@@ -26,7 +26,7 @@ clean:
 distdir:	all
 	$(mkdir_p) $(distdir) $(distdir)/html $(distdir)/html/images
 	cp README *.xml Makefile $(distdir)
-	cp html/*.html $(distdir)/html
+	cp html/*.html html/style.css $(distdir)/html
 	cp html/images/*.png $(distdir)/html/images
 	cp html/images/*.jpg $(distdir)/html/images
 

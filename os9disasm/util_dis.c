@@ -69,7 +69,7 @@ skipblank (char *p)
      * ( especially the extra character MS-Dos uses
      */
 
-    while ((*p) && (index (" \t\r\f\n", *p)))
+    while ((*p) && (strchr (" \t\r\f\n", *p)))
     {
         ++p;
     }
@@ -140,9 +140,9 @@ PBFcat (char *dst, char *fmt, unsigned char *src, int sz)
     }
 #endif
 
-/* MinGw doesn't seem to have functions index() or isblank */
+/* MinGw doesn't seem to have functions strchr() or isblank */
 
-#ifndef HAVE_INDEX
+/*#ifndef HAVE_INDEX
 char *
 index (char *s, int c)
 {
@@ -160,7 +160,7 @@ index (char *s, int c)
 
     return NULL;
 }
-#endif
+#endif*/
 
 #ifndef HAVE_ISBLANK
 int

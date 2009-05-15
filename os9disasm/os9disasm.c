@@ -19,7 +19,10 @@
 #define MAIN
 
 #include "odis.h"
-#include <libgen.h>
+
+#ifdef HAVE_LIBGEN_H
+#   include <libgen.h>
+#endif
 
 	/* ascii names for control characters */
 static const char *CtrlCod[] =
@@ -39,6 +42,25 @@ static int doingcmds = 0;              /* Flag: set if doing cmd file */
 static char *DefDir;
 static char *myhome;            /* pointer to HOME environment name */
 char rdbuf[500];
+
+#ifndef HAVE_DIRNAME
+char *
+dirname (char *path)
+{
+    char *slash = strrchr (path, '/');
+
+    if (slash)
+    {
+        *slash = '\0';
+    }
+    else
+    {
+        strcpy (path, ".");
+    }
+
+    return path;
+}
+#endif
 
 static void
 usage ()
@@ -128,8 +150,19 @@ build_path (char *fname)
 
     if ( ! strncmp (fname, "~/", 2))
     {
-        realname = malloc (strlen(myhome) + strlen(fname) + 1);
+        if ( ! (realname = malloc (strlen(myhome) + strlen(fname) + 1)))
+        {
+            fprintf (stderr, "Cannot allocate memory for %s\n", fname);
+            return 0;
+        }
+        
         strcpy (realname, myhome);
+
+        if ((realname[strlen(realname) - 1]) != '/')
+        {
+            strcat (realname, "/");
+        }
+
         strcat (realname, &fname[1]);
         return realname;
     }
@@ -137,14 +170,16 @@ build_path (char *fname)
     /* Now try for the same directory as the cmdfile, if it's been set */
     if (cmdfilename)
     {
-        if ( ! (realname = malloc (strlen(cmdfilename) + strlen(fname) + 2)))
+        char *cmdf = dirname(strdup (cmdfilename));
+
+        if ( ! (realname = malloc (strlen(cmdf) + strlen(fname) + 2)))
         {
             fprintf (stderr, "Cannot allocate memory for %s\n", fname);
             return 0;
         }
 
-        strcpy (realname, cmdfilename);
-        realname = dirname (realname);
+        strcpy (realname, cmdf);
+        free (cmdf);
         strcat (realname, "/");
         strcat (realname, fname);
 

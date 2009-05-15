@@ -758,7 +758,7 @@ DoMode (char *lpos)
     class = *(lpos++);
     class = toupper (class);
 
-    if ( ! index (lblorder, class))
+    if ( ! strchr (lblorder, class))
     {
         nerrexit ("Illegal class definition");
     }
@@ -938,7 +938,7 @@ setoffset (char *p, struct ofsetree *oft)
     p = skipblank (p);
     c = toupper (*(p++));
 
-    if ( ! index (lblorder, oft->oclas_maj = c) )
+    if ( ! strchr (lblorder, oft->oclas_maj = c) )
         nerrexit ("No offset specified !!");
 
     p = skipblank (p);
@@ -1002,7 +1002,7 @@ setupbounds (char *lpos)
             lpos = skipblank (++lpos);
             lclass = toupper (*lpos);
 
-            if ( ! index (lblorder, lclass))
+            if ( ! strchr (lblorder, lclass))
             {
                 nerrexit ("Illegal Label Class");
             }

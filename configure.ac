@@ -14,7 +14,7 @@ AC_PROG_CC
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([stdlib.h string.h unistd.h libgen.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -25,7 +25,7 @@ AC_STRUCT_TM
 AC_FUNC_MALLOC
 AC_FUNC_STAT
 
-AC_CHECK_FUNCS([memset strcasecmp strchr strdup stpcpy strncasecmp strstr index isblank])
+AC_CHECK_FUNCS([memset strcasecmp strchr strdup stpcpy strncasecmp strstr isblank dirname])
 
 # Establish pkg-config paths
 AC_ARG_WITH([g09dis],

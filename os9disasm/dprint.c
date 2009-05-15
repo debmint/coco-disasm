@@ -1006,7 +1006,7 @@ WrtEquates (int stdflg)
 
             /* Don't write vsect data for ROF's */
 
-/*            if ((IsROF) && stdflg && index ("BDGH", NowClass))
+/*            if ((IsROF) && stdflg && strchr ("BDGH", NowClass))
             {
                 continue;
             }*/
@@ -1114,7 +1114,7 @@ TellLabels (struct nlist *me, int flg, char class, int minval)
             strcpy (pb->lbnm, me->sname);
             strcpy (pb->mnem, "equ");
 
-            if (index ("!^", class))
+            if (strchr ("!^", class))
             {
                 sprintf (pb->operand, "$%02x", me->myaddr);
             }

@@ -11,7 +11,10 @@
 /*#include <unistd.h>*/
 #include <stdlib.h>
 #include <ctype.h>
-#include <libgen.h>
+
+#ifdef HAVE_LIBGEN_H
+#   include <libgen.h>
+#endif
 
 #ifdef WIN32
 #define DIRSTR "\\"
@@ -36,6 +39,31 @@
  * File selection stuff
  * *******************************************
  */
+
+#ifndef HAVE_DIRNAME
+/* ******************************************************** *
+ * dirname() - a replacement for the libgen dirname.        *
+ *      Note:  This function, like the original, mangles    *
+ *              the original string, so in most cases, a    *
+ *              dup of the original should be passed        *
+ * ******************************************************** */
+char *
+dirname (char *path)
+{
+    char *slash = strrchr (path, '/');
+
+    if (slash)
+    {
+        *slash = '\0';
+    }
+    else
+    {
+        strcpy (path, ".");
+    }
+
+    return path;
+}
+#endif
 
 /* *********************************************
  * ending_slash() append a "/" to the end of a *
