@@ -773,7 +773,7 @@ ROFDataPrint ()
                          */
 
                         ModData = thissz[isinit];
-                        ListData (dta, thissz[isinit]);
+                        ListData (dta, thissz[isinit], dattyp[isinit]);
                     }           /* end "if (dta)" */
                     else        /* else no labels.. check to see */
                     {           /* if any "hidden" variables */
@@ -845,7 +845,7 @@ OS9DataPrint ()
             PrintLine (realcmd, pbuf, 'D', 0, srch->myaddr);
         }
 
-        ListData (dta, ModData);
+        ListData (dta, ModData, 'D');
     }
     else
     {
@@ -857,16 +857,16 @@ OS9DataPrint ()
     InProg = 1;
 }
 
-/* ****************************************************** *
- * ListData() - recursive routine to print rmb's for Data *
- *              definitions                               *
- * Passed: pointer to current nlist element               *
- *         address of upper (or calling) ListData()       *
- *             routine                                    *
- * ****************************************************** */
+/* ******************************************************** *
+ * ListData() - recursive routine to print rmb's for Data   *
+ *              definitions                                 *
+ * Passed: pointer to current nlist element                 *
+ *         address of upper (or calling) ListData() routine *
+ *         Label Class                                      *
+ * ******************************************************** */
 
 void
-ListData (struct nlist *me, int upadr)
+ListData (struct nlist *me, int upadr, char class)
 {
     struct printbuf PB, *pbf = &PB;
     register struct nlist *srch;
@@ -878,7 +878,7 @@ ListData (struct nlist *me, int upadr)
 
     if (me->LNext)
     {
-        ListData (me->LNext, me->myaddr);
+        ListData (me->LNext, me->myaddr, class);
     }
 
     /* Don't print non-data elements here */
@@ -943,11 +943,11 @@ ListData (struct nlist *me, int upadr)
 
     CmdEnt = me->myaddr;
     PrevEnt = CmdEnt;
-    PrintLine (realcmd, pbf, 'D', me->myaddr, (me->myaddr + datasize));
+    PrintLine (realcmd, pbf, class, me->myaddr, (me->myaddr + datasize));
 
     if (me->RNext && (me->myaddr < ModData))
     {
-        ListData (me->RNext, upadr);
+        ListData (me->RNext, upadr, class);
     }
 }
 
