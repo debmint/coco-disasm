@@ -197,12 +197,6 @@ MovASC (int nb, char class)
         char c[6];
 
         x = fgetc (progpath);
-/*        if (isprint(x)){
-            fprintf (stderr, "'%c'\n", x);
-        }
-        else {
-            fprintf (stderr, "0x%02x\n",x);
-        }*/
 
         if ((isprint (x)) || ((x & 0x80) && UseFCC && isprint (x & 0x7f)))
         {
@@ -210,7 +204,6 @@ MovASC (int nb, char class)
             {
                 if (strlen (pbuf->instr) < 12)
                 {
-                    /*PBFcat (pbuf->instr, "%02x ", h, 1);*/
                     sprintf (c, "%02x ", x);
                     strcat (pbuf->instr, c);
                 }
@@ -218,7 +211,7 @@ MovASC (int nb, char class)
                 sprintf (c, "%c", x & 0x7f);
                 strcat (oper_tmp, c);
 
-                if (Pass2 && (x & 0x80))
+                if ((x & 0x80))
                 {
                     strcpy (pbuf->mnem, "fcs");
                     AddDelims (pbuf->operand, oper_tmp);

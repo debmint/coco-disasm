@@ -93,10 +93,6 @@ strpos (char *s, char c)
     register char *p;
 
     return ((p = strchr (s, c)) ? (p - s) + 1 : 0);
-/*	if( p=strchr(s,c) )
-		return p-s+(char *)1;
-	else
-		return 0;*/
 }
 
 
@@ -104,20 +100,20 @@ strpos (char *s, char c)
  * *pbuf->instr and pbuf->operand positions
  */
 
-void
+/*void
 PBFcp (char *dst, char *fmt, unsigned char *src, int sz)
 {
     register unsigned int x;
 
     x = (sz == 2) ? o9_int (src) : *src;
     sprintf (dst, fmt, x);
-}
+}*/
 
 /* PBFcat():	same as PBFcp() except that it cats onto an existing
  * string
  */
 
-void
+/*void
 PBFcat (char *dst, char *fmt, unsigned char *src, int sz)
 {
     register unsigned int x;
@@ -127,7 +123,7 @@ PBFcat (char *dst, char *fmt, unsigned char *src, int sz)
     x &= (sz == 1 ? 0xff : 0xffff);
     sprintf (buf, fmt, x);
     strcat (dst, buf);
-}
+}*/
 
 #ifndef HAVE_STPCPY
     char *

@@ -485,11 +485,11 @@ char
  *      NULL if no match               *
  * *********************************** */
 
-static gpointer
+/*static gpointer
 glist_strcmp (char *inlist, char *notlist)
 {
     return (gpointer)strcmp (inlist, notlist);
-}
+}*/
 
 /* *************************************** *
  * on_adr_mode_response () - Callback for  *
@@ -572,7 +572,7 @@ guess_addr_mode(gchar *mnem)
     return guess;
 }
 
-static void
+/*static void
 on_use_offset_toggled (GtkToggleButton *button, GtkWidget **entry)
 {
     gboolean cond = gtk_toggle_button_get_active (button);
@@ -583,7 +583,7 @@ on_use_offset_toggled (GtkToggleButton *button, GtkWidget **entry)
     }
     
     gtk_widget_set_sensitive (*entry, cond);
-}
+}*/
 
 static void
 populate_offset (char *element, GtkWidget **combobox)

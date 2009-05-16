@@ -251,7 +251,10 @@ set_chooser_folder(GtkFileChooser *chooser, glbls *hbuf)
  * **************************************************** */
 
 void
-selectfile_open (glbls *hbuf, const gchar *type, gboolean IsFile, gchar *fnam)
+selectfile_open ( glbls *hbuf,
+                  const gchar *type,
+                  gboolean IsFile,
+                  const gchar *fnam)
 {
     GtkWidget *fsel;
     gchar *title = g_strconcat ("Select a ", type, NULL);
@@ -308,7 +311,7 @@ selectfile_open (glbls *hbuf, const gchar *type, gboolean IsFile, gchar *fnam)
  * ********************* */
 
 void
-selectfile_save (glbls *hbuf, gchar *cur_name, const gchar *type)
+selectfile_save (glbls *hbuf, const gchar *cur_name, const gchar *type)
 {
     GtkWidget *fsel;
     gchar *title = g_strconcat ("Select a ", type, NULL);

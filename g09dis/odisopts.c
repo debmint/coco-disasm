@@ -99,7 +99,7 @@ browse_dirs (GtkButton * button, FILE_WIDGET *wp)
  * **************************************************************** */
 
 static GtkWidget *
-build_entry_frame (gchar *title, GtkWidget **m_frame)
+build_entry_frame (const gchar *title, GtkWidget **m_frame)
 {
     GtkWidget *entry_vbox;
 
@@ -197,7 +197,6 @@ static GtkWidget *
 build_entry_box (FILE_WIDGET *wp, GtkWidget * main_box, GtkWidget **m_frame)
 {
     GtkWidget *entry_box;
-    GtkWidget *entry;
 
     entry_box = build_entry_frame (wp->dialog_ttl, m_frame);
     wp->o_entry = build_entry_entry (entry_box, wp->fname);
