@@ -1,14 +1,14 @@
-/* *********************************************** *
- *                                                 *
- * odisopts.c - setup options to pass to assembler *
- *                                                 *
- * NOTE:  This newer version will create the       *
- *   widgets within a single table rather than     *
- *   stacking hboxes within the dialog->vbox       *
- *                                                 *
- * *********************************************** */
+/* ******************************************************** *
+ *                                                          $
+ * odisopts.c - setup options to pass to assembler          $
+ *                                                          $
+ * NOTE:  This newer version will create the widgets within $
+ *        a single table rather than stacking hboxes within $
+ *        the dialog->vbox                                  $
+ *                                                          $
+ * $Id::                                                    $
+ * ******************************************************** */
 
-/* $Id$ */
 
 #include <gtk/gtk.h>
 #include <string.h>
@@ -31,13 +31,13 @@ newspin1 (int defval)
     return spin;
 }
 
-/* ******************************************************** *
- * browse_files() - get a filename using selectfile_open () *
- *                                                          *
- *   Passed: (1) - The button pressed                       *
- *           (2) - The associated FILE_WIDGET *             *
- *   Returns: nothing                                       *
- * ******************************************************** */
+/* ************************************************************ *
+ * browse_files() - get a filename using selectfile_open ()     *
+ *                                                              *
+ *   Passed: (1) - The button pressed                           *
+ *           (2) - The associated FILE_WIDGET *                 *
+ *   Returns: nothing                                           *
+ * ************************************************************ */
 
 static void
 browse_files (GtkButton * button, FILE_WIDGET *wp)
@@ -70,10 +70,10 @@ browse_files (GtkButton * button, FILE_WIDGET *wp)
     free_filename_to_return (&(O9Dis.filename_to_return));
 }
 
-/* ************************************************ *
- * browse_dirs() - same as browse_files() except    *
- *                 that it returns a directory      *
- * ************************************************ */
+/* **************************************************** *
+ * browse_dirs() - same as browse_files() except        *
+ *                 that it returns a directory          *
+ * **************************************************** */
 
 static void
 browse_dirs (GtkButton * button, FILE_WIDGET *wp)
@@ -113,15 +113,15 @@ build_entry_frame (const gchar *title, GtkWidget **m_frame)
     return entry_vbox;
 }
 
-/* ************************************************************ *
- * build_entry_entry() - create an entry widget  and pack it    *
- *                       inside the provided v/h-box            *
- *    Passed:  (1) - Container (v/h-box) to hold entry text (if *
- *                   not NULL) to place into entry.             *
- *             (2) - Filename                                   *
- *    Returns: the entry widget ptr                             *
- *                                                              *
- * ************************************************************ */
+/* **************************************************************** *
+ * build_entry_entry() - create an entry widget  and pack it        *
+ *                       inside the provided v/h-box                *
+ *    Passed:  (1) - Container (v/h-box) to hold entry text (if     *
+ *                   not NULL) to place into entry.                 *
+ *             (2) - Filename                                       *
+ *    Returns: the entry widget ptr                                 *
+ *                                                                  *
+ * **************************************************************** */
 
 static GtkWidget *
 build_entry_entry (GtkWidget * entry_box, gchar * filnam)
@@ -205,15 +205,15 @@ build_entry_box (FILE_WIDGET *wp, GtkWidget * main_box, GtkWidget **m_frame)
     return wp->o_entry;
 }
 
-/* ************************************************************ *
- * on_ofile_tgl ()  - callback for checkbox toggles to          *
- *                enable/disable out/in file usage              *
- *                                                              *
- * Passed:  The toggle button (checkbox) widget                 *
- *          The corresponding struct ofile_widgets (as data ptr)*
- *                                                              *
- * Returns: Nothing                                             *
- * ************************************************************ */
+/* **************************************************************** *
+ * on_ofile_tgl ()  - callback for checkbox toggles to              *
+ *                enable/disable out/in file usage                  *
+ *                                                                  *
+ * Passed:  The toggle button (checkbox) widget                     *
+ *          The corresponding struct ofile_widgets (as data ptr)    *
+ *                                                                  *
+ * Returns: Nothing                                                 *
+ * **************************************************************** */
 
 static void
 on_ofile_tgle (GtkToggleButton * tbutton, struct ofile_widgets *srcf)
@@ -255,10 +255,6 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     gint result;
     GtkTooltips *optips;
     int files_page, misc_page;  /* Save page numbers */
-
-    /*struct ofile_widgets srcfile,
-                         lstfile,
-                         defspath;*/
 
     dialog =
         gtk_dialog_new_with_buttons ("Command Line options for os9disasm",

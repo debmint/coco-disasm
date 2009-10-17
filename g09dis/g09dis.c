@@ -1,8 +1,11 @@
-/* ************************************** *
- * g09dis.c - GTK frontend for os9disasm. *
- * ************************************** */
+/* **************************************************************** *
+ * g09dis.c - GTK frontend for os9disasm.  This is the mainline     $
+ *      file for the system.  This frontend uses the commandline    $
+ *      component of os9disasm.                                     $
+ *                                                                  $
+ * $Id::                                                            $
+ * **************************************************************** */
 
-/* $Id$ */
 
 #define MAIN
 #define WWIDTH 750
@@ -28,12 +31,11 @@ cmdbuf_changed_cb (GtkTextBuffer *buffer, fileinf *cmdbuf)
     doc_set_modified (cmdbuf, TRUE);
 }
 
-/* ***************************************************** *
- * build_cmd_window() - create and set up a text window  *
- *                 ( cmd file )                          *
- *   Passed:   the box into which new window goes        *
- *             ptr to valid fileinf data structure       *
- * ***************************************************** */
+/* ******************************************************************** *
+ * build_cmd_window() - create and set up a text window ( cmd file )    *
+ *   Passed:   the box into which new window goes ptr to valid fileinf  *
+ *             data structure                                           *
+ * ******************************************************************** */
 
 static GtkWidget *
 build_cmd_window (GtkWidget * mainbox, fileinf * fi)
@@ -70,14 +72,13 @@ build_cmd_window (GtkWidget * mainbox, fileinf * fi)
 
 }
 
-/* ************************************************* *
- * build_list_window() - Creates a Window containing *
- *                 a Treeview for the listing        *
- * Passed: Container for Treeview window             *
- *         Associated fileinf structure              *
- * Returns: The Window widget                        *
- *                                                   *
- * ************************************************* */
+/* **************************************************** *
+ * build_list_window() - Creates a Window containing a  *
+ *                 Treeview for the listing             *
+ * Passed:  (1) Container for Treeview window           *
+ *          (2) Associated fileinf structure            *
+ * Returns: The Window widget                           *
+ * **************************************************** */
 
 static GtkWidget *
 build_list_window (GtkWidget * mainbox, fileinf * fi)
@@ -142,17 +143,15 @@ build_list_window (GtkWidget * mainbox, fileinf * fi)
     /* save treeview to global storage */
     fi->tview = view;
     
-    /*return view; */
     return s_win;
 }
 
-/* *************************************** *
- * new_lbl_win () - create a window with   *
- *         a TreeView for label file       *
- * Passed:  &Os9Dis.lblfile.tview          *
- * Returns: The new scrolled window Widget *
- *                                         *
- * *************************************** */
+/* **************************************************************** *
+ * new_lbl_win () - create a window with a TreeView for label file  *
+ * Passed:  &Os9Dis.lblfile.tview                                   *
+ * Returns: The new scrolled window Widget                          *
+ *                                                                  *
+ * **************************************************************** */
 
 static GtkWidget *
 new_lbl_win (GtkWidget **view)
@@ -203,7 +202,6 @@ new_lbl_win (GtkWidget **view)
 
     gtk_container_add (GTK_CONTAINER (s_win), *view);
 
-    /*return view; */
     return s_win;
 }
 
@@ -216,11 +214,10 @@ odis_init (void)
     pgdpth = 66;
 }
 
-/* ************************************ *
- * window_quit() - cleanup before exit  *
- * - checks for and notifies user about *
- *   modified files                     *
- * ************************************ */
+/* **************************************************** *
+ * window_quit() - cleanup before exit                  *
+ * - checks for and notifies user about modified files  *
+ * **************************************************** */
 
 gboolean
 window_quit()
@@ -257,11 +254,11 @@ window_quit()
         }
     }
 
-    if ( !savenone )
+    if ( ! savenone )
     {
         if (O9Dis.cmdfile.altered && !savecmd)
         {
-            if( save_warn_OW ("Command", O9Dis.cmdfile.fname, FALSE) ==
+            if (save_warn_OW ("Command", O9Dis.cmdfile.fname, FALSE) ==
                     GTK_RESPONSE_YES)
             {
                 savecmd = TRUE;
@@ -270,7 +267,7 @@ window_quit()
 
         if (O9Dis.lblfile.altered && !savelbl)
         {
-            if( save_warn_OW ("Label", O9Dis.lblfile.fname, FALSE) ==
+            if (save_warn_OW ("Label", O9Dis.lblfile.fname, FALSE) ==
                     GTK_RESPONSE_YES)
             {
                 savelbl = TRUE;
@@ -278,17 +275,17 @@ window_quit()
         }
     }
 
-    if(savecmd)
+    if (savecmd)
     {
-        cmd_save( NULL, &O9Dis);
+        cmd_save (NULL, &O9Dis);
     }
 
-    if(savelbl)
+    if (savelbl)
     {
-        lbl_save( NULL, &O9Dis);
+        lbl_save (NULL, &O9Dis);
     }
     
-    gtk_main_quit();
+    gtk_main_quit ();
 
     return TRUE;
 }

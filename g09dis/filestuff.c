@@ -1,8 +1,8 @@
-/* *********************************** *
- * filestuff.c - handles file I/O, etc *
- * *********************************** */
+/* ******************************************************************** *
+ * filestuff.c - handles file I/O, etc                                  $
+ * $Id::                                                                $
+ * ******************************************************************** */
 
-/* $Id$ */
 
 #include <gtk/gtk.h>
 #include "g09dis.h"
@@ -41,12 +41,14 @@
  */
 
 #ifndef HAVE_DIRNAME
+
 /* ******************************************************** *
  * dirname() - a replacement for the libgen dirname.        *
  *      Note:  This function, like the original, mangles    *
  *              the original string, so in most cases, a    *
  *              dup of the original should be passed        *
  * ******************************************************** */
+
 char *
 dirname (char *path)
 {
@@ -88,16 +90,16 @@ ending_slash (const gchar * dirnm)
     }
 }
 
-/* ************************************************************ *
- * set_fname() - Generic filename setup, called by the          *
- *               following file-selection callbacks.            *
- *               Checks that filename is present in             *
- *               hbuf->filename_to_return, and if so, clears    *
- *               and resets the filename ptr passed as a        *
- *               reference in "flag".                           *
- * Passed : (1) - Ptr to the glbls structure                    *
- *          (2) - Pointer to the appropriate filename ptr       *
- * ************************************************************ */
+/* **************************************************************** *
+ * set_fname() - Generic filename setup, called by the following    *
+ *               file-selection callbacks.                          *
+ *               Checks that filename is present in                 *
+ *               hbuf->filename_to_return, and if so, clears and    *
+ *               resets the filename ptr passed as a reference in   *
+ *               "flag".                                            *
+ * Passed : (1) - Ptr to the glbls structure                        *
+ *          (2) - Pointer to the appropriate filename ptr           *
+ * **************************************************************** */
 
 void
 set_fname (glbls *hbuf, gchar **flag)
@@ -120,6 +122,7 @@ set_fname (glbls *hbuf, gchar **flag)
 }
 
 /* Returns column number or -1 if not found or on error */
+
 gint
 get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
 {
@@ -139,6 +142,7 @@ get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
 }
 
 /* Callback for click on a row in the Listing display */
+
 gboolean
 onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
                       gchar *menu_name)
@@ -193,12 +197,12 @@ onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
     return FALSE;
 }
 
-/* ************************************************************ *
- * set_chooser_folder() - Sets the folder path in the           *
- *               GtkFileChooser if appropriate.                 *
- * Passed:  (1) - GtkFileChooser in which to set folder         *
- *          (2) - glbls * hbuf in which to search for paths     *
- * ************************************************************ */
+/* ******************************************************************** *
+ * set_chooser_folder() - Sets the folder path in the GtkFileChooser    *
+ *               if appropriate.                                        *
+ * Passed:  (1) - GtkFileChooser in which to set folder                 *
+ *          (2) - glbls * hbuf in which to search for paths             *
+ * ******************************************************************** */
 
 void
 set_chooser_folder(GtkFileChooser *chooser, glbls *hbuf)
@@ -486,6 +490,7 @@ list_store_empty( fileinf *fdat)
      * but for the listing, fdat->altered should NEVER be set
      * (we don't save the listing
      */
+
     if (fdat->altered == TRUE)
     {
         switch(save_warn_OW ("Label", fdat->fname, TRUE)) {
@@ -503,6 +508,7 @@ list_store_empty( fileinf *fdat)
     }
 
     /* clear out current list_store */
+
     if (fdat->fname != NULL)
     {
         gtk_list_store_clear (fdat->l_store);
@@ -532,7 +538,7 @@ save_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     
     /* TODO: rename file if it exists? */
 
-    if (!(outfile = fopen (*newfile, "wb")))
+    if ( ! (outfile = fopen (*newfile, "wb")))
     {
         fprintf (stderr, "Cannot open file %s for write!\n", *newfile);
     }
@@ -845,6 +851,7 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
             }
 
             /* Now add to ListStore */
+
             if ((splits) )
             {
                 GtkTreeIter iter;
@@ -899,11 +906,11 @@ sysfailed (char *msg)
 }
 
 
-/* ********************************************** *
- * run_disassembler  - a callback from the menu   *
- *                     does a disassembly pass    *
- * Passed: action, the global variables           *
- * ********************************************** */
+/* **************************************************** *
+ * run_disassembler  - a callback from the menu does a  *
+ *                     disassembly pass                 *
+ * Passed: action, the global variables                 *
+ * **************************************************** */
 
 void
 run_disassembler (GtkAction * action, glbls * hbuf)
@@ -916,7 +923,7 @@ run_disassembler (GtkAction * action, glbls * hbuf)
 
     /* We MUST have a binary file to disassemble */
     
-    if( !prog_wdg->fname )
+    if( ! prog_wdg->fname )
     {
         GtkWidget *warnwin;
         gchar *msg;
@@ -1014,7 +1021,7 @@ run_disassembler (GtkAction * action, glbls * hbuf)
 
     cmdline = g_string_free (CmdL, FALSE);
     
-    if ( !(PipeIt))   /* Output is to stdout or a file */
+    if ( ! (PipeIt))   /* Output is to stdout or a file */
     {
         int retval;
         char *msg = NULL;
@@ -1053,6 +1060,7 @@ run_disassembler (GtkAction * action, glbls * hbuf)
 }
 
 /* Disassemble listing to file */
+
 void
 dasm_list_to_file_cb (GtkAction *action, glbls *hbuf)
 {
@@ -1065,9 +1073,8 @@ dasm_list_to_file_cb (GtkAction *action, glbls *hbuf)
     write_list = old_write;
 }
 
-/*--------------- cut -----------*/
-
 /* Clean up */
+
 void
 free_filename_to_return (gchar ** fname)
 {
@@ -1078,11 +1085,11 @@ free_filename_to_return (gchar ** fname)
     }
 }
 
-/* *************************************** *
- * Callbacks for file selection            *
- * Passed: GtkAction *action,              *
- *       address of global data pointer    *
- * *************************************** */
+/* ******************************************** *
+ * Callbacks for file selection                 *
+ * Passed:  (1) GtkAction *action,              *
+ *          (2) address of global data pointer  *
+ * ******************************************** */
 
 void
 compile_listing (GtkAction * action, glbls * hbuf)
@@ -1098,11 +1105,11 @@ compile_listing (GtkAction * action, glbls * hbuf)
     write_list = old_write_list;        /* restore write_list */
 }
 
-/* *************************************** *
- * load_listing() - A callback from the    *
- *    menu(s),  This is the "top-level"    *
- *    function for loading a listing       *
- * *************************************** */
+/* ******************************************************** *
+ * load_listing() - A callback from the menu(s).            *
+ *          This is the "top-level" function for loading    *
+ *          a listing                                       *
+ * ******************************************************** */
 
 void
 load_listing (GtkAction * action, glbls * hbuf)
@@ -1161,12 +1168,11 @@ load_lblfile (GtkAction * action, glbls * hbuf)
     free_filename_to_return (&hbuf->filename_to_return);
 }
 
-/* ************************************************ *
- * File Save callbacks                              *
- * These that follow are the top-level entry points *
- * for these routines - they call others to do the  *
- * "manual labor"                                   *
- * ************************************************ */
+/* ************************************************************ *
+ * File Save callbacks                                          *
+ * These that follow are the top-level entry points for these   *
+ * routines - they call others to do the "manual labor"         *
+ * ************************************************************ */
 
 void
 cmd_save_as (GtkAction * action, glbls * hbuf)
@@ -1241,10 +1247,10 @@ lbl_save (GtkAction *action, glbls *hbuf)
  * Options load/save callbacks                          *
  * **************************************************** */
 
-/* ******************************************* *
- * opt_put() - check for state of variable ptr *
- *    and if set, write to optsave file        *
- * ******************************************* */
+/* ******************************************************** *
+ * opt_put() - check for state of variable ptr and if set,  *
+ *          write to optsave file                           *
+ * ******************************************************** */
 
 static void
 opt_put (gboolean isset, char *nam, char *hdr, FILE *fp)
@@ -1275,14 +1281,13 @@ opt_load_path (gchar **pthptr, gchar *pthnm, gboolean *flag, gchar* hdr)
     *pthptr = g_strdup (start);
 }
 
-/* ******************************************** *
- * opt_get_val() - check for a match in the HDR *
- *     and store the value of matched           *
- * PASSED: hdr string to check against          *
- *         buffer holding the loaded line       *
- *         address to store value if matched    *
- * Returns: value if matched, NULL if no match  *
- * ******************************************** */
+/* **************************************************************** *
+ * opt_get_val() - check for a match in the HDR and store the value *
+ *          of matched                                              *
+ * PASSED: hdr string to check against buffer holding the loaded    *
+ *          line address to store value if matched                  *
+ * Returns: value if matched, NULL if no match                      *
+ * **************************************************************** */
 
 static gint
 opt_get_val ( gchar *ctrl, gchar *buf, gint *addr)
@@ -1354,7 +1359,7 @@ void opts_load (GtkAction *action, glbls *hbuf)
     selectfile_open (hbuf, "n Options File", TRUE, NULL);
     optfile = fopen(hbuf->filename_to_return, "rb");
     
-    if (!optfile)
+    if ( ! optfile)
     {
         /* Print Error message */
         
@@ -1366,27 +1371,27 @@ void opts_load (GtkAction *action, glbls *hbuf)
 
     while (fgets (buf, 200, optfile))
     {
-        if (!strncmp (OPT_BIN, buf, strlen(OPT_BIN)))
+        if ( ! strncmp (OPT_BIN, buf, strlen(OPT_BIN)))
         {
             opt_load_path (&(prog_wdg->fname), buf, NULL, OPT_BIN);
             continue;
         }
-        if (!strncmp (OPT_CMD, buf, strlen (OPT_CMD)))
+        if ( ! strncmp (OPT_CMD, buf, strlen (OPT_CMD)))
         {
             opt_load_path (&(cmd_wdg->fname), buf, NULL, OPT_CMD);
             continue;
         }
-        if (!strncmp (OPT_DEF, buf, strlen(OPT_DEF)))
+        if ( ! strncmp (OPT_DEF, buf, strlen(OPT_DEF)))
         {
             opt_load_path (&(defs_wdg->fname), buf, &alt_defs, OPT_DEF);
             continue;
         }
-        if (!strncmp (OPT_OBJ, buf, strlen (OPT_OBJ)))
+        if ( ! strncmp (OPT_OBJ, buf, strlen (OPT_OBJ)))
         {
             opt_load_path (&(asmout_wdg->fname), buf, &write_obj, OPT_OBJ);
             continue;
         }
-        if (!strncmp (OPT_LST, buf, strlen (OPT_LST)))
+        if ( ! strncmp (OPT_LST, buf, strlen (OPT_LST)))
         {
             gchar *start = buf;
             gchar **splits;

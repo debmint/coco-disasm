@@ -1,10 +1,9 @@
-/* **************************************** *
- * amode.c handles editing functions for    *
- *   editing addressing modes  a breakout   *
- *   from dasmedit.c                        *
- * **************************************** */
+/* **************************************************************** *
+ * amode.c - handles editing functions for editing addressing modes $
+ *      a breakout  from dasmedit.c                                 $
+ * $Id::                                                            $
+ * **************************************************************** */
 
-/* $Id$ */
 
 #include <gtk/gtk.h>
 #include <stdio.h>
@@ -17,12 +16,12 @@ static GList *offset_list;  /* Convenience list of offsets used */
 
 extern GList *amode_list;
 
-/* ******************************************** *
- * amode_init() - populate the addressing modes *
- *    list with the standard label classes      *
- * NOTE: a g_strdup() of the constant string    *
- *     is used so it can be deleted if desired  *
- * ******************************************** */
+/* ******************************************************** *
+ * amode_init() - populate the addressing modes list with   *
+ *          the standard label classes                      *
+ * NOTE: a g_strdup() of the constant string is used so it  *
+ *       can be deleted if desired                          *
+ * ******************************************************** */
 
 void
 amode_init()
@@ -115,18 +114,17 @@ add_amode_man (GtkButton *button, GtkWidget *entry)
 }
 
 /* callback to clear the amode entry window */
+
 static void
 clear_entry( GtkButton *button, GtkWidget *entry)
 {
     gtk_entry_set_text (GTK_ENTRY(entry), "");
 }
 
-/* ******************************* *
- * amode_add_from_string ()        *
- *   Add an amode to amode_list    *
- *     provided by a string        *
- *     (usually loaded from a file *
- * ******************************* */
+/* ******************************************************** *
+ * amode_add_from_string () -  Add an amode to amode_list   *
+ *     provided by a string  (usually loaded from a file    *
+ * ******************************************************** */
 void
 amode_add_from_string (gchar *ptr)
 {
@@ -200,7 +198,7 @@ amodes_from_file (GtkButton *button, glbls *fdat)
         }
         
         /* last thing... */
-        free_filename_to_return(&(fdat->filename_to_return));
+        free_filename_to_return (&(fdat->filename_to_return));
     }
 }
 
@@ -249,11 +247,10 @@ delete_combo_changed (GtkComboBox *cbox, GtkWidget *call_win)
     }
 }
 
-/* *************************** *
- * delete_amode_cb ()          *
- *  dialog to choose an amode  *
- *  entry to delete            *
- * *************************** */
+/* ************************************************ *
+ * delete_amode_cb () - dialog to choose an amode   *
+ *      entry to delete                             *
+ * ************************************************ */
 
 static void
 delete_amode_cb (GtkButton *button, gpointer zilch)
@@ -282,11 +279,10 @@ delete_amode_cb (GtkButton *button, gpointer zilch)
     gtk_widget_destroy(dialog);
 }
 
-/* ********************************** *
- * amode_list_edit_cb() - add/delete  *
- * or otherwise modify the addressing *
- * mode list                          *
- * ********************************** */
+/* ************************************************************ *
+ * amode_list_edit_cb() - add/delete or otherwise modify the    *
+ *          addressing mode list                                *
+ * ************************************************************ */
 
 void
 amode_list_edit_cb(GtkAction * action, glbls *fdat)
@@ -366,14 +362,14 @@ char
     gint mymode;
     register int sz;
 
-    if( !strncmp(opcode,"10",2) )
+    if( ! strncmp(opcode,"10",2) )
     {
         T = Pre10;
         sscanf( &opcode[2], "%02x", &opcode_val);
         sz = sizeof(Pre10)/sizeof(Pre10[0]);
     }
     else {
-        if( !strncmp(opcode,"11",2) )
+        if( ! strncmp(opcode,"11",2) )
         {
             T = Pre11;
             sscanf( &opcode[2], "%02x", &opcode_val);
@@ -491,15 +487,13 @@ glist_strcmp (char *inlist, char *notlist)
     return (gpointer)strcmp (inlist, notlist);
 }*/
 
-/* *************************************** *
- * on_adr_mode_response () - Callback for  *
- *     when "OK" button is clicked in      *
- *     addressing mode setup               *
- * Passed:  dialog box containing widgets  *
- *          the response -> button clicked *
- *          the structure containing ptrs  *
- *              to the entry widgets       *
- * *************************************** */
+/* ******************************************************************** *
+ * on_adr_mode_response () - Callback for when "OK" button is clicked   *
+ *      in addressing mode setup                                        *
+ * Passed:  (1) dialog box containing widgets                           *
+ *          (2) the response button clicked                             *
+ *          the structure containing ptrs to the entry widgets          *
+ * ******************************************************************** */
 
 static void
 on_adr_mode_response( GtkDialog *dialog, gint resp,
@@ -549,6 +543,7 @@ on_adr_mode_response( GtkDialog *dialog, gint resp,
     g_free (data);
     gtk_widget_destroy (GTK_WIDGET (dialog));
 }
+
 /* Try to guess a usable Addressing Mode from the mnemonic */
 
 gchar *
@@ -556,7 +551,7 @@ guess_addr_mode(gchar *mnem)
 {
     gchar *guess;
     
-    if ( !g_ascii_strcasecmp (mnem, "equ") )
+    if ( ! g_ascii_strcasecmp (mnem, "equ") )
     {
         guess = "X";
     }
@@ -591,6 +586,54 @@ populate_offset (char *element, GtkWidget **combobox)
     gtk_combo_box_append_text (GTK_COMBO_BOX (*combobox), element);
 }
 
+/* ************************************************************************ *
+ * pack_offset_entry() - Build an offset definition frame, packed inside    *
+ *      the mainbox passed as the parameter.                                *
+ * ************************************************************************ */
+
+GtkWidget *
+pack_offset_entry (GtkBox *mainbox)
+{
+    GtkWidget * frame,
+              * vbox,
+              * entry,
+              * label;
+
+    frame = bounds_aligned_frame (mainbox,
+                                  "Offset from address");
+
+    vbox = gtk_vbox_new (0, 1);    // Utilize vbox for vbox
+
+    if (offset_list == NULL )   /* If not initialized */
+    {
+        offset_list = g_list_append (offset_list, "NONE");
+    }
+
+    entry = gtk_combo_box_entry_new_text ();
+    /* Now populate the combobox */
+    g_list_foreach (g_list_first (offset_list), (GFunc)populate_offset,
+                   &entry);
+
+    gtk_entry_set_text (GTK_ENTRY (GTK_BIN(entry)->child), "NONE");
+
+    gtk_box_pack_start (GTK_BOX (vbox), entry, 0, 0, 3);
+
+    /* Add help labels */
+
+    pack_hsep (GTK_BOX (vbox));
+    label = gtk_label_new_with_mnemonic ("Enter label class followed by");
+    gtk_box_pack_start (GTK_BOX (vbox), label, 0, 0, 1);
+    label = gtk_label_new_with_mnemonic ("hexadecimal offset");
+    gtk_box_pack_start (GTK_BOX (vbox), label, 0, 0, 1);
+    label = gtk_label_new_with_mnemonic ("$=hex, &=decimal, @=either,");
+    gtk_box_pack_start (GTK_BOX (vbox), label, 0, 0, 1);
+    label = gtk_label_new_with_mnemonic ("or Label Class letter");
+    gtk_box_pack_start (GTK_BOX (vbox), label, 0, 0, 1);
+
+    gtk_container_add (GTK_CONTAINER (frame), vbox);
+    return entry;
+}
+
 /* ******************************************* *
  * callback function to handle addressing mode *
  * ******************************************* */
@@ -609,16 +652,14 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
     
     if (gtk_tree_selection_get_selected(selection, &model, &iter))
     {
-        GtkWidget *align,
-                  *frame,
-                  *label;
+        GtkWidget *align;
 
         gchar *addr, *opcod, *pbyt, *mnem,
               *oprand;
         
         char adr_mode[4];
 
-        if (!(cb_data = g_malloc(sizeof (struct adr_widgets))))
+        if ( ! (cb_data = g_malloc(sizeof (struct adr_widgets))))
         {
             /* print error */
             abort_warn("adr_mode_cb():   Cannot malloc memory!\n");
@@ -697,39 +738,8 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
          * Add Offset if desired        *
          * **************************** */
 
-        frame = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                      "Offset from address");
-
-        align = gtk_vbox_new (0, 1);    // Utilize align for vbox
-
-        if (offset_list == NULL )   /* If not initialized */
-        {
-            offset_list = g_list_append (offset_list, "NONE");
-        }
-
-        cb_data->offset_entry = gtk_combo_box_entry_new_text ();
-        /* Now populate the combobox */
-        g_list_foreach (g_list_first (offset_list), (GFunc)populate_offset,
-                       &cb_data->offset_entry);
-
-        gtk_entry_set_text (GTK_ENTRY (GTK_BIN (
-                                       cb_data->offset_entry)->child), "NONE");
-
-        gtk_box_pack_start (GTK_BOX (align), cb_data->offset_entry, 0, 0, 3);
-
-        /* Add help labels */
-
-        pack_hsep (GTK_BOX (align));
-        label = gtk_label_new_with_mnemonic ("Enter label class followed by");
-        gtk_box_pack_start (GTK_BOX (align), label, 0, 0, 1);
-        label = gtk_label_new_with_mnemonic ("hexadecimal offset");
-        gtk_box_pack_start (GTK_BOX (align), label, 0, 0, 1);
-        label = gtk_label_new_with_mnemonic ("$=hex, &=decimal, @=either,");
-        gtk_box_pack_start (GTK_BOX (align), label, 0, 0, 1);
-        label = gtk_label_new_with_mnemonic ("or Label Class letter");
-        gtk_box_pack_start (GTK_BOX (align), label, 0, 0, 1);
-
-        gtk_container_add (GTK_CONTAINER (frame), align);
+        cb_data->offset_entry =
+                         pack_offset_entry (GTK_BOX(GTK_DIALOG(dialog)->vbox));
         
         /* Initialize to "not" have offset */
      /*   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (use_offset), FALSE);
