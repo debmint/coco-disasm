@@ -1,19 +1,19 @@
 /* ************************************************************************ *
+ *                                                                          $
+ *  os9disasm - OS9-6809 CROSS DISASSEMBLER                                 $
+ *             following the example of Dynamite+                           $
+ *                                                                          $
+ * ************************************************************************ $
+ *                                                                          $
+ *  Edition History:                                                        $
+ *  #  Date       Comments                                              by  $
+ *  -- ---------- -------------------------------------------------     --- $
+ *  01 2003/01/31 First began project                                   dlb $
+ * ************************************************************************ $
+ *    File:  progdis.c                                                      $
+ * Purpose:  do disassembly of program file                                 $
  *                                                                          *
- *  os9disasm - OS9-6809 CROSS DISASSEMBLER                                 *
- *             following the example of Dynamite+                           *
- *                                                                          *
- * ************************************************************************ *
- *                                                                          *
- *  $Id$                           *
- *                                                                          *
- *  Edition History:                                                        *
- *  #  Date       Comments                                              by  *
- *  -- ---------- -------------------------------------------------     --- *
- *  01 2003/01/31 First began project                                   dlb *
- * ************************************************************************ *
- *    File:  progdis.c                                                      *
- * Purpose:  do disassembly of program file                                 *
+ * $Id::                                                                    $
  * ************************************************************************ */
 
 #define _GNU_SOURCE
@@ -21,6 +21,7 @@
 #include "dtble.h"
 
 /* Flag whether Databoundary or Addressing Mode */
+
 #define DBOUND 1
 #define ADRMOD 2
 #define NOIDXINDIR if(c&0x20) return 0
@@ -34,11 +35,13 @@ char *RegR03[] =        /* 6309 registers */
 };
 
 /* Register order for push, pull for regS and reg U */
+
 char *PshPuls[] = { "cc", "a", "b", "dp", "x", "y", "u", "pc" };
 char *PshPulu[] = { "cc", "a", "b", "dp", "x", "y", "s", "pc" };
 char RegOrdr[] = "xyus";
 
 /*extern struct lkuptbl *Pre10, *Pre11, *Byte1;*/
+
 extern char pseudcmd[], realcmd[];
 
 char CmdBuf[10];                /* buffer to hold bytes of cmd code */
@@ -55,9 +58,11 @@ extern struct rof_hdr *rofptr;
 
 int CodEnd;                     /* End of executable code (ModSize-3 for OS9 */
 
-/* ************************************************************* *
- * MovBytes() -
- * ************************************************************* */
+/* ******************************************************************** *
+ * MovBytes() - Reads data for Data Boundary range from input file and  *
+ *          places it onto the print buffer (and does any applicable    *
+ *          printing if in pass 2).                                     *
+ * ******************************************************************** */
 
 static void
 MovBytes (struct databndaries *db)
@@ -69,11 +74,15 @@ MovBytes (struct databndaries *db)
 
     while (Pc <= db->b_hi)
     {
+        /* Init dest buffer to null string for LblCalc concatenation */
+
         tmps[0] = '\0';
         valu = fgetc (progpath);
 
         if (PBytSiz == 2)
         {
+            /* Read data in in LittleEndian format, save in Native */
+
             valu = (valu << 8) + fgetc (progpath);
         }
 
@@ -104,8 +113,10 @@ MovBytes (struct databndaries *db)
 
             strcat (pbuf->operand, tmps);
 
-            if ( (strlen (pbuf->operand) > 22)          ||
-                 (FindLbl (ListRoot ('L'), Pc + PBytSiz))  )
+            /* If length of operand string is max, print a line */
+
+            if (    (strlen (pbuf->operand) > 22)
+                 || (FindLbl (ListRoot ('L'), Pc + PBytSiz))  )
             {
                 strcpy (pbuf->mnem, PBytSiz == 1 ? "fcb" : "fdb");
                 PrintLine (pseudcmd, pbuf, 'L', CmdEnt, Pc + PBytSiz);
@@ -115,6 +126,8 @@ MovBytes (struct databndaries *db)
 
         Pc += PBytSiz;
     }
+
+    /* Loop finished.. print any unprinted data */
 
     if (Pass2 && strlen (pbuf->operand))
     {
@@ -128,6 +141,7 @@ MovBytes (struct databndaries *db)
  *              checks string for nonexistand delimiter      *
  *              and copies string with delims to destination *
  * ********************************************************* */
+
 static void
 AddDelims (char *dest, char *src)
 {
@@ -186,7 +200,7 @@ MovASC (int nb, char class)
     char oper_tmp[30];
 
     memset (pbuf, 0, sizeof (pbuf));
-    strcpy (pbuf->mnem, "fcc"); /* Default mnemonic to "fcc" */
+    strcpy (pbuf->mnem, "fcc");         /* Default mnemonic to "fcc" */
     CmdEnt = Pc;
 
     *oper_tmp = '\0';
@@ -268,8 +282,9 @@ MovASC (int nb, char class)
             }
             CmdEnt = Pc + 1;
         }
+
         ++Pc;
-    }  /* end while (nb--) - all chars moved */
+    }       /* end while (nb--) - all chars moved */
 
     if (strlen (oper_tmp))        /* Clear out any pending string */
     {
@@ -294,21 +309,16 @@ NsrtBnds (struct databndaries *bp)
     switch (bp->b_typ)
     {
         case 1:                    /* Ascii */
-            /*MovASC ((bp->b_hi) - (bp->b_lo) + 1);*/
             /* Bugfix?  Pc was bp->b_lo...  that setup allowed going past
              * the end if the lower bound was not right. */
 
             MovASC ((bp->b_hi) - Pc + 1, 'L');
             break;                  /* bump PC  */
-        case 6:                    /* Word */
-        case 4:                    /* Long */
+        case 6:                     /* Word */
+        case 4:                     /* Long */
             PBytSiz = 2;            /* Takes care of both Word & Long */
-        case 2:                    /* Byte */
-        case 5:                    /* Short */
-            /*if( (bp->b_typ==1) || (bp->b_typ==5) )
-               PBytSiz=1;
-               else
-               PBytSiz=2; */
+        case 2:                     /* Byte */
+        case 5:                     /* Short */
             MovBytes (bp);
             break;
         case 3:                    /* "C"ode .. not implememted yet */
@@ -318,13 +328,13 @@ NsrtBnds (struct databndaries *bp)
     }
 
     NowClass = 0;
-    /*Pc=(bp->b_hi)+PBytSiz; *//* Not needed for Pass2, but no harm */
 }
 
-/* ************************************************************** *
- * IsCmd() - Checks to see if code pointed to by p is valid code. *
- * Returns: pointer to valid lkuptable entry or 0 on fail         *
- * ************************************************************** */
+/* ******************************************************************** *
+ * IsCmd() - Checks to see if code pointed to by p is valid code.       *
+ *      On entry, we are poised at the first byte of prospective code.  *
+ * Returns: pointer to valid lkuptable entry or 0 on fail               *
+ * ******************************************************************** */
 
 static struct lkuptbl *
 IsCmd (int *fbyte, int *csiz)
@@ -339,14 +349,12 @@ IsCmd (int *fbyte, int *csiz)
     {
         case '\x10':
             T = Pre10;
-            /*c = *(++p);*/
             c = fgetc (progpath);
             *fbyte =(*fbyte <<8) + c;
             sz = sizeof (Pre10) / sizeof (Pre10[0]);
             break;
         case '\x11':
             T = Pre11;
-            /*c = *(++p);*/
             c = fgetc (progpath);
             *fbyte =(*fbyte <<8) + c;
             sz = sizeof (Pre11) / sizeof (Pre11[0]);
@@ -373,14 +381,14 @@ IsCmd (int *fbyte, int *csiz)
     return ((T->cod == c) && (T->t_cpu <= CpuTyp)) ? T : 0;
 }
 
-/* *************************************************** *
- * GetIdxOffset () - Reads offset bytes for an indexed *
- *   instruction  (1 or 2 depending on the postbyte)   *
- * Passed:  The postbyte                               *
- * Returns: The signed integer offset read from the    *
- *   current file position                             *
- *   Also updates Pc by size of "offset"               *
- * *************************************************** */
+/* **************************************************************** *
+ * GetIdxOffset () - Reads offset bytes for an indexed instruction  *
+ *   (1 or 2 depending on the postbyte)                             *
+ * Passed:  The postbyte                                            *
+ * Returns: The signed integer offset read from the current file    *
+ *          position                                                *
+ *   Also updates Pc by size of "offset"                            *
+ * **************************************************************** */
 
 static int
 GetIdxOffset (int postbyte)
@@ -423,14 +431,15 @@ GetIdxOffset (int postbyte)
     return offset;
 }
 
-/* ******************************************************* *
- * regput() - Common setup for n,R or n,Pc indexed modes.  *
- *                                                         *
- * Passed:  int pbyte- the postbyte, (to determine whether *
- *                     ofst is 8-bit or 16-bit             *
- *          char *op1 - pointer to oper1 (the first part   *
- *                     of the opcode string data           *
- * ******************************************************* */
+/* **************************************************************** *
+ * regput() - Common setup for n,R or n,Pc indexed modes.           *
+ *                                                                  *
+ * Passed : (1) pbyte- the postbyte, (to determine whether ofst is  *
+ *                     8-bit or 16-bit                              *
+ *          (2) op1 - pointer to oper1 (the first part of the       *
+ *                    opcode string data                            *
+ *          (3) pcrel- Flag if it's PCREL or not.                   *
+ * **************************************************************** */
 
 char *opfmt[] = {"%s%02x", "%s%04x"};
 int bytmsk[] = {0xff, 0xffff};
@@ -574,6 +583,11 @@ regput (int pbyte, char *op1, int pcrel)
 /*    }*/
 }
 
+/* ******************************************************************** *
+ * TxIdx() - Handle the postbyte(s) of an indexed mode.                 *
+ *                                                                      *
+ * ******************************************************************** */
+
 static int
 TxIdx ()
 {
@@ -623,10 +637,7 @@ TxIdx ()
             }
             else
             {
-               // if (myval)
-               // {
-                    rof_addlbl (destval, myval);
-                //}
+                rof_addlbl (destval, myval);
             }
 
             return 1;
@@ -773,13 +784,13 @@ TxIdx ()
     return 1;
 }
 
-/* **************************************************** *
- * GetCmd(): parse through data and assemble (if valid) *
- *         an assembler command.                        *
- * Return Status:                                       *
- *    Success: file positioned at next command          *
- *    Failure: file positioned same as entry            *
- * **************************************************** */
+/* ******************************************************************** *
+ * GetCmd(): parse through data and assemble (if valid) an assembler    *
+ *         command.                                                     *
+ * Return Status:                                                       *
+ *    Success: file positioned at next command                          *
+ *    Failure: file positioned same as entry                            *
+ * ******************************************************************** */
 
 static int
 GetCmd ()
@@ -802,8 +813,6 @@ GetCmd ()
 
     if ( ! (tbl = IsCmd (&firstbyte, &pcbump)))
     {
-        /*      ++Pc;
-           ++noncode; */
         /* Need to provide for cleanup of noncode */
         /* Reset file pos to begin */
         fseek ( progpath, file_pos, SEEK_SET);
@@ -819,7 +828,7 @@ GetCmd ()
         return 0;
     }
 
-    /* Now move stuff to printer buffer */
+    /* Now move stuff to printer buffer if Pass2 */
 
     if (Pass2)
     {
@@ -1267,6 +1276,8 @@ DoPrt (struct nlist *nl)
     }
 }
 
+/* This is a debugging function */
+
 void
 listlbls ()
 {
@@ -1445,11 +1456,14 @@ progdis ()
 
         CmdLen = 0;
         strcpy (CmdBuf, "");
+
         /* Try this to see if it avoids buffer overflow */
+
         memset (pbuf, 0, sizeof (struct printbuf));
         CmdEnt = Pc;
 
         /* check if in data boundary */
+
         if ((bp = ClasHere (dbounds, Pc)))
         {
             NsrtBnds (bp);

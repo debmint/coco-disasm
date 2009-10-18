@@ -1,25 +1,31 @@
 /* ************************************************************************ *
+ *                                                                          $
+ * os9disasm - a project to disassemble Os9-coco modules into source code   $
+ *             following the example of Dynamite+                           $
+ *                                                                          $
+ * ************************************************************************ $
+ *                                                                          $
+ *  Edition History:                                                        $
+ *  #  Date       Comments                                              by  $
+ *  -- ---------- -------------------------------------------------     --- $
+ *  01 2003/01/31 First began project                                   dlb $
+ * ************************************************************************ $
+ * File:  cmdfile.c                                                         $
+ * Purpose: process command file                                            $
  *                                                                          *
- * os9disasm - a project to disassemble Os9-coco modules into source code   *
- *             following the example of Dynamite+                           *
- *                                                                          *
- * ************************************************************************ *
- *                                                                          *
- *  $Id$                           *
- *                                                                          *
- *  Edition History:                                                        *
- *  #  Date       Comments                                              by  *
- *  -- ---------- -------------------------------------------------     --- *
- *  01 2003/01/31 First began project                                   dlb *
- * ************************************************************************ *
- * File:  cmdfile.c                                                         *
- * Purpose: process command file                                            *
+ *  $Id::                                                                   $
  * ************************************************************************ */
 
 /*#include <ctype.h>*/
 #define _GNU_SOURCE     /* Needed to get isblank() defined */
 #include "odis.h"
 #include "amodes.h"
+
+static char *cpyhexnum (char *dst, char *src);
+static char *cpy_digit_str (char *dst, char *src);
+static void setupbounds (char *lpos);
+static int do_mode (char *lpos);
+static char *setoffset (char *p, struct ofsetree *oft);
 
 static int NoEnd;      /* Flag that no end on last bound                 */
 static int GettingAmode;    /* Flag 1=getting Addressing mode 0=Data Boundary */
@@ -577,18 +583,17 @@ cmdamode (char *pt)
 
     while ((pt = cmdsplit (buf, pt)))
     {
-        DoMode (buf);
+        do_mode (buf);
     }
 
     GettingAmode = 0;
 }
 
-/* ********************************************* *
- * getrange() This function interprets the range *
- *   specified in the command line and stores    *
- *   the low and high values in "lo" and "hi"    *
- *   (the addresses are passed by the caller     *
- * ********************************************* */
+/* **************************************************************** *
+ * getrange() This function interprets the range specified in the   *
+ *      command line and stores the low and high values in "lo"     *
+ *      and "hi" (the addresses are passed by the caller            *
+ * **************************************************************** */     
 
 void
 getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
@@ -632,7 +637,7 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
     }
     else  /* We have a (first) number) */
     {
-        pt = movxnum (tmpdat, pt);
+        pt = cpyhexnum (tmpdat, pt);
         sscanf (tmpdat, "%x", lo);
     }
 
@@ -661,7 +666,7 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
                 *hi = *lo;
                 break;
             default:
-                pt = movdigit (tmpdat, pt);
+                pt = cpy_digit_str (tmpdat, pt);
                 NxtBnd = *lo + atoi (tmpdat);
                 *hi = NxtBnd - 1;
                 break;
@@ -685,7 +690,7 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
             if (isxdigit (*pt))
             {
                 tellme (pt);
-                pt = movxnum (tmpdat, pt);
+                pt = cpyhexnum (tmpdat, pt);
                 sscanf (tmpdat, "%x", hi);
                 NxtBnd = *hi + 1;
             }
@@ -706,8 +711,15 @@ getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
     }
 }
 
-int
-DoMode (char *lpos)
+/* **************************************************************** *
+ * do_mode() - Process a single Addressing Mode command.  called by *
+ *      cmdamode(), which splits the command line up into single    *
+ *      commands.                                                   *
+ * Passed : lpos - Pointer to current character in command line.    *
+ * **************************************************************** */
+
+static int
+do_mode (char *lpos)
 {
     struct databndaries *mptr;
     register int class;         /* addressing mode */
@@ -722,36 +734,39 @@ DoMode (char *lpos)
         notimm = 0;
         lpos = skipblank (++lpos);
     }
+
     switch (c = toupper (*(lpos++)))
     {
-    case 'D':
-			if (notimm)
-				AMode=AM_DRCT;
-			else
-				AMode=AM_DIMM;
-			break;
-    case 'X':
-    case 'Y':
-    case 'U':
-    case 'S':
-        AMode = (int) strpos ("DXYUS", c) + notimm + 1; /*+2 */
-        if ( ! AMode)
-        {
-            nerrexit ("Class \'%c\' not found");
-        }
-        break;
-    case '1':
-        AMode = AM_BYTI;
-        break;
-    case 'E':
-        AMode = AM_EXT;
-        break;
-    case 'R':
-        AMode = AM_REL;
-        break;
-    default:
-        nerrexit ("Illegal addressing mode");
-        exit (1);               /* not needed but just to be safe */
+        case 'D':
+                if (notimm)
+                    AMode = AM_DRCT;
+                else
+                    AMode = AM_DIMM;
+                break;
+        case 'X':
+        case 'Y':
+        case 'U':
+        case 'S':
+            AMode = (int) strpos ("DXYUS", c) + notimm + 1; /*+2 */
+
+            if ( ! AMode)
+            {
+                nerrexit ("Class \'%c\' not found");
+            }
+
+            break;
+        case '1':
+            AMode = AM_BYTI;
+            break;
+        case 'E':
+            AMode = AM_EXT;
+            break;
+        case 'R':
+            AMode = AM_REL;
+            break;
+        default:
+            nerrexit ("Illegal addressing mode");
+            exit (1);               /* not needed but just to be safe */
     }
 
     lpos = skipblank (lpos);
@@ -769,8 +784,6 @@ DoMode (char *lpos)
 
     if ( ! (lpos = skipblank (lpos)) || ! (*lpos) || (*lpos == ';'))
     {
-        /* Changed the following after change for addlbl() */
-        //DfltLbls[AMode - 1] = lblorder[class - 1];
         DfltLbls[AMode - 1] = class;
         return 1;
     }
@@ -855,14 +868,18 @@ DoMode (char *lpos)
             }
         }
     }
+
     return 1;
 }
 
 #define ILLBDRYNAM "Illegal boundary name in line %d\n"
 
-/* ********************************************* *
- * process boundaries found in command file line *
- * ********************************************* */
+/* ************************************************************ *
+ * boundsline () -Process boundaries found in command file line *
+ *      This processes the entire line, including all multiple  *
+ *      commands separated by a semicolon  on the same line     *
+ *      (Called from mainline cmdfile processing routine.       *
+ * ************************************************************ */     
 
 void
 boundsline (char *mypos)
@@ -873,19 +890,23 @@ boundsline (char *mypos)
 
     GettingAmode = 0;
 
-    if (isdigit (*mypos))
-    {                           /*      Repeat count for line   */
-        mypos = movdigit (tmpbuf, mypos);
+    if (isdigit (*mypos))           /*   Repeat count for line   */
+    {
+        mypos = cpy_digit_str (tmpbuf, mypos);
         count = atoi (tmpbuf);
         mypos = skipblank (mypos);
     }
 
-    hold = mypos;
+    hold = mypos;       /* Save begin of count repeated commands */
+
+    /* Repeatedly process the repeated commands for count times */
 
     while (count--)
     {
         char *nextpos;
         mypos = hold;
+
+        /* Process each command (within the repeat) individually */
 
         while ((nextpos = cmdsplit (tmpbuf, mypos)))
         {
@@ -899,10 +920,12 @@ boundsline (char *mypos)
  * set up offset (if there) for offset specification *
  * ************************************************* */
 
-char *
+static char *
 setoffset (char *p, struct ofsetree *oft)
 {
     char c, bufr[80];
+
+    /* Insure that the ofsetree struct is all NULL */
 
     oft->oclas_maj = oft->of_maj = oft->add_to = 0;
 
@@ -913,6 +936,8 @@ setoffset (char *p, struct ofsetree *oft)
         nerrexit ("\"(\" in command with no \")\"");
     }
 
+    /* If it's "*", handle it */
+
     if ((c = toupper (*(p++))) == '*')
     {
         /* Hope this works - flag * addressing like this  */
@@ -922,18 +947,20 @@ setoffset (char *p, struct ofsetree *oft)
     }
     switch (c)
     {
-    case '+':
-        ++oft->add_to;
-        break;
-    case '-':
-        break;
-    case ')':
-        if (!oft->incl_pc)
-            nerrexit ("Blank offset spec!!!");
-        return p;
-    default:
-        nerrexit ("No '+', '-', or '*' in offset specification");
+        case '+':       /* Allowable for "*" ??? */
+            ++oft->add_to;
+            break;
+        case '-':
+            break;
+        case ')':
+            if (!oft->incl_pc)
+                nerrexit ("Blank offset spec!!!");
+            return p;
+        default:
+            nerrexit ("No '+', '-', or '*' in offset specification");
     }
+
+    /* At this point, we have a "+" or "-" and are sitting on it */
 
     p = skipblank (p);
     c = toupper (*(p++));
@@ -951,10 +978,12 @@ setoffset (char *p, struct ofsetree *oft)
     /* NOTE: need to be sure string is lowercase and following
      * value needs to go into the structure */
 
-    p = movxnum (bufr, p);
+    p = cpyhexnum (bufr, p);
     sscanf (bufr, "%x", &oft->of_maj);
     /*if(add_to)
        oft->of_maj = -(oft->of_maj); */
+
+    /* Here oft->of_maj contains the offset specified in (+/-xxxx) */
 
     if (*(p = skipblank (p)) == ')')
     {
@@ -967,21 +996,23 @@ setoffset (char *p, struct ofsetree *oft)
     return ++p;
 }
 
-/* ******************************************* *
- * setupbounds() - The entry point for setting *
- *            up a single boundary             *
- * Entry: lpos = current position in cmd line  *
- * ******************************************* */
+/* **************************************************************** *
+ * setupbounds() - The base entry point for setting up a single     *
+ *      boundary.                                                   *
+ * Passed : lpos = current position in cmd line                     *
+ * **************************************************************** */
 
-void
+static void
 setupbounds (char *lpos)
 {
     struct databndaries *bdry;
-    register int bdtyp, lclass = 0;
-    int rglo, rghi;
-    char c;
+    register int bdtyp,
+             lclass = 0;
+    int rglo,
+        rghi;
+    char c,
+         loc[20];
     struct ofsetree *otreept = 0;
-    char loc[20];
 
     GettingAmode = 0;
     PBytSiz = 1;                /* Default to single byte */
@@ -990,12 +1021,16 @@ setupbounds (char *lpos)
 
     switch (c = toupper (*(lpos = skipblank (lpos))))
     {
-        case 'C':
+        case 'C':       /* 'C'ode cmd.  simply sets the Boundary Pointer */
+                        /* for the next command */
             lpos = skipblank (++lpos);
-            lpos = movxnum (loc, lpos);
+            lpos = cpyhexnum (loc, lpos);
             sscanf (loc, "%x", &NxtBnd);
             ++NxtBnd;   /* Position to start of NEXT boundary */
             return;     /* Nothing else to do for this option */
+
+            /* The following two are the label types */
+
         case 'L':
             PBytSiz = 2;
         case 'S':
@@ -1008,11 +1043,17 @@ setupbounds (char *lpos)
             }
 
             break;
+
+            /* These two are the non-label versions */
+
         case 'W':
             PBytSiz = 2;
         case 'B':
             lclass = '$';
             break;
+
+            /* ASCII string */
+
         case 'A':
             lclass = '^';
             break;
@@ -1159,8 +1200,19 @@ tellme (char *pt)
     return;
 }
 
-char *
-movxnum (char *dst, char *src)
+/* ******************************************************************** *
+ * cpyhexnum() - Copies all valid hexadecimal string from "src" to      *
+ *      "dst" until a non-hex char is encountered and NULL-terminates   *
+ *      string in "dst".                                                *
+ * Passed : (1) - Destination for string .  It is the responsibility of *
+ *                the caller to insure that "dst" is of adequate size.  *
+ *          (2) - Source from which to copy                             *
+ * Returns: Pointer to first non-hexadecimal character in src string.   *
+ *          This may be a space, "/", etc.                              *
+ * ******************************************************************** */
+
+static char *
+cpyhexnum (char *dst, char *src)
 {
     while (isxdigit (*(src)))
         *(dst++) = tolower (*(src++));
@@ -1168,8 +1220,13 @@ movxnum (char *dst, char *src)
     return src;
 }
 
+/* ******************************************************************** *
+ * cpy_digit_str() - Copies string of digits from "src" to "dst" until  *
+ *      a non-digit is encountered.  See cpyhexnum() for details        *
+ * ******************************************************************** */
+
 char *
-movdigit (char *dst, char *src)
+cpy_digit_str (char *dst, char *src)
 {
     while (isdigit (*(src)))
         *(dst++) = *(src++);

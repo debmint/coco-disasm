@@ -1,33 +1,33 @@
 
-/* *************************************************************** *
- * structures.h - definitions for structures used in os9disasm     *
- * Note:  Coco Integers in most cases are represented as an array  *
- * of two chars due to big-endian  translations                    *
- * *************************************************************** */
-
-/* $Id$ */
+/* **************************************************************** *
+ * structures.h - definitions for structures used in os9disasm      $
+ * Note:  Coco Integers in most cases are represented as an array   $
+ * of two chars due to big-endian  translations                     $
+ *                                                                  $
+ * $Id$
+ * **************************************************************** */
 
 /* *************************************************************** *
  * OS9 Module header defs                                          *
  * *************************************************************** */
 
 struct modhead {
-	unsigned char M_ID[2],	/* Sync bytes ($87CD)	*/
-	     M_Size[2],	        /* Module Size		*/
-	     M_Name[2];	        /* Ptr to Module Name	*/
-	unsigned char M_Type,	/* Type / Language	*/
-	     M_Revs,	        /* Attributes/Rev Level	*/
-	     M_Parity,	        /* Header Parity	*/
-	     M_Exec[2],	        /*Execution Entry Offset*/
-	     M_Mem[2];	        /*Stack Requirement	*/
+	unsigned char M_ID[2],	    /* Sync bytes ($87CD)	*/
+	     M_Size[2],	            /* Module Size		*/
+	     M_Name[2];	            /* Ptr to Module Name	*/
+	unsigned char M_Type,	    /* Type / Language	*/
+	     M_Revs,	            /* Attributes/Rev Level	*/
+	     M_Parity,	            /* Header Parity	*/
+	     M_Exec[2],	            /*Execution Entry Offset*/
+	     M_Mem[2];	            /*Stack Requirement	*/
 };
 
 /* This structure dflts contains the list of defaults/options
  * under which the program is running	*/
 
 struct dflts {
-	char ShLbl;	    /* 0 = 8-char labels; 1 = 6-char labels */
-	char OSType;	/* See OS_* defines */
+	char ShLbl;	        /* 0 = 8-char labels; 1 = 6-char labels */
+	char OSType;	    /* See OS_* defines */
 };
 
 /* Symbol Table tree structure */
@@ -35,31 +35,31 @@ struct dflts {
 #define NLMAX 12
 
 struct nlist {
-	char sname[NLMAX+1];	/* symbol name	*/
-	int myaddr;		        /* address of symbol */
-	int stdnam;		        /* flag that it's a std named label */
-    int global;             /* For ROF use... flags it's global */
-	struct nlist *LNext;	/* left (smaller) next	*/
-	struct nlist *RNext;	/* right (larger) next	*/
-	struct nlist *parent;	/* parent	*/
+	char sname[NLMAX+1];	    /* symbol name	*/
+	int myaddr;		            /* address of symbol */
+	int stdnam;		            /* flag that it's a std named label */
+    int global;                 /* For ROF use... flags it's global */
+	struct nlist *LNext;	    /* left (smaller) next	*/
+	struct nlist *RNext;	    /* right (larger) next	*/
+	struct nlist *parent;	    /* parent	*/
 };
 
 /* Offset [ (-L0053) - types stuff ] */
 
 struct ofsetree {
-	char oclas_maj;	/* Class to use in offset addressing	*/
-	int  of_maj;	/* The main offset value		*/
-	char incl_pc;	/* Flag to include PC offset mode	*/
-	int add_to;	    /* Flag: if set, means add offset, else subtract */
-	/*int  of_sec;	 Secondary offset (0 if none)		*/
-	/*char oclas_sec;	 Class of secondary offset		*/
+	char oclas_maj;	    /* Class to use in offset addressing             */
+	int  of_maj;	    /* The main offset value		                 */
+	char incl_pc;	    /* Flag to include PC offset mode	             */
+	int add_to;	        /* Flag: if set, means add offset, else subtract */
+	/*int  of_sec;	 Secondary offset (0 if none)                        */
+	/*char oclas_sec;	 Class of secondary offset                       */
 };
 
 /* Data areas/Label Addressing Modes tree structure */
 
 struct databndaries {
-	int b_lo;               /* lower (beginning) boundary address   */
-	int b_hi;               /* high (ending) boundary address */
+	int b_lo;               /* lower (beginning) boundary address            */
+	int b_hi;               /* high (ending) boundary address                */
 	char b_typ;	            /* Boundary type for DA's, Lbl Class for A-Modes */
 	char b_class;	        /* class def for type L and S Data boundaries    */
 	struct ofsetree *dofst;
@@ -99,11 +99,11 @@ struct printbuf {
          *comment;
 };
 
-/* ************************************ *
- * xtndcmnt structures                  *
- * These are comments that are appended *
- * to the end of the assembly line      *
- * ************************************ */
+/* ******************************************** *
+ * xtndcmnt structures                          *
+ * These are comments that are appended to the  *
+ * end of the assembly line                     *
+ * ******************************************** */
 
 struct apndcmnt {
     int adrs;
@@ -166,10 +166,10 @@ struct rof_glbl {
 /* External references */
 
 struct rof_extrn {
-            char  name[100];     /* External name */
-            char  Type;         /* Type Flag */
-            int   Ofst;         /* Offset into code */
-            int   Extrn;         /* Flag that it's an external ref */
+            char  name[100];        /* External name                  */
+            char  Type;             /* Type Flag                      */
+            int   Ofst;             /* Offset into code               */
+            int   Extrn;            /* Flag that it's an external ref */
             struct rof_extrn *up,
                              *LNext,
                              *RNext;

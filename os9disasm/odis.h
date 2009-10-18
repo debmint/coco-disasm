@@ -1,15 +1,11 @@
-/*##########################################################################
-#       OS9 Cross Disassembler                                             #
-#                                                                          #
-############################################################################
-#                                                                          #
-# $Id$                                         #
-#                                                                          #
-############################################################################
-#                                                                          #
-# File: odis.h                                                             #
-# Purpose: general header file for os9disasm                               #
-##########################################################################*/
+/* *********************************************************************** *
+*       OS9 Cross Disassembler                                             $
+*                                                                          $
+* File: odis.h                                                             $
+* Purpose: general header file for os9disasm                               $
+*                                                                          $
+* $Id::                                                                    $
+***************************************************************************/
 
 #include <config.h>
 #include <stdio.h>
@@ -49,15 +45,15 @@
 #include "structures.h"  /* All structure definitions */
 
 /* File and filename pointers */
-GLOBAL FILE *progpath, /* The program module (or file) we're disassembling */
-            *inpath,  /* generic input stream */
+GLOBAL FILE *progpath,  /* The program module (or file) we're disassembling */
+            *inpath,    /* generic input stream */
 	        *outpath;	/* .asm file if -o specified		*/
-GLOBAL char *modfile;  /* Filename of module    */
+GLOBAL char *modfile;   /* Filename of module    */
 GLOBAL char *asmfile;	/* output asm source file	*/
 GLOBAL char *cmdfilename;
 GLOBAL int LblFilz; 	/* Label file count		*/
-GLOBAL char *LblFNam[MAX_LBFIL]; /* List of label files to process */
-GLOBAL int NxtBnd;	/* Next available data bound	*/
+GLOBAL char *LblFNam[MAX_LBFIL];    /* List of label files to process */
+GLOBAL int NxtBnd;	    /* Next available data bound	*/
 GLOBAL int FileSize;	/* overall size of program file */
 GLOBAL char BoundsNames[]
 #ifdef MAIN
@@ -66,32 +62,32 @@ GLOBAL char BoundsNames[]
 ;
 
 	/* General options and settings for program disassembly */
-GLOBAL char OSType;	/* OS for module - OS9, Flex, CoCo, or Motorola */
-GLOBAL int ShortLbl	/* Flag (if set) to only allow 6-character labels */
+GLOBAL char OSType;	    /* OS for module - OS9, Flex, CoCo, or Motorola */
+GLOBAL int ShortLbl	    /* Flag (if set) to only allow 6-character labels */
 #ifdef MAIN
 = 8
 #endif
 ;
 
-GLOBAL int CpuTyp	/* Target cpu (6809 or 6309 */
+GLOBAL int CpuTyp	        /* Target cpu (6809 or 6309 */
 #ifdef MAIN
 =M_09		/* Default to 6809 */
 #endif
 ;
 
-GLOBAL int Show8bit;    /* 1 = Always specify short index offsets "<" */
-GLOBAL int dozeros;     /* 1 = print zero offsets */
-GLOBAL int UseTabs;     /* Use Tabs in output */
-GLOBAL int UseFCC;	    /* Flag (if set) to enable "fcc" statement
+GLOBAL int Show8bit;        /* 1 = Always specify short index offsets "<" */
+GLOBAL int dozeros;         /* 1 = print zero offsets */
+GLOBAL int UseTabs;         /* Use Tabs in output */
+GLOBAL int UseFCC;	        /* Flag (if set) to enable "fcc" statement
 			   default for OSTYpe=OS_9 */
 GLOBAL int UpCase
 #ifdef MAIN
-= 0			/* default to off (lower case */
+= 0			                /* default to off (lower case */
 #endif
 ;
-GLOBAL int IsROF;       /* ROF flag.  if true, we're doing a ROF */
-GLOBAL char *DfltLbls;	/* Ptr to default label class table	*/
-GLOBAL char OS9Dflt[]	/* Default addressing modes for diff. OS's */
+GLOBAL int IsROF;           /* ROF flag.  if true, we're doing a ROF */
+GLOBAL char *DfltLbls;	    /* Ptr to default label class table	*/
+GLOBAL char OS9Dflt[]	    /* Default addressing modes for diff. OS's */
 #ifdef MAIN
 = "@@@@@X&&D&DXL"
 #endif
@@ -110,34 +106,34 @@ GLOBAL char OS9Dflt[]	/* Default addressing modes for diff. OS's */
 ;
 
 
-GLOBAL unsigned int ModLoad; /* Load address for RS-Dos module */
+GLOBAL unsigned int ModLoad;    /* Load address for RS-Dos module */
 
 	/* Module info from OS9 module header */
 GLOBAL unsigned int ModSiz,
 		    ModNam,
 		    ModExe,
-		    ModTyp,  /* only one byte, but probably saves processing */
+		    ModTyp,     /* only one byte, but probably saves processing */
 		    ModData,
             ModRev,
-		    HdrLen;	/* (probably useful for other OS's, too) */
+		    HdrLen;	    /* (probably useful for other OS's, too) */
 
 /* The following are variables used by the disassembly process */
 
 	/* EndAdr is a ptr to the end of the executable code in our buffer
 	 * ... less 3-byte CRC value of OS9 */
 /*GLOBAL int EndAdr;*/
-GLOBAL char *ModBegin;	/* Ptr to in-memory prog we're reading	*/
-GLOBAL int Pass2;	/* Flag as to which pass we're in	*/
-GLOBAL int Pc;		/* The "Program counter"..		*/
-GLOBAL int AMode;	/* Label Class for current command	*/
-GLOBAL int CmdLen;	/* # bytes in current cmd		*/
-GLOBAL int CmdEnt;	/* Entry point for current command	*/
+GLOBAL char *ModBegin;	    /* Ptr to in-memory prog we're reading	*/
+GLOBAL int Pass2;	        /* Flag as to which pass we're in	*/
+GLOBAL int Pc;		        /* The "Program counter"..		*/
+GLOBAL int AMode;	        /* Label Class for current command	*/
+GLOBAL int CmdLen;	        /* # bytes in current cmd		*/
+GLOBAL int CmdEnt;	        /* Entry point for current command	*/
 
 	/* Modes,etc for current address being processed or set up	*/
 GLOBAL int	NowAmode,
 		NowClass,
 		NowOfst,
-		PBytSiz;	/* # bytes in operand	*/
+		PBytSiz;	        /* # bytes in operand	*/
 
 
 		/* printer/output specific stuff */
@@ -145,7 +141,7 @@ GLOBAL int HavUnknown;
 GLOBAL int LinNum;
 GLOBAL int PgLin;
 GLOBAL struct printbuf PBuf, Unknown;
-GLOBAL int WrtSrc	/* Flag to write source file - 0 = no */
+GLOBAL int WrtSrc	        /* Flag to write source file - 0 = no */
 #ifdef MAIN
 = 0
 #endif
@@ -172,13 +168,23 @@ GLOBAL char *lblorder
 = "!^$&@%ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #endif
 ;
-	/* roots for the 31 symbol list trees (1 for each class */
+
+/* **************************************************** *
+ * roots for the 31 symbol list trees (1 for each class *
+ * **************************************************** */
+
 GLOBAL struct nlist *SymLst[33]; /* [0] is empty - to avoid adjusting strpos */
-	/* roots for the 31 classes of data boundaries*/
+
+/* roots for the 31 classes of data boundaries*/
+
 GLOBAL struct databndaries *LAdds[33];
-	/* (the single) root to data boundaries tree */
+
+/* (the single) root to data boundaries tree */
+
 GLOBAL struct databndaries *dbounds;
-    /* Comments tree */
+
+/* Comments tree */
+
 GLOBAL struct commenttree *Comments[33];
 GLOBAL struct apndcmnt *CmntApnd[33];
 

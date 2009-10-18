@@ -1,29 +1,29 @@
 /* ************************************************************************ *
+ *                                                                          $
+ * os9disasm - OS9-6809 CROSS DISASSEMBLER                                  $
+ *             following the example of Dynamite+                           $
+ *                                                                          $
+ * ************************************************************************ $
+ *                                                                          $
+ *  Edition History:                                                        $
+ *  #  Date       Comments                                              by  $
+ *  -- ---------- -------------------------------------------------     --- $
+ *  01 2003/01/31 First began project                                   dlb $
+ * ************************************************************************ $
+ * File:  util_dis.c                                                        $
+ * Purpose: Contain common utilities needed by all prog                     $
  *                                                                          *
- * os9disasm - OS9-6809 CROSS DISASSEMBLER                                  *
- *             following the example of Dynamite+                           *
- *                                                                          *
- * ************************************************************************ *
- *                                                                          *
- *  $Id$                          *
- *                                                                          *
- *  Edition History:                                                        *
- *  #  Date       Comments                                              by  *
- *  -- ---------- -------------------------------------------------     --- *
- *  01 2003/01/31 First began project                                   dlb *
- * ************************************************************************ *
- * File:  util_dis.c                                                        *
- * Purpose: Contain common utilities needed by all prog                     *
+ * $Id::                                                                    $
  * ************************************************************************ */
 
 #include "odis.h"
 
-/* **************************************** *
- * o9_fgetword() - get a 6809-formatted     *
- *   word (double byte) from stream         *
- * Passed: FILE stream                      *
- * Returns big-endian WORD                  *
- * **************************************** */
+/* ******************************************************** *
+ * o9_fgetword() - get a 6809-formatted word (double byte)  *
+ *      from stream                                         *
+ * Passed: FILE *stream                                     *
+ * Returns: WORD in native-endian format.                   *
+ * ******************************************************** */
 
 int
 o9_fgetword(FILE *fp)
@@ -53,13 +53,13 @@ o9_int (char *o9num)
     return ((msb << 8) + lsb);
 }
 
-/* **************************************************** *
- * skipblank() passes over any space, tab, or any       *
- *             newline character in the string          *
- * Passed: p pointer to begin of string to parse        *
- * Returns: pointer to first character of "valid"       *
- *          data, or null if end of data                *
- * **************************************************** */
+/* **************************************************************** *
+ * skipblank() passes over any space, tab, or any newline character *
+ *             in the string                                        *
+ * Passed: p pointer to begin of string to parse                    *
+ * Returns: pointer to first character of "valid" data,             *
+ *          or null if end of data                                  *
+ * **************************************************************** */
 
 char *
 skipblank (char *p)
@@ -82,10 +82,11 @@ skipblank (char *p)
     return p;
 }
 
-/* Strpos():  similar to strchr except that it returns the
- * offset from the beginning of the string rather that the
- * actual memory address
- */
+/* ******************************************************************** *
+ * Strpos():  similar to strchr except that it returns the offset from  * 
+ *          the beginning of the string rather that the actual          *
+ *          memory address                                              *
+ * ******************************************************************** */
 
 int
 strpos (char *s, char c)

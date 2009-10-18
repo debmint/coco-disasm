@@ -1,10 +1,10 @@
 
-/* ************************************************** *
- * rof.c - handles rof files                          *
- *                                                    *
- * ************************************************** */
+/* **************************************************** *
+ * rof.c - handles rof files                            $
+ *                                                      $
+ * $Id::                                                $
+ * **************************************************** */
 
-/* $Id$ */
 
 #include "odis.h"
 
@@ -78,16 +78,15 @@ reflst (struct asc_data *cl)
     }
 }
 
-/* ************************************************** *
- * fstrncpy() - equivalent to strncpy, except that    *
- *           the source comes from a stdio filehandle *
- *           Will copy n-1 chars, and returns a null- *
- *           terminated string                        *
- * Passed: char *dest - the destination               *
- *         int  n     - the maximum number of chars   *
- *         FILE *fp   - the file ptr for the source   *
- * Returns: pointer to the stored string              *
- * ************************************************** */
+/* ******************************************************************** *
+ * fstrncpy() - equivalent to strncpy, except that the source comes     *
+ *           from a stdio filehandle                                    *
+ *           Will copy n-1 chars, and returns a null-terminated string  *
+ * Passed : (1) dest - the destination                                  *
+ *          (2) n    - the maximum number of chars                      *
+ *          (3) fp   - the file ptr for the source                      *
+ * Returns: pointer to the stored string                                *
+ * ******************************************************************** */
 
 char *
 fstrncpy (char *dest, int n, FILE *fp)
@@ -407,8 +406,8 @@ void get_refs(char *vname, int count, int is_extern)
 
 /* ************************************************** *
  * find_extrn() - find an external reference          *
- * Passed: xtrn - starting extrn ref                  *
- *         adrs - Address to match                    *
+ * Passed : (1) xtrn - starting extrn ref             *
+ *          (2) adrs - Address to match               *
  * ************************************************** */
 
 struct rof_extrn *
@@ -458,15 +457,14 @@ find_extrn ( struct rof_extrn *xtrn, int adrs)
     return 0;
 }
 
-/* ************************************************** *
- * rof_lblref() - Process a label reference found in  *
- *       the code.  On entry, Pc points to the begin  *
- *       of the reference                             *
- * Passed: pointer to int variable to store value of  *
- *      operand value                                 *
- * Returns: pointer to the rof_extern entry, with     *
- *       a label name added, if applicable            *
- * ************************************************** */
+/* ************************************************************ *
+ * rof_lblref() - Process a label reference found inthe code.   *
+ *       On entry, Pc points to the begin of the reference      *
+ * Passed: pointer to int variable to store value of operand    *
+ *         value                                                *
+ * Returns: pointer to the rof_extern entry, with a label name  *
+ *       added, if applicable                                   *
+ * ************************************************************ */
 
 struct rof_extrn *
 rof_lblref (int *value)
@@ -508,8 +506,8 @@ rof_lblref (int *value)
 
 /* ******************************************************** *
  * rof_find_asc() - Find an ascii data block def            *
- * Passed: tree - ptr to asc_dat tree                       *
- *         entry - Command entry point (usually CmdEnt      *
+ * Passed : (1) tree - ptr to asc_dat tree                  *
+ *          (2) entry - Command entry point (usually CmdEnt *
  * Returns: tree entry if present, 0 if no match            *
  * ******************************************************** */
 
@@ -588,14 +586,13 @@ rof_datasize (char class)
     return dsize;
 }
 
-/* ******************************************************** *
- * DataDoBlock - Process a block composed of an initialized *
- *               reference from a data area                 *
- * Passed: struct rof_extrn *mylist - pointer to tree       *
- *                      tree element                        *
- *         int datasize - the size of the area to process   *
- *         char class - the label class (D or C)            *
- * ******************************************************** */
+/* ******************************************************************** *
+ * DataDoBlock - Process a block composed of an initialized reference   *
+ *               from a data area                                       *
+ * Passed : (1) struct rof_extrn *mylist - pointer to tree element      *
+ *          (2) int datasize - the size of the area to process          *
+ *          (3) char class - the label class (D or C)                   *
+ * ******************************************************************** */
 
 static void
 DataDoBlock (struct rof_extrn *mylist, int datasize,
@@ -740,15 +737,15 @@ ROFDataLst (struct rof_extrn *mylist, int maxcount, struct asc_data *ascdat,
     }
 }
 
-/* ************************************************** *
- * ListInitROF() - moves initialized data into the    *
- *                 listing.  Really a setup routine   *
- * Passed: nl - Ptr to proper nlist, positioned at    *
- *               the first element to be listed       *
- *         mycount - count of elements in this sect.  *
- *         notdp   - 0 if DP, 1 if non-DP             *
- *         class   - Label Class letter               *
- * ************************************************** */
+/* ******************************************************** *
+ * ListInitROF() - moves initialized data into the listing. *
+ *                 Really a setup routine                   *
+ * Passed : (1) nl - Ptr to proper nlist, positioned at the *
+ *              first element to be listed                  *
+ *          (2) mycount - count of elements in this sect.   *
+ *          (3) notdp   - 0 if DP, 1 if non-DP              *
+ *          (4) class   - Label Class letter                *
+ * ******************************************************** */
 
 void
 ListInitROF (struct nlist *nl, int mycount, int notdp, char class)

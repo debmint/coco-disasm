@@ -1,19 +1,19 @@
 /* ************************************************************************ *
+ *                                                                          $
+ * os9disasm - a project to disassemble Os9-coco modules into source code   $
+ *             following the example of Dynamite+                           $
+ *                                                                          $
+ * ************************************************************************ $
+ *                                                                          $
+ *  Edition History:                                                        $
+ *  #  Date       Comments                                              by  $
+ *  -- ---------- -------------------------------------------------     --- $
+ *  01 2003/01/31 First began project                                   dlb $
+ ************************************************************************** $
+ * File:  o9dis.c                                                           $
+ * Purpose: mainline for program                                            $
  *                                                                          *
- * os9disasm - a project to disassemble Os9-coco modules into source code   *
- *             following the example of Dynamite+                           *
- *                                                                          *
- * ************************************************************************ *
- *                                                                          *
- *  $Id$                         *
- *                                                                          *
- *  Edition History:                                                        *
- *  #  Date       Comments                                              by  *
- *  -- ---------- -------------------------------------------------     --- *
- *  01 2003/01/31 First began project                                   dlb *
- ************************************************************************** *
- * File:  o9dis.c                                                           *
- * Purpose: mainline for program                                            *
+ *  $Id::                                                                   $
  * ************************************************************************ */
 
 #define MAIN
@@ -103,19 +103,18 @@ pass_eq (char *pr)
     return (*pr == '=' ? ++pr : pr);
 }
 
-/* ************************************************************ *
- * build_path() - Try to build a valid pathname for a filename  *
- *                provided.  Several attempts are made.  First, *
- *                if the raw name is accessible, this name is   *
- *                returned.  If not, successive attempts to     *
- *                substute for "~/", trying for the same dir    *
- *                in which the cmdfile is located, and finally  *
- *                DefDir - where the defs are located.  On all  *
- *                these, a string is dup-ed, and this string is *
- *                returned.                                     *
- * Passed:    the filename                                      *
- * Returned:  return ptr to full pathname string. 0 on failure. *
- * ************************************************************ */
+/* ************************************************************************ *
+ * build_path() - Try to build a valid pathname for a filename provided.    *
+ *                Several attempts are made.  First, if the raw name is     *
+ *                accessible, this name is returned.                        *
+ *                If not, successive attempts to substute for "~/", trying  *
+ *                for the same dir  in which the cmdfile is located,        *
+ *                and finally  DefDir - where the defs are located.         *
+ *                On all these, a string is dup-ed, and this string is      *
+ *                returned.                                                 *
+ * Passed:    the filename                                                  *
+ * Returned:  return ptr to full pathname string. 0 on failure.             *
+ * ************************************************************************ */
 
 static char *
 build_path (char *fname)
@@ -244,12 +243,12 @@ build_path (char *fname)
     return 0;
 }
 
-/* **************************************************** *
- * do_opt() - Searches for match of char pointed to by  *
- *      c and does whatever setup processing is needed  *
- *      This is used for both command-line opts and     *
- *      opts found in the command file.                 *
- * **************************************************** */
+/* **************************************************************** *
+ * do_opt() - Searches for match of char pointed to by c and does   *
+ *      whatever setup processing is needed.                        *
+ *      This is used for both command-line opts and  opts found in  *
+ *      the command file.                                           *
+ * **************************************************************** */
 
 void
 do_opt (char *c)
@@ -392,12 +391,12 @@ do_opt (char *c)
     }
 }
 
-/* **************************************************************** *
- * pass1() - Do setup procedures.  Processes header, depending upon *
- *          OSType.  For OS9 type (default), determines if it's a   *
- *          program module or ROF and then processes header.        *
- *          Process command dfile (if we have one).                 *
- * **************************************************************** */
+/* ************************************************************************ *
+ * pass1() - Do setup procedures.  Processes header, depending upon OSType. *
+ *          For OS9 type (default), determines if it's a program module or  *
+ *          ROF and then processes header.                                  *
+ *          Process command dfile (if we have one).                         *
+ * ************************************************************************ */
 
 static void
 pass1 ()
@@ -469,8 +468,8 @@ pass1 ()
 }
 
 /* ******************************************************************** *
- * RdLblFile() - Reads a label file and stores label values into        *
- *      label tree if value (or address) is present in tree             *
+ * RdLblFile() - Reads a label file and stores label values into label  *
+ *      tree if value (or address) is present in tree                   *
  *      Path to file has already been opened and is stored in "inpath"  *
  * ******************************************************************** */
 
