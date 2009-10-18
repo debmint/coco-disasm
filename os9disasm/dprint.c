@@ -740,7 +740,11 @@ ROFDataPrint ()
 
                 if (isinit)
                 {
-                    PrintNonCmd (mytmp, 0, 1);
+                    if (thissz[isinit])
+                    {
+                        PrintNonCmd (mytmp, 0, 1);
+                    }
+
                     ListInitROF (dta, thissz[isinit], vs, dattyp[isinit]);
                 }
                 else
@@ -751,7 +755,11 @@ ROFDataPrint ()
                          * line is not printed, since it is provided by
                          * PrinLine above */
 
-                        PrintNonCmd (mytmp, isinit, 1);
+                        if (thissz[isinit])
+                        {
+                            PrintNonCmd (mytmp, isinit, 1);
+                        }
+
                         srch = dta;
 
                         while (srch->LNext)
