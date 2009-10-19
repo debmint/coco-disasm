@@ -223,3 +223,47 @@ strdup (char *str)
     return dupstr;
 }
 #endif
+
+/* This is a debugging function */
+
+void printbounds (struct databndaries *bnd)
+{
+    if (bnd->DLeft)
+    {
+        printbounds (bnd->DLeft);
+    }
+
+    printf ("b_lo %x; b_hi %x b_typ %c b_class %d\n", bnd->b_lo, bnd->b_hi,
+                                                      bnd->b_typ, bnd->b_class);
+
+    if (bnd->dofst)
+    {
+        struct ofsetree *o = bnd->dofst;
+
+        printf ("    oclas_maj %c, of_maj %x, add_to %d, incl_pc %d\n",
+                o->oclas_maj, o->of_maj, o->add_to, o->incl_pc);
+    }
+
+    if (bnd->DRight)
+    {
+        printbounds (bnd->DRight);
+    }
+}
+
+void
+listbounds ()
+{
+    struct databndaries *dbs;
+    int count;
+
+    for (count = 1; count < 32; count++)
+    {
+        dbs = LAdds[count];
+
+        if (dbs)
+        {
+            printf ("-------\n");
+            printbounds(dbs);
+        }
+    }
+}

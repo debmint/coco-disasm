@@ -198,9 +198,12 @@ LblCalc (char *dst, int adr, int amod)
                     raw += kls->dofst->of_maj;
                 }
 
+                /* Let's attempt to insert the label for PC-Rel offets here */
+
                 if (kls->dofst->incl_pc)
                 {
-                    raw += Pc;
+                    raw += CmdEnt;
+                    addlbl (raw, kls->dofst->oclas_maj);
                 }
             }
         }
@@ -287,6 +290,20 @@ LblCalc (char *dst, int adr, int amod)
             else
             {
                 strcat (dst, "-");
+            }
+
+            if (kls->dofst->incl_pc)
+            {
+                strcat (dst, "*");
+
+                if (kls->dofst->of_maj)
+                {
+                    strcat (dst, "-");
+                }
+                else
+                {
+                    return 1;
+                }
             }
 
             if ((mylabel = FindLbl (SymLst[strpos (lblorder, c)],

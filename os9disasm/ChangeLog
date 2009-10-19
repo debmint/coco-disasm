@@ -1,3 +1,15 @@
+Rev 126
+  * cmdfile.c, lbltree.c
+    Added ability to do Data Bounds and Addressing Mode setup using offset
+	from PC - (*) and (* - addr).  This had never been implemented, at least
+	correctly.  Hopefully, nothing was broken.
+
+  * util_dis.c
+    Added a listbounds() subroutine.  This is for debugging, and will print
+	out all the data boundary defs.
+
+-- dlb  Mon, 19 Oct 2009 16:23:53 -0500
+
 os9disasm (0.9.1)
   * os9disasm.c, progdis.c, odis.h
     Added ability to specify label name length

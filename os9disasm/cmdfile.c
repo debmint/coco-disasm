@@ -955,6 +955,9 @@ setoffset (char *p, struct ofsetree *oft)
         case ')':
             if (!oft->incl_pc)
                 nerrexit ("Blank offset spec!!!");
+
+            oft->oclas_maj = 'L';
+
             return p;
         default:
             nerrexit ("No '+', '-', or '*' in offset specification");
