@@ -69,9 +69,17 @@
       a certain addressing mode, depending upon the target system.  For
       code in an OS9 program module, for example, &odis; will assume that, since
       register <emphasis>U</emphasis> usually points to the base of the
-      data area, that something indexed by <emphasis>U</emphasis> refers
-      to data, and will assign it class <emphasis>"D"</emphasis> (the default
-      class for <command>D</command>ata).
+      data area,
+      <footnote>
+        <para>For code compiled from <emphasis>C</emphasis> source, register
+          <emphasis>Y</emphasis> is the data pointer, rather than register
+          <emphasis>U></emphasis>.  For disassembling <emphasis>C</emphasis>
+          output, This default should be reassigned to register
+          <emphasis>Y</emphasis>.  </para>
+      </footnote>
+      that something indexed by <emphasis>U</emphasis> refers
+      to data, and will assign a label in this operand class
+      <emphasis>"D"</emphasis> (the default class for <command>D</command>ata).
     </para>
   </section>
   <section id="comments"><title>Adding comments to the Source</title>
@@ -82,7 +90,8 @@
       years later.  Also, while disassembling a program, comments can be useful
       in understanding just what is going on.
     </para>
-    <para>To this end, comments can be added in two ways.
+    <para>To this end, comments can be permanently added (in that they
+      appear in every disassembly) in two ways.
     </para>
     <section id="inlinecmnt"><title>Inline Comments</title>
       <para id="appendcmpt">First, short notes can be appended to the end of the
@@ -125,7 +134,7 @@
       <para>
         Any character is permissible to use as a delimiter, and this delimiter
         can be used anywhere in the text as long as it is not the
-        <emphasis>final</emphasis>character on a line.  The comments will
+        <emphasis>final</emphasis> character on a line.  The comments will
         continue and include all text in the command file until the specified
         delimiter is found as the <emphasis>last</emphasis> character on a
         line.  To end the commenting, this delimiter must be
@@ -184,6 +193,11 @@
           * Also we need to say this
           *
         </screen>
+      </para>
+      <para>Note in the second comment, we use the letter "e" to denote a
+        delimiter.  Normally, you would probably want to use something else,
+        but this is just to display that the delimiter character is strictly
+        optional.
       </para>
     </section>
   </section>

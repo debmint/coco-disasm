@@ -4,7 +4,6 @@
  * ******************************************************************** */
 
 
-#include <gtk/gtk.h>
 #include "g09dis.h"
 #include <stdio.h>
 #include <string.h>

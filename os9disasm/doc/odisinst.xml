@@ -93,10 +93,10 @@
      </section>
    </section>
    <section id="buildprogs"><title>Building the program(s)</title>
-     <para>After running <command>configure</command> and <command>cd</command>
-       'ing into the directory level in which you wish to do your build,
-       issuing the command <command>make</command> will build your program,
-       but won't install it.
+     <para>After running <command>configure</command> you are now ready to
+       build your program(s).  You build the programs by issuing the command
+       <command>make</command>.  This will build your program, but won't
+       install it.
      </para>
      <note>
        <para>You are not required to build from the top-level directory.
@@ -110,6 +110,10 @@
          </command> commands.  The command will apply over only
          that directory and any directories below it.  No higher directory
          or any outside this directory will be involved.
+       </para>
+       <para>In addition, you can also issue the command
+         <command>make &lt;component&gt;</command> to build a single
+         aspect of the suite.
        </para>
      </note>
    </section>
@@ -182,6 +186,9 @@
        done before installing to be done before attempting to do the install.
        By default, this will install the &odis; binary in the directory
        <filename>/usr/local/bin/</filename>.
+     </para>
+     <para>Note that on most systems, to install to a standard location, such
+       as <emphasis>/usr/local/bin/</emphasis>, you need superuser priviledges.
      </para>
      <section><title>Installing in an alternate location</title>
        <para>
@@ -303,14 +310,26 @@
       location, but you can specify any path with the <command>-d</command>
       command-line option.
     </para>
-    <formalpara id="dd-dir">><title>Getting /dd on a unix-style system</title>
+    <formalpara id="dd-dir"><title>Getting /dd on a unix-style system</title>
       There are a couple of ways to get <filename>/dd</filename> to exist on
       a unix-style system.  The first is simply to create a directory named
-      <filename>dd</filename> in the root directory.  However, I preferred to
-      have my coco files in my <filename>$HOME</filename> directory, so I
+      <filename>dd</filename> in the root directory and place all the files
+      there.  However, I preferred to have my coco files in my
+      <filename>$HOME</filename> directory.  This way, I did not have to worry
+      about getting root permissions to modify files in this directory, so I
       created a <filename>coco</filename> directory there and created a
       symbolic link to that directory in the root directory.
     </formalpara>
+    <para>On Windows, if you operate under MinGW, the simplest way is to
+      create a directory <filename>/dd</filename> in the root directory.  Note
+      that symbolic links are not available under Windows.
+    </para>
+    <para>In addition to these options, there is an option in &odis;
+      <filename>-d</filename> which allows you to specify an alternate
+      directory where the defs files are found.  This can be embedded in
+      your <filename>command</filename> file for each disassembly you are
+      doing.
+    </para>
   </section>
  </section>
 </section>

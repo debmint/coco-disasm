@@ -21,6 +21,12 @@
 
 #define CNULL '\0'
 
+static void PrintFormatted (char *pfmt, struct printbuf *pb);
+static void NonBoundsLbl (char class);
+static void PrintComment(char lblclass, int cmdlow, int cmdhi);
+static void StartPage ();
+static void TellLabels (struct nlist *me, int flg, char class, int minval);
+
 extern char *CmdBuf;
 extern struct printbuf *pbuf;
 extern struct rof_hdr *rofptr;
@@ -115,6 +121,23 @@ PrintCleanup (struct printbuf *pb)
     ++LinNum;
 }
 
+static void
+BlankLine ()                    /* Prints a blank line */
+{
+    if ( ! PgLin || PgLin > (PgDepth - 6))
+    {
+        StartPage ();
+    }
+
+    printf ("%5d\n", LinNum++);
+    ++PgLin;
+
+    if (WrtSrc)
+    {
+        fprintf (outpath, "\n");
+    }
+}
+
 /* ************************************************************ *
  * PrintNonCmd() - A utility function to print any non-command  *
  *          line (except stored comments).                      *
@@ -125,7 +148,7 @@ PrintCleanup (struct printbuf *pb)
  *         postblank - true if blankline after str              *
  * ************************************************************ */
 
-void
+static void
 PrintNonCmd (char *str, int preblank, int postblank)
 {
     if (IsROF)
@@ -160,7 +183,7 @@ PrintNonCmd (char *str, int preblank, int postblank)
  *          ptr to empty string if none                     *
  * ******************************************************** */
 
-char *
+static char *
 get_apcomment(char clas, int addr)
 {
     struct apndcmnt *mytree = CmntApnd[strpos (lblorder, clas)];
@@ -227,7 +250,7 @@ PrintLine (char *pfmt, struct printbuf *pb, char class, int cmdlow, int cmdhi)
     PrintCleanup (pb);
 }
 
-void
+static void
 UpString (char *s)              /* Translate a string to uppercase */
 {
     register int x = strlen (s);
@@ -246,7 +269,7 @@ UpString (char *s)              /* Translate a string to uppercase */
  * Passed: Pointer to the print buffer to UpCase   *
  * *********************************************** */
 
-void
+static void
 UpPbuf (struct printbuf *pb)
 {
     if (UpCase)
@@ -259,7 +282,7 @@ UpPbuf (struct printbuf *pb)
     }
 }
 
-void
+static void
 PrintFormatted (char *pfmt, struct printbuf *pb)
 {
     int _linlen;
@@ -304,7 +327,7 @@ PrintFormatted (char *pfmt, struct printbuf *pb)
     fflush (stdout);
 }
 
-void
+static void
 StartPage ()
 {
     char *bywhom = "* Disassembly by Os9disasm of";
@@ -346,26 +369,9 @@ StartPage ()
     }
 }
 
-void
-BlankLine ()                    /* Prints a blank line */
-{
-    if ( ! PgLin || PgLin > (PgDepth - 6))
-    {
-        StartPage ();
-    }
-
-    printf ("%5d\n", LinNum++);
-    ++PgLin;
-
-    if (WrtSrc)
-    {
-        fprintf (outpath, "\n");
-    }
-}
-
 /* print any comments appropriate */
 
-    void
+static void
 PrintComment(char lblclass, int cmdlow, int cmdhi)
 {
     register struct commenttree *me;
@@ -410,7 +416,7 @@ PrintComment(char lblclass, int cmdlow, int cmdhi)
     }
 }
 
-void
+static void
 NonBoundsLbl (char class)
 {
     if (class)
@@ -680,7 +686,6 @@ void
 ROFDataPrint ()
 {
     struct nlist *dta, *srch;
-//    char *vstyp[2] = {"vsect dp", "vsect"};
     char *dptell[2] = {"* Uninitialized data (class %c)",
                        "* Initialized Data (class %c)"};
     int sizes[4] = { rofptr->udpsz, rofptr->idpsz,
@@ -712,7 +717,6 @@ ROFDataPrint ()
 
     for ( vs = 0; vs <= 1; vs++)    /* Cycle through DP, non-dp */
     {
-        //if ((ListRoot (dattyp[0]) || ListRoot (dattyp[1])))
         if ((thissz[0]) || thissz[1])
         {
             strcpy (pbuf->mnem, "vsect");
@@ -818,7 +822,6 @@ void
 OS9DataPrint ()
 {
     struct nlist *dta, *srch;
-/*    struct printbuf PB, *pbuf = &PB;*/
     char *what = "* OS9 data area definitions";
 
     InProg = 0;    /* Stop looking for Inline program labels to substitute */
@@ -1085,7 +1088,7 @@ WrtEquates (int stdflg)
 
 /* TellLabels(me) - Print out the labels for class in "me" tree */
 
-void
+static void
 TellLabels (struct nlist *me, int flg, char class, int minval)
 {
     struct printbuf PBF, *pb = &PBF;

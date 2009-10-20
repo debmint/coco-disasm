@@ -8,6 +8,8 @@
 
 #include "odis.h"
 
+static void get_refs(char *vname, int count, int is_extern);
+
 /* symbol table types */
 /* symbol definition/reference type/location */
 /* location flags */
@@ -88,7 +90,7 @@ reflst (struct asc_data *cl)
  * Returns: pointer to the stored string                                *
  * ******************************************************************** */
 
-char *
+static char *
 fstrncpy (char *dest, int n, FILE *fp)
 {
     char *pt = dest;
@@ -294,7 +296,8 @@ rof_addlbl (int adrs, struct rof_extrn *ref)
  *          1 if external, 0 if local                 *
  * ************************************************** */
 
-void get_refs(char *vname, int count, int is_extern)
+static void
+get_refs(char *vname, int count, int is_extern)
 {
     while (count--)
     {
@@ -511,7 +514,7 @@ rof_lblref (int *value)
  * Returns: tree entry if present, 0 if no match            *
  * ******************************************************** */
 
-struct asc_data *
+static struct asc_data *
 rof_find_asc (struct asc_data *tree, int entry)
 {
     if (!tree)

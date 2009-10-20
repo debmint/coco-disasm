@@ -10,7 +10,6 @@
  * ******************************************************** */
 
 
-#include <gtk/gtk.h>
 #include <string.h>
 #include "g09dis.h"
 

@@ -267,3 +267,30 @@ listbounds ()
         }
     }
 }
+
+void
+nerrexit (char *l)
+{
+    fprintf (stderr, l);
+    fprintf (stderr, " Line #%d\n", LinNum);
+    exit (1);
+}
+
+/* This is a debugging function */
+
+void
+listlbls ()
+{
+    struct nlist *nl;
+    int count;
+
+    for (count = 1; count < strlen (lblorder); count++)
+    {
+        nl = SymLst[count];
+        if (nl)
+        {
+            printf ("Labels of class: %c\n", lblorder[count]);
+            DoPrt (nl);
+        }
+    }
+}

@@ -46,52 +46,52 @@ ListRoot (char symbol)
 
 /* NOTE: renamed - not currently used */
 
-static void
-no_dataget (struct databndaries *bp, char c, int k)
-{
-    int x;
-    char bf[6];
-
-    /* Let's add ModBegin to save conversion */
-    register char *cp = ModBegin + bp->b_lo;
-    register char *dtop = ModBegin + bp->b_hi;
-    int offset = 0;
-    char ofcls;
-
-    if (bp->dofst)
-    {
-        offset = bp->dofst->of_maj;
-
-        if ( ! bp->dofst->add_to)
-            offset = -offset;
-        if ((bp->dofst)->incl_pc)
-            offset += Pc;
-        if ((bp->dofst)->oclas_maj)
-            ofcls = (bp->dofst)->oclas_maj;
-    }
-
-    /* Assume now that this routine only does data boundaries */
-    while (cp < dtop)
-    {
-        strncpy (bf, cp, k);    /* if it's single byte, it ordered x0 */
-        bf[k] = '\0';           /* Be sure it's null terminated */
-        x = o9_int (bf);        /* and this takes care of little-endian */
-        x += offset;
-        if ( ! (Pass2))
-        {
-            addlbl (x, c);
-        }
-
-        cp += k;
-    }
-}
+//static void
+//no_dataget (struct databndaries *bp, char c, int k)
+//{
+//    int x;
+//    char bf[6];
+//
+//    /* Let's add ModBegin to save conversion */
+//    register char *cp = ModBegin + bp->b_lo;
+//    register char *dtop = ModBegin + bp->b_hi;
+//    int offset = 0;
+//    char ofcls;
+//
+//    if (bp->dofst)
+//    {
+//        offset = bp->dofst->of_maj;
+//
+//        if ( ! bp->dofst->add_to)
+//            offset = -offset;
+//        if ((bp->dofst)->incl_pc)
+//            offset += Pc;
+//        if ((bp->dofst)->oclas_maj)
+//            ofcls = (bp->dofst)->oclas_maj;
+//    }
+//
+//    /* Assume now that this routine only does data boundaries */
+//    while (cp < dtop)
+//    {
+//        strncpy (bf, cp, k);    /* if it's single byte, it ordered x0 */
+//        bf[k] = '\0';           /* Be sure it's null terminated */
+//        x = o9_int (bf);        /* and this takes care of little-endian */
+//        x += offset;
+//        if ( ! (Pass2))
+//        {
+//            addlbl (x, c);
+//        }
+//
+//        cp += k;
+//    }
+//}
 
 /* **************************************************************** *
  * bGoBegin():	Go to the beginning of the tree, or branch of tree. *
  *      for Data Boundary tree                                      *
  * **************************************************************** */
 
-struct databndaries *
+static struct databndaries *
 bGoBegin (struct databndaries *pt)
 {
     while (pt->DLeft || pt->DRight)

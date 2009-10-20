@@ -115,12 +115,13 @@
       </para>
       <para>At present, &odis; does a large portion of what
         <filename>dynamite+</filename> is capable of doing.  However,
-        as of now, &odis; disassembles only OS9 and RS-DOS code. No
-        command-line options for setting Addressing Mode or Bounaries
-        are implemented, and neither have some of the disassembly options
-        been implemented. Actually, some seem unnecessary given the tools
-        we have to work with.  However, the program does disassemble valid
-        code, and (hopefully) very few bugs remain.
+        as of now, &odis; disassembles only OS9 (including both complete
+        program modules and ROF modules) and RS-DOS code. No command-line
+        options for setting Addressing Mode or Bounaries are implemented, and
+        neither have some of the disassembly options been implemented.
+        Actually, some seem unnecessary given the tools we have to work with.
+        However, the program does disassemble valid code, and (hopefully) very
+        few bugs remain.
       </para>
     </section>
     <section><title>Structure of this package</title>

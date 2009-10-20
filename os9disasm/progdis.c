@@ -1255,7 +1255,7 @@ GetCmd ()
 
 char prfmt[] = "%10s %04x\n";
 
-static void
+void
 DoPrt (struct nlist *nl)
 {
     if (!nl)
@@ -1273,25 +1273,6 @@ DoPrt (struct nlist *nl)
     if (nl->RNext)
     {
         DoPrt (nl->RNext);
-    }
-}
-
-/* This is a debugging function */
-
-void
-listlbls ()
-{
-    struct nlist *nl;
-    int count;
-
-    for (count = 1; count < strlen (lblorder); count++)
-    {
-        nl = SymLst[count];
-        if (nl)
-        {
-            printf ("Labels of class: %c\n", lblorder[count]);
-            DoPrt (nl);
-        }
     }
 }
 

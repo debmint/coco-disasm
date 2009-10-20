@@ -26,10 +26,197 @@ static char *cpy_digit_str (char *dst, char *src);
 static void setupbounds (char *lpos);
 static int do_mode (char *lpos);
 static char *setoffset (char *p, struct ofsetree *oft);
+static int optincmd (char *lpos);
+static void cmdamode (char *pt);
+static void boundsline (char *mypos);
+static struct commenttree *newcomment (int addrs,
+                                       struct commenttree *parent);
 
 static int NoEnd;      /* Flag that no end on last bound                 */
 static int GettingAmode;    /* Flag 1=getting Addressing mode 0=Data Boundary */
 static struct databndaries *prevbnd ;
+
+/* ************************************************************************ *
+ * asmcomment() Add comments to be placed into the assembler source/listing *
+ *          on separate lines                                               *
+ * Format for this entry:                                                   *
+ *      " <Label class> addr <delim>Dtext<delim>                            *
+ *      ---                                                                 *
+ *      textD\n                                                             *
+ * D represents any delimiter, following lines will be added until a line   *
+ *      ended by the delimiter is encountered.  The delimiter can be        *
+ *      included in the text as long as it's not the last char on the line. *
+ *      The delimiter can be the last character if it's doubled             *
+ * ************************************************************************ */
+
+static int
+asmcomment (char *lpos, FILE *cmdfile)
+{
+    int adr = 0;
+    register char *txt;
+    char delim;
+    int lastline;
+    struct commenttree *treebase;
+    register struct commenttree *me;
+    struct cmntline *prevline = 0;
+    char lblclass;
+
+    if ( ! (lpos = cmntsetup (lpos, &lblclass, &adr)))
+    {
+        return -1;
+    }
+
+    switch (*lpos)
+    {
+#ifndef OSK
+        case '\r':
+#endif
+        case '\n':
+            return 0;    /* Require AT LEAST the delimiter on the first line */
+        default:
+            delim = *lpos;
+            *lpos = '\0';   /* So we can have an empty string for first line */
+            ++lpos;
+    }
+
+    /* Now locate or set up an appropriate tree structure */
+
+    treebase = Comments[strpos (lblorder, lblclass)];
+
+    if ( ! treebase)
+    {
+        me = treebase = Comments[strpos (lblorder, lblclass)] =
+            newcomment (adr, 0);
+    }
+    else
+    {
+        struct commenttree *oldme;
+
+       /* int cmtfound = 0;*/
+        me = treebase;
+
+        while (1) {
+            if (adr < me->adrs)
+            {
+                if (me->cmtLeft)
+                {
+                    me = me->cmtLeft;
+                    continue;
+                }
+                else
+                {
+                    oldme = me;
+                    me = newcomment (adr, me);
+                    oldme->cmtLeft = me;
+
+                    /*cmtfound = 1;*/
+                    break;
+                }
+            }
+            else
+            {
+                if (adr > me->adrs)
+                {
+                    if (me->cmtRight)
+                    {
+                        me = me->cmtRight;
+                        continue;
+                    }
+                    else        /* The same address was previously done */
+                    {
+                        oldme = me;
+                        me = newcomment (adr, me);
+                        oldme->cmtRight = me;
+                        break;
+                    }
+                }
+                else
+                {
+                    /*cmtfound = 1;*/
+
+                    /* Here, we need to find the last comment */
+                    prevline = me->commts;
+
+                    while (prevline->nextline) {
+                        prevline = prevline->nextline;
+                    }
+
+                    /*cmtfound = 1;*/
+                    break;
+                }
+            }
+        }       /* while (1) ( for locating or adding comments */
+    }           /* end of search in commenttree - me = appropriate tree */
+
+/************************************************************************** */
+
+    /* Now get the comment strings */
+    while (1)
+    {
+        struct cmntline *cline;
+        char mbuf[500];
+
+        lastline = 0;
+
+        if (strchr(lpos,'\n'))
+        {
+            *strchr(lpos,'\n') = '\0';
+        }
+        if (strchr(lpos,'\r'))
+        {
+            *strchr(lpos,'\r') = '\0';
+        }
+
+        /* If this is the last line, set flag for later */
+
+        if (lpos[strlen(lpos) - 1] == delim)
+        {
+            lastline = 1;
+            lpos[strlen(lpos) - 1] = '\0'; /* Get rid of the delimiter */
+        }
+
+        /* Now we can finally store the comment */
+        if ( ! (txt = calloc (1, strlen(lpos)+1)))
+        {
+            fprintf(stderr,"Error - cannot allocate memory for comment\n");
+            exit(1);
+        }
+        strncpy (txt,lpos,strlen(lpos));
+
+        if ( ! (cline = calloc (1, sizeof (struct cmntline))))
+        {
+            fprintf (stderr,
+                    "Error - cannot allocate memory for comment line\n");
+            exit(1);
+        }
+        if (prevline)
+        {
+            prevline->nextline = cline;
+        }
+        else
+        {
+            me->commts = cline;
+        }
+
+        prevline = cline;
+        cline->ctxt = txt;
+
+        if (lastline)
+        {
+            return 0;
+        }
+        else
+        {
+            if (!(lpos = fgets(mbuf,sizeof(mbuf),cmdfile)))
+            {
+                return -1; /* Try to proceed on error */
+            }
+
+            ++LinNum;
+            lpos = skipblank(lpos);
+        }
+    }
+}
 
 void
 do_cmd_file ()
@@ -311,7 +498,7 @@ cmntsetup (char *cpos, char *clas, int *adrs)
  *         parent or null if first in tree         *
  * *********************************************** */
 
-struct commenttree *
+static struct commenttree *
 newcomment (int addrs, struct commenttree *parent)
 {
     struct commenttree *newtree;
@@ -327,193 +514,11 @@ newcomment (int addrs, struct commenttree *parent)
     return newtree;
 }
 
-/* ************************************************************************ *
- * asmcomment() Add comments to be placed into the assembler source/listing *
- *          on separate lines                                               *
- * Format for this entry:                                                   *
- *      " <Label class> addr <delim>Dtext<delim>                            *
- *      ---                                                                 *
- *      textD\n                                                             *
- * D represents any delimiter, following lines will be added until a line   *
- *      ended by the delimiter is encountered.  The delimiter can be        *
- *      included in the text as long as it's not the last char on the line. *
- *      The delimiter can be the last character if it's doubled             *
- * ************************************************************************ */
-
-int
-asmcomment (char *lpos, FILE *cmdfile)
-{
-    int adr = 0;
-    register char *txt;
-    char delim;
-    int lastline;
-    struct commenttree *treebase;
-    register struct commenttree *me;
-    struct cmntline *prevline = 0;
-    char lblclass;
-
-    if ( ! (lpos = cmntsetup (lpos, &lblclass, &adr)))
-    {
-        return -1;
-    }
-
-    switch (*lpos)
-    {
-#ifndef OSK
-        case '\r':
-#endif
-        case '\n':
-            return 0;    /* Require AT LEAST the delimiter on the first line */
-        default:
-            delim = *lpos;
-            *lpos = '\0';   /* So we can have an empty string for first line */
-            ++lpos;
-    }
-
-    /* Now locate or set up an appropriate tree structure */
-
-    treebase = Comments[strpos (lblorder, lblclass)];
-
-    if ( ! treebase)
-    {
-        me = treebase = Comments[strpos (lblorder, lblclass)] =
-            newcomment (adr, 0);
-    }
-    else
-    {
-        struct commenttree *oldme;
-
-       /* int cmtfound = 0;*/
-        me = treebase;
-
-        while (1) {
-            if (adr < me->adrs)
-            {
-                if (me->cmtLeft)
-                {
-                    me = me->cmtLeft;
-                    continue;
-                }
-                else
-                {
-                    oldme = me;
-                    me = newcomment (adr, me);
-                    oldme->cmtLeft = me;
-
-                    /*cmtfound = 1;*/
-                    break;
-                }
-            }
-            else
-            {
-                if (adr > me->adrs)
-                {
-                    if (me->cmtRight)
-                    {
-                        me = me->cmtRight;
-                        continue;
-                    }
-                    else        /* The same address was previously done */
-                    {
-                        oldme = me;
-                        me = newcomment (adr, me);
-                        oldme->cmtRight = me;
-                        break;
-                    }
-                }
-                else
-                {
-                    /*cmtfound = 1;*/
-
-                    /* Here, we need to find the last comment */
-                    prevline = me->commts;
-
-                    while (prevline->nextline) {
-                        prevline = prevline->nextline;
-                    }
-
-                    /*cmtfound = 1;*/
-                    break;
-                }
-            }
-        }       /* while (1) ( for locating or adding comments */
-    }           /* end of search in commenttree - me = appropriate tree */
-
-/************************************************************************** */
-
-    /* Now get the comment strings */
-    while (1)
-    {
-        struct cmntline *cline;
-        char mbuf[500];
-
-        lastline = 0;
-
-        if (strchr(lpos,'\n'))
-        {
-            *strchr(lpos,'\n') = '\0';
-        }
-        if (strchr(lpos,'\r'))
-        {
-            *strchr(lpos,'\r') = '\0';
-        }
-
-        /* If this is the last line, set flag for later */
-
-        if (lpos[strlen(lpos) - 1] == delim)
-        {
-            lastline = 1;
-            lpos[strlen(lpos) - 1] = '\0'; /* Get rid of the delimiter */
-        }
-
-        /* Now we can finally store the comment */
-        if ( ! (txt = calloc (1, strlen(lpos)+1)))
-        {
-            fprintf(stderr,"Error - cannot allocate memory for comment\n");
-            exit(1);
-        }
-        strncpy (txt,lpos,strlen(lpos));
-
-        if ( ! (cline = calloc (1, sizeof (struct cmntline))))
-        {
-            fprintf (stderr,
-                    "Error - cannot allocate memory for comment line\n");
-            exit(1);
-        }
-        if (prevline)
-        {
-            prevline->nextline = cline;
-        }
-        else
-        {
-            me->commts = cline;
-        }
-
-        prevline = cline;
-        cline->ctxt = txt;
-
-        if (lastline)
-        {
-            return 0;
-        }
-        else
-        {
-            if (!(lpos = fgets(mbuf,sizeof(mbuf),cmdfile)))
-            {
-                return -1; /* Try to proceed on error */
-            }
-
-            ++LinNum;
-            lpos = skipblank(lpos);
-        }
-    }
-}
-
 /* ****************************************** *
  * Process options found in command file line *
  * ****************************************** */
 
-int
+static int
 optincmd (char *lpos)
 {
     char st[80], *spt = st;
@@ -574,7 +579,7 @@ cmdsplit (char *dest, char *src)
  * Process addressing modes found in command file line *
  * *************************************************** */
 
-void
+static void
 cmdamode (char *pt)
 {
     char buf[80];
@@ -881,7 +886,7 @@ do_mode (char *lpos)
  *      (Called from mainline cmdfile processing routine.       *
  * ************************************************************ */     
 
-void
+static void
 boundsline (char *mypos)
 {
     char tmpbuf[80];
@@ -997,6 +1002,65 @@ setoffset (char *p, struct ofsetree *oft)
     }
 
     return ++p;
+}
+
+static void
+bndoverlap ()
+{
+    fprintf (stderr, "Data segment overlap in line %d\n", LinNum);
+    exit (1);
+}
+
+/* ***************************************************** *
+ * bdinsert() - inserts an entry into the boundary table *
+ * ***************************************************** */
+
+static void
+bdinsert (struct databndaries *bb)
+{
+    register struct databndaries *npt;
+    register int mylo = bb->b_lo, myhi = bb->b_hi;
+
+    npt = dbounds;              /*  Start at base       */
+
+    while (1)
+    {
+        if (myhi < npt->b_lo)
+        {
+            if (npt->DLeft)
+            {
+                npt = npt->DLeft;
+                continue;
+            }
+            else
+            {
+                bb->dabove = npt;
+                npt->DLeft = bb;
+                return;
+            }
+        }
+        else
+        {
+            if (mylo > npt->b_hi)
+            {
+                if (npt->DRight)
+                {
+                    npt = npt->DRight;
+                    continue;
+                }
+                else
+                {
+                    bb->dabove = npt;
+                    npt->DRight = bb;
+                    return;
+                }
+            }
+            else
+            {
+                bndoverlap ();
+            }
+        }
+    }
 }
 
 /* **************************************************************** *
@@ -1139,65 +1203,6 @@ setupbounds (char *lpos)
 }
 
 void
-bndoverlap ()
-{
-    fprintf (stderr, "Data segment overlap in line %d\n", LinNum);
-    exit (1);
-}
-
-/* ***************************************************** *
- * bdinsert() - inserts an entry into the boundary table *
- * ***************************************************** */
-
-void
-bdinsert (struct databndaries *bb)
-{
-    register struct databndaries *npt;
-    register int mylo = bb->b_lo, myhi = bb->b_hi;
-
-    npt = dbounds;              /*  Start at base       */
-
-    while (1)
-    {
-        if (myhi < npt->b_lo)
-        {
-            if (npt->DLeft)
-            {
-                npt = npt->DLeft;
-                continue;
-            }
-            else
-            {
-                bb->dabove = npt;
-                npt->DLeft = bb;
-                return;
-            }
-        }
-        else
-        {
-            if (mylo > npt->b_hi)
-            {
-                if (npt->DRight)
-                {
-                    npt = npt->DRight;
-                    continue;
-                }
-                else
-                {
-                    bb->dabove = npt;
-                    npt->DRight = bb;
-                    return;
-                }
-            }
-            else
-            {
-                bndoverlap ();
-            }
-        }
-    }
-}
-
-void
 tellme (char *pt)
 {
     return;
@@ -1228,7 +1233,7 @@ cpyhexnum (char *dst, char *src)
  *      a non-digit is encountered.  See cpyhexnum() for details        *
  * ******************************************************************** */
 
-char *
+static char *
 cpy_digit_str (char *dst, char *src)
 {
     while (isdigit (*(src)))
@@ -1238,16 +1243,8 @@ cpy_digit_str (char *dst, char *src)
 }
 
 /* FIXME : This is not used, but it's wrong anyway... fix or delete */
-int
-endofcmd (char *pp)
-{
-    return (1 ? ((*pp == '\n') || (*pp == ';') || ( ! (*pp))) : 0);
-}
-
-void
-nerrexit (char *l)
-{
-    fprintf (stderr, l);
-    fprintf (stderr, " Line #%d\n", LinNum);
-    exit (1);
-}
+//int
+//endofcmd (char *pp)
+//{
+//    return (1 ? ((*pp == '\n') || (*pp == ';') || ( ! (*pp))) : 0);
+//}

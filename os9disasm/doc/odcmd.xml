@@ -732,9 +732,9 @@
             </row>
             <row>
               <entry><command>L</command></entry>
-              <entry>This should probably <emphasis>never</emphasis> be used.
-                It's for &odis;'s classification of <literal>program area
-                labels</literal>
+              <entry>This should probably <emphasis>never</emphasis> be
+                reassigned.  It's for &odis;'s classification of
+                <literal>program area labels</literal>
               </entry>
             </row>
             <row>

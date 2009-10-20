@@ -44,7 +44,7 @@ static char *myhome;            /* pointer to HOME environment name */
 char rdbuf[500];
 
 #ifndef HAVE_DIRNAME
-char *
+static char *
 dirname (char *path)
 {
     char *slash = strrchr (path, '/');

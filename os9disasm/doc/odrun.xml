@@ -18,10 +18,14 @@
           redirection ( "> something"), the output will go to the screen,
           or wherever normal output would go.  This holds true if the
           <command>-g</command> option is invoked.  The output for this
-          goes to the same place as the regular listing would go.  To
-          get no listing, redirect output to <command>/dev/null</command>
-          or whatever the "bit bucket" for your system is.
+          goes to the same place as the regular listing would go.
         </para>
+        <note>
+          <simpara>At present, there is no "quiet" option.  To get no listing,
+            redirect output to <command>/dev/null</command> or whatever is the
+            "bit bucket" for your system.
+          </simpara>
+        </note>
       </formalpara>
       <formalpara><title>The assembly source file</title>
         <para>The assembly source file, the one that would be used to
@@ -42,6 +46,9 @@
       <para>&odis; uses the following options. Some of these options will
         be more fully explained later.  The options cannot be grouped, and must
         be preceded by a minus sign (-).
+      </para>
+      <para>The equal (=) sign is optional, but if omitted, no space is
+        permitted between the option letter and the argument.
       </para>
       <section id="cmdfilespec"><title>Files</title>
         <informaltable frame="none">
@@ -66,8 +73,8 @@
                 <entry>Use &lt;label-file&gt; for label assignments.  More than
                   one label file can be specified, and these will be read one
                   after the other, in order that they are entered.  Label files
-                  are explained in <xref linkend="labelfile"/>.  &odis; tries very
-                  hard to resolve the path to the label file.  Please see
+                  are explained in <xref linkend="labelfile"/>.  &odis; tries
+                  very hard to resolve the path to the label file.  Please see
                   <xref linkend="pathresolution"/> to see how it works.
                 </entry>
               </row>
@@ -75,14 +82,15 @@
                 <entry><command>o[=]&lt;asm-source-filename&gt;
                 </command></entry>
                 <entry>Output assembly source code to filename (off by
-                  default)
+                  default).  This is the file that <emphasis>should</emphasis>
+                  reassemble.
                 </entry>
               </row>
               <row>
                 <entry id="defspath"><command>d[=]&lt;path-to-defsdir&gt;</command></entry>
                 <entry>Define path to defs.  This is the directory under which
                   the default label files are found.  The default is
-                  <filename>$HOME/coco/defs</filename>
+                  <filename>/dd/coco/defs</filename>
                 </entry>
               </row>
             </tbody>
@@ -535,13 +543,16 @@
                     will generate the proper form for the value without the high
                     bit set, appending an offset of +$80.
                   </simpara>
-                  <simpara><computeroutput>LDA #$C1</computeroutput> disassebles
-                    as <computeroutput>LDA #'A+$80</computeroutput>.
-                    </simpara></listitem> <listitem><simpara>For two byte values
-                    to be disassembled as an ASCII constant, &odis; will break
-                    the value apart into the two separate bytes, and generate
-                    each as a one byte ASCII constant, taking into account the
-                    possible presence of a parity bit on each byte.
+                  <simpara><computeroutput>LDA #$C1</computeroutput>
+                    disassembles as <computeroutput>LDA
+                      #'A+$80</computeroutput>.
+                  </simpara>
+                </listitem>
+                <listitem><simpara>For two byte values to be disassembled as an
+                    ASCII constant, &odis; will break the value apart into the
+                    two separate bytes, and generate each as a one byte ASCII
+                    constant, taking into account the possible presence of a
+                    parity bit on each byte.
                   </simpara>
                   <simpara>As an option, if both bytes are the codes for ASCII
                     graphic characters, &odis; can generate a double ASCII
@@ -976,12 +987,13 @@
         classes, standard labels, offsets, and data areas can be quite
         difficult.  It requires a careful examination of the disassembled
         output, so that at least two complete disassemblies are required (often
-        more). In return, though, it is possible to disassemble a large
-        program, and have as output a file requiring no extensive editing . A
-        thorough use of standard labels and label class specifications will
-        result in output filled with meaningful operands, so that the real work
-        of understanding a disassembled program, that of deciphering the
-        algorithms used instead of the opcodes used, is much easier.
+        many, many more). In return, though, it is possible to disassemble a
+        large program, and have as output a file requiring no extensive
+        editing . A thorough use of standard labels and label class
+        specifications along with adequate commenting will result in output
+        filled with meaningful operands, so that the real work of understanding
+        a disassembled program, that of deciphering the algorithms used instead
+        of the opcodes used, is much easier.
       </para>
     </section>
   </section>
