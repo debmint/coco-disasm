@@ -224,9 +224,12 @@ window_quit()
 {
     gboolean savelbl = FALSE,
              savecmd = FALSE,
-             savenone = FALSE;
+             savenone = FALSE,
+             cmdfile_altered
+                 = gtk_text_buffer_get_modified (O9Dis.cmdfile.tbuf);
     
-    if(O9Dis.lblfile.altered && O9Dis.cmdfile.altered)
+    if(O9Dis.lblfile.altered
+            && cmdfile_altered)
     {
         switch (save_all_query() ) {
             case SAVALL_NONE:
@@ -256,7 +259,7 @@ window_quit()
 
     if ( ! savenone )
     {
-        if (O9Dis.cmdfile.altered && !savecmd)
+        if (cmdfile_altered && !savecmd)
         {
             if (save_warn_OW ("Command", O9Dis.cmdfile.fname, FALSE) ==
                     GTK_RESPONSE_YES)

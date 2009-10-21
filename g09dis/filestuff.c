@@ -25,6 +25,7 @@
 
 #define OPT_BIN "BIN-FILE:"
 #define OPT_CMD "CMD-FILE:"
+#define OPT_LBL "LBL-FILE:"
 #define OPT_DEF "ALT-DEFS:"
 #define OPT_OBJ "SRC-FILE:"
 #define OPT_RS  "RS-FILE:"
@@ -1143,12 +1144,30 @@ load_listing (GtkAction * action, glbls * hbuf)
 }
 
 void
-load_cmdfile (GtkAction * action, glbls * hbuf)
+do_cmdfileload (glbls * hbuf)
 {
-    selectfile_open (hbuf, "Command file", TRUE, cmd_wdg->fname);
     if (hbuf->filename_to_return != NULL)       /* Leak? */
     {
         load_text (&hbuf->cmdfile, list_win, &(hbuf->filename_to_return));
+    }
+
+    free_filename_to_return (&hbuf->filename_to_return);
+    gtk_text_buffer_set_modified ((hbuf->cmdfile).tbuf, FALSE);
+}
+
+void
+load_cmdfile (GtkAction * action, glbls * hbuf)
+{
+    selectfile_open (hbuf, "Command file", TRUE, cmd_wdg->fname);
+    do_cmdfileload (hbuf);
+}
+
+void
+do_lblfileload (glbls * hbuf)
+{
+    if (hbuf->filename_to_return != NULL)       /* Leak? */
+    {
+        load_lbl (&hbuf->lblfile, list_win, &(hbuf->filename_to_return));
     }
 
     free_filename_to_return (&hbuf->filename_to_return);
@@ -1158,13 +1177,8 @@ void
 load_lblfile (GtkAction * action, glbls * hbuf)
 {
     selectfile_open (hbuf, "Label File", TRUE, NULL);
+    do_lblfileload (hbuf);
     
-    if (hbuf->filename_to_return != NULL)       /* Leak? */
-    {
-        load_lbl (&hbuf->lblfile, list_win, &(hbuf->filename_to_return));
-    }
-
-    free_filename_to_return (&hbuf->filename_to_return);
 }
 
 /* ************************************************************ *
@@ -1207,6 +1221,8 @@ cmd_save(GtkAction *action, glbls *hbuf)
     else {
         save_text (&hbuf->cmdfile, list_win, &(hbuf->cmdfile.fname));
     }
+
+    gtk_text_buffer_set_modified ((hbuf->cmdfile).tbuf, FALSE);
 }
 
 void
@@ -1323,6 +1339,8 @@ opts_save (GtkAction *action, glbls *hbuf)
 
     opt_put ((gboolean)prog_wdg->fname, prog_wdg->fname, OPT_BIN, optfile);
     opt_put ((gboolean)cmd_wdg->fname, cmd_wdg->fname, OPT_CMD, optfile);
+    opt_put ((gboolean)hbuf->lblfile.fname, hbuf->lblfile.fname, OPT_LBL,
+            optfile);
     opt_put (alt_defs, defs_wdg->fname, OPT_DEF, optfile);
     opt_put (write_obj, asmout_wdg->fname, OPT_OBJ, optfile);
     fprintf (optfile, "%s%d\n", OPT_RS, (int)isrsdos);
@@ -1373,13 +1391,25 @@ void opts_load (GtkAction *action, glbls *hbuf)
         if ( ! strncmp (OPT_BIN, buf, strlen(OPT_BIN)))
         {
             opt_load_path (&(prog_wdg->fname), buf, NULL, OPT_BIN);
+            menu_do_dis_sensitize();
             continue;
         }
         if ( ! strncmp (OPT_CMD, buf, strlen (OPT_CMD)))
         {
             opt_load_path (&(cmd_wdg->fname), buf, NULL, OPT_CMD);
+            hbuf->filename_to_return = g_strdup (cmd_wdg->fname);
+            do_cmdfileload (hbuf);
             continue;
         }
+
+        if ( ! strncmp (OPT_LBL, buf, strlen (OPT_LBL)))
+        {
+            opt_load_path (&(hbuf->lblfile.fname), buf, NULL, OPT_LBL);
+            hbuf->filename_to_return = g_strdup (hbuf->lblfile.fname);
+            do_lblfileload (hbuf);
+            continue;
+        }
+
         if ( ! strncmp (OPT_DEF, buf, strlen(OPT_DEF)))
         {
             opt_load_path (&(defs_wdg->fname), buf, &alt_defs, OPT_DEF);

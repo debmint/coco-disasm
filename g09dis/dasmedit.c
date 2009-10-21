@@ -119,6 +119,42 @@ build_label_selector (gchar **modept, gboolean with_entry)
 
 /* ----------------- end general functions begin locals ----------------- */
 
+/* ************************************************************************ *
+ * txtbuf_insert_line() - Inserts text on a new line after the line where   *
+ *      the cursor is.  It automatically prepends a newline to the string,  *
+ *      moves the cursor to the end of the current line, and inserts the    *
+ *      text.                                                               *
+ * Passed : (1) the GtkTextBuffer into which to insert the text.            *
+ *          (2) a GString containing a NULL-terminated string (no newline)  *
+ * ************************************************************************ */
+
+void
+txtbuf_insert_line (GtkTextBuffer *t_buf, GString *g_str)
+{
+    GtkTextMark *mark;
+    GtkTextIter iter;
+
+    mark = gtk_text_buffer_get_insert (O9Dis.cmdfile.tbuf);
+    gtk_text_buffer_get_iter_at_mark (O9Dis.cmdfile.tbuf, &iter, mark);
+
+    if ( gtk_text_iter_starts_line (&iter))
+    {
+        g_string_append (g_str, "\n");
+    }
+    else
+    {
+        if ( ! gtk_text_iter_ends_line (&iter))
+        {
+            gtk_text_iter_forward_to_line_end (&iter);
+            gtk_text_buffer_place_cursor (t_buf, &iter);
+        }
+
+        g_string_prepend (g_str, "\n");
+    }
+
+    gtk_text_buffer_insert_at_cursor (t_buf, g_str->str, -1);
+}
+
 static void
 on_bnds_define_response (GtkDialog *dialog, gint resp,
                          struct adr_widgets *data)
@@ -154,22 +190,19 @@ on_bnds_define_response (GtkDialog *dialog, gint resp,
                 }
             }
             
-            g_string_append_printf(line, "%s\n", gtk_entry_get_text(
-                                                     GTK_ENTRY(
+            g_string_append(line, gtk_entry_get_text(GTK_ENTRY(
                                                      data->address_entry)));
-            
-            gtk_text_buffer_insert_at_cursor (
-                    O9Dis.cmdfile.tbuf, line->str, -1);
+            txtbuf_insert_line (O9Dis.cmdfile.tbuf, line);
 
-            doc_set_modified(&O9Dis.cmdfile, TRUE);
+//            doc_set_modified(&O9Dis.cmdfile, TRUE);
             
             g_string_free(line, TRUE);
             break;
         default:
             break;
     }
-    g_free (data);
-    gtk_widget_destroy (GTK_WIDGET(dialog));
+    /*g_free (data);*/ /* We now keep it permanently after creating */
+    gtk_widget_hide (GTK_WIDGET(dialog));
 }
 
 /* ******************************************************************** *
@@ -203,7 +236,7 @@ void abort_warn (char *msg)
  * **************************************************************** */
 
 GtkWidget *
-build_dialog_cancel_save (gchar *title)
+build_dialog_cancel_save (gchar *title, gboolean hide_on_delete)
 {
     GtkWidget *dlg;
     dlg = gtk_dialog_new_with_buttons(title,
@@ -215,8 +248,15 @@ build_dialog_cancel_save (gchar *title)
                                       "Save",
                                       GTK_RESPONSE_OK,
                                       NULL);
-    
+
     gtk_container_set_border_width(GTK_CONTAINER(dlg), 15);
+
+    if (hide_on_delete)
+    {
+        g_signal_connect (dlg, "delete-event",
+                               G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    }
+
     return dlg;
 }
 
@@ -249,13 +289,18 @@ sensitize_amode (GtkComboBox *btype, struct adr_widgets *wdgs)
             gtk_widget_set_sensitive (wdgs->offset_entry, sen_state);
 }
 
-/* ************************************************ *
- * callback function to handle boundary definitions *
- * ************************************************ */
+/* ******************************************************************** *
+ * bnds_define_cb() - Callback function to handle boundary definitions  *
+ *      The dialog and widget list are created upon first call to       *
+ *      function and then kept for the duration of program.             *
+ * ******************************************************************** */
 
 void
 bnds_define_cb (GtkAction *action, glbls *fdat)
 {
+    static GtkWidget *bounds_dlg;
+    static struct adr_widgets *bnds_widgets;
+
     GtkTreeModel *model;
     GtkTreeIter iter;
     GtkTreeSelection *selection;
@@ -265,57 +310,82 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
     
     if (gtk_tree_selection_get_selected(selection, &model, &iter))
     {
-        GtkWidget *dialog;
         GtkWidget *align;
-        struct adr_widgets *cb_data;
         
         gchar *addr;
        
-        if (!(cb_data = g_malloc (sizeof (struct adr_widgets))))
+        if ( ! bnds_widgets)
         {
-            /* Error report */
-            abort_warn ("Error! cannot malloc memory!\n");
-            return;
+            if (!(bnds_widgets = g_malloc (sizeof (struct adr_widgets))))
+            {
+                /* Error report */
+                abort_warn ("Error! cannot malloc memory!\n");
+                return;
+            }
         }
         
-        gtk_tree_model_get (model, &iter, LST_ADR, &addr,
-                                          -1);
-        dialog = build_dialog_cancel_save ("Addressing Mode specification");
-      
-        /* ******************************** *
-         *   Boundary Type dropdown menu    *
-         * ******************************** */
-        
-        g_signal_connect (dialog, "response",
-                          G_CALLBACK(on_bnds_define_response), cb_data);
+        if ( ! bounds_dlg)
+        {
+            bounds_dlg = build_dialog_cancel_save ("Define Data Bounds", TRUE);
+          
+            g_signal_connect (bounds_dlg, "response",
+                          G_CALLBACK(on_bnds_define_response), bnds_widgets);
 
-        align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                      "Boundary type");
-        cb_data->label_combo = build_label_selector (bounds_list, FALSE);
-        gtk_container_add (GTK_CONTAINER(align),cb_data->label_combo);
-        gtk_combo_box_set_active (GTK_COMBO_BOX(cb_data->label_combo), 0);
+            /* ******************************** *
+             *   Boundary Type dropdown menu    *
+             * ******************************** */
+            
+            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(bounds_dlg)->vbox),
+                                          "Boundary type");
+            bnds_widgets->label_combo
+                = build_label_selector (bounds_list, FALSE);
+            gtk_container_add (GTK_CONTAINER(align),bnds_widgets->label_combo);
 
-        align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                      "Addressing Mode");
-        cb_data->label_entry = build_label_selector (NULL, TRUE);
-        gtk_widget_set_sensitive (cb_data->label_entry, FALSE);
-        gtk_container_add (GTK_CONTAINER(align),cb_data->label_entry);
-        gtk_combo_box_set_active (GTK_COMBO_BOX(cb_data->label_entry), 0);
+            /* ******************************** *
+             *   Addressing Mode dropdown menu  *
+             * ******************************** */
+            
+            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(bounds_dlg)->vbox),
+                                          "Addressing Mode");
+            bnds_widgets->label_entry = build_label_selector (NULL, TRUE);
+            gtk_widget_set_sensitive (bnds_widgets->label_entry, FALSE);
+            gtk_container_add (GTK_CONTAINER(align),bnds_widgets->label_entry);
 
-        g_signal_connect (cb_data->label_combo, "changed",
-                          G_CALLBACK(sensitize_amode), cb_data);
-        align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                      "Address or Address Range");
-        cb_data->address_entry = gtk_entry_new();
-        gtk_container_add (GTK_CONTAINER(align), cb_data->address_entry);
-        gtk_entry_set_text (GTK_ENTRY(cb_data->address_entry), addr);
+            g_signal_connect (bnds_widgets->label_combo, "changed",
+                              G_CALLBACK(sensitize_amode), bnds_widgets);
 
-        cb_data->offset_entry =
-            pack_offset_entry (GTK_BOX(GTK_DIALOG(dialog)->vbox));
-      
+            /* ******************************** *
+             *   Address dropdown menu          *
+             * ******************************** */
+            
+            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(bounds_dlg)->vbox),
+                                          "Address or Address Range");
+            bnds_widgets->address_entry = gtk_entry_new();
+            gtk_container_add (GTK_CONTAINER(align),
+                               bnds_widgets->address_entry);
+
+            /* ******************************** *
+             *   Offset dropdown menu           *
+             * ******************************** */
+            
+            bnds_widgets->offset_entry =
+                pack_offset_entry (GTK_BOX(GTK_DIALOG(bounds_dlg)->vbox));
+          
+            gtk_widget_show_all(GTK_WIDGET(GTK_DIALOG(bounds_dlg)->vbox));
+        }
+
+        gtk_combo_box_set_active (GTK_COMBO_BOX(bnds_widgets->label_combo), 0);
+        gtk_combo_box_set_active (GTK_COMBO_BOX(bnds_widgets->label_entry), 0);
+
+        gtk_tree_model_get (model, &iter, LST_ADR, &addr, -1);
+        gtk_entry_set_text (GTK_ENTRY(bnds_widgets->address_entry), addr);
         g_free (addr);
-        gtk_widget_show_all(dialog);
 
+        gtk_entry_set_text (
+                    GTK_ENTRY (GTK_BIN(bnds_widgets->offset_entry)->child),
+                    "NONE");
+        gtk_widget_set_sensitive (bnds_widgets->offset_entry, FALSE);
+        gtk_widget_show (bounds_dlg);
     }
 }
 
@@ -353,8 +423,8 @@ name_label_response (GtkDialog *dialog, gint resp,
             break;
     }
 
-    g_free (data);
-    gtk_widget_destroy(GTK_WIDGET(dialog));
+    /*g_free (data);*/ /* We now keep the widget list */
+    gtk_widget_hide(GTK_WIDGET(dialog));
 }
 
 /* ******************************************** *
@@ -364,8 +434,10 @@ name_label_response (GtkDialog *dialog, gint resp,
 void
 rename_label (GtkAction * action, glbls *fdat)
 {
-    GtkWidget *dialog,
-              *align;
+    static struct adr_widgets *cb_data;
+    static GtkWidget *dialog;
+
+    GtkWidget *align;
     GtkTreeModel *model;
     GtkTreeIter iter;
     GtkTreeSelection *selection;
@@ -379,24 +451,17 @@ rename_label (GtkAction * action, glbls *fdat)
         gchar *addr, *lblname, *opcod, *pbyt, *mnem, *oprand;
 
         char adr_mode[4];
-        struct adr_widgets *cb_data;
        
-        if (!(cb_data = g_malloc (sizeof (struct adr_widgets))))
+        if ( ! cb_data)
         {
-            /*report error */
-            abort_warn ("Error! cannot allocate memory for struct\n");
-            return;
+            if (!(cb_data = g_malloc (sizeof (struct adr_widgets))))
+            {
+                /*report error */
+                abort_warn ("Error! cannot allocate memory for struct\n");
+                return;
+            }
         }
-        /* The following assignment is needless, but it keeps gcc quiet about
-         * it "might be used uninitialized"
-         *
-        cb_data->cmd_mode = NULL;*/
-       
-        dialog = build_dialog_cancel_save ("Define Label Name");
 
-        g_signal_connect(dialog, "response",
-                G_CALLBACK(name_label_response), cb_data);
-        
         gtk_tree_model_get (model, &iter, LST_ADR, &addr,
                                           LST_LBL, &lblname,
                                           LST_OPCO, &opcod,
@@ -419,45 +484,60 @@ rename_label (GtkAction * action, glbls *fdat)
          * Label name entry box *
          * ******************** */
 
-        align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                      "Label Name");
-        cb_data->label_entry = gtk_entry_new();
-        gtk_container_add (GTK_CONTAINER(align), cb_data->label_entry);
-                
+        if ( ! dialog)
+        {
+            dialog = build_dialog_cancel_save ("Define Label Name", TRUE);
+            /* The following assignment is needless,
+             * but it keeps gcc quiet about
+             * it "might be used uninitialized"
+             *
+            cb_data->cmd_mode = NULL;*/
+           
+            g_signal_connect(dialog, "response",
+                    G_CALLBACK(name_label_response), cb_data);
+        
+
+            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
+                                          "Label Name");
+            cb_data->label_entry = gtk_entry_new();
+            gtk_container_add (GTK_CONTAINER(align), cb_data->label_entry);
+                    
+            /* ***************** *
+             * Address entry box *
+             * ***************** */
+        
+            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
+                                          "Label Address");
+            cb_data->address_entry = gtk_entry_new();
+            gtk_container_add (GTK_CONTAINER(align), cb_data->address_entry);
+            
+
+            /* ******************************************* *
+             * Build selection for desired Addressing Mode *
+             * ******************************************* */
+            
+            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
+                                          "Addressing Mode");
+            
+            cb_data->label_combo = build_label_selector (NULL, TRUE);
+            gtk_container_add (GTK_CONTAINER(align), cb_data->label_combo);
+
+            gtk_widget_show_all (GTK_WIDGET(GTK_DIALOG(dialog)->vbox));
+        }
+        /*gtk_dialog_run(GTK_DIALOG(dialog));*/
+
         if( strlen(lblname) )
         {
             gtk_entry_set_text (GTK_ENTRY(cb_data->label_entry), lblname);
         }
 
-        /* ***************** *
-         * Address entry box *
-         * ***************** */
-    
-        align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                      "Label Address");
-        cb_data->address_entry = gtk_entry_new();
-        gtk_container_add (GTK_CONTAINER(align), cb_data->address_entry);
-        
-        gtk_entry_set_text (GTK_ENTRY(cb_data->address_entry), addr);
-
-        /* ******************************************* *
-         * Build selection for desired Addressing Mode *
-         * ******************************************* */
-        
-        align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                      "Addressing Mode");
-        
-        cb_data->label_combo = build_label_selector (NULL, TRUE);
-        gtk_container_add (GTK_CONTAINER(align), cb_data->label_combo);
         gtk_entry_set_text(GTK_ENTRY(GTK_BIN(cb_data->label_combo)->child),
-                           guess_addr_mode(mnem));
-
-        gtk_widget_show_all (dialog);
-        /*gtk_dialog_run(GTK_DIALOG(dialog));*/
-
+                               guess_addr_mode(mnem));
+        gtk_entry_set_text (GTK_ENTRY(cb_data->address_entry), addr);
         g_free(addr); g_free(opcod); g_free(pbyt);
         g_free(oprand); g_free(mnem); g_free(lblname);
         
+        gtk_widget_show (dialog);
     }
 
 }
@@ -476,7 +556,7 @@ lbl_edit_line(gchar **label, gchar **addr, gchar **class)
               *name_ent, *addr_ent, *class_ent;
     gint response;
    
-    dialog = build_dialog_cancel_save ("Edit Label Line");
+    dialog = build_dialog_cancel_save ("Edit Label Line", FALSE);
 
     align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
                                   "Label Name");

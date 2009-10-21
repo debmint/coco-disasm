@@ -1,3 +1,24 @@
+rev 128
+g09dis/g09dis.c g09dis/amode.c g09dis/filestuff.c g09dis/dasmedit.c
+  This revision improves the "Addressing Mode" and the "Data Bounds"
+  popups.  First, the popups for these are now created only once - on
+  the first call to each, and then are hidden, rather than destroyed and
+  recreated on each call.
+  When an entry is added to the cmdfile buffer, the entry is added on a
+  new line.  If the Cursor is at the begin of the line, the entry is added
+  before that line. If the Cursor is anywhere else, the entry is added after
+  that line.
+  The commandfile buffer (a GtkTextBuffer) no longer uses a variable to tell
+  if it has been modified, but its own native gtk_text_buffer_get_altered()
+  call.  The label file (A GtkTreeview), still uses the variable.
+  When the menu entry "Load options..." is envoked, the entries for
+  "Disassemble to (GUI|file) are now also enabled, avoiding the need to
+  call up the "Options" dialog and pressing "OK".  Also, on loading the
+  options file, if a CMDFILE and/or LBLFILE is specified in the options file,
+  then the cmdfile and/or lblfile is also loaded into the corresponding window.
+
+-- dlb Wed, 21 Oct 2009 15:16:25 -0500
+
 g09dis (version 0.4)
   * filestuff.c - Added Load/Save Disassembly Options from/to File. Now
     can save options setup and reload at a later session.

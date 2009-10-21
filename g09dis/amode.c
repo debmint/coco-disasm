@@ -49,13 +49,14 @@ amode_init()
     }
 }
 
-static void
+static GtkWidget *
 pack_label (GtkBox *box, gchar *text)
 {
     GtkWidget *label;
 
     label = gtk_label_new (text);
     gtk_box_pack_start (box, label, FALSE, FALSE, 2);
+    return label;
 }
 
 static void
@@ -520,26 +521,24 @@ on_adr_mode_response( GtkDialog *dialog, gint resp,
                 {
                     offset_list = g_list_append (offset_list,
                                                  g_strdup (offsetpt));
+                    gtk_combo_box_append_text (
+                                GTK_COMBO_BOX(data->offset_entry), offsetpt);
                 }
             }
 
             /* Address */
             g_string_append(line, gtk_entry_get_text(GTK_ENTRY(
                                                      data->address_entry)));
-            g_string_append(line, "\n");
-
-            gtk_text_buffer_insert_at_cursor (
-                    O9Dis.cmdfile.tbuf, line->str, -1);
+            txtbuf_insert_line (O9Dis.cmdfile.tbuf, line);
                                     
-            doc_set_modified( &O9Dis.cmdfile, TRUE);
+            /*doc_set_modified( &O9Dis.cmdfile, TRUE);*/
             g_string_free(line, TRUE);
             break;
         default:
             break;
     }
 
-    g_free (data);
-    gtk_widget_destroy (GTK_WIDGET (dialog));
+    gtk_widget_hide (GTK_WIDGET(dialog));
 }
 
 /* Try to guess a usable Addressing Mode from the mnemonic */
@@ -597,8 +596,7 @@ pack_offset_entry (GtkBox *mainbox)
               * entry,
               * label;
 
-    frame = bounds_aligned_frame (mainbox,
-                                  "Offset from address");
+    frame = bounds_aligned_frame (mainbox, "Offset from address");
 
     vbox = gtk_vbox_new (0, 1);    // Utilize vbox for vbox
 
@@ -639,11 +637,13 @@ pack_offset_entry (GtkBox *mainbox)
 void
 adr_mode_cb(GtkAction * action, glbls *fdat)
 {
-    GtkWidget *dialog;
+    static GtkWidget *dialog,
+                     *mainmode; /* The label widget showing main AMode */
+    static struct adr_widgets *cb_data;
+
     GtkTreeModel *model;
     GtkTreeIter iter;
     GtkTreeSelection *selection;
-    struct adr_widgets *cb_data;
 
     selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(
                                                  (fdat->list_file).tview));
@@ -657,16 +657,19 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
         
         char adr_mode[4];
 
-        if ( ! (cb_data = g_malloc(sizeof (struct adr_widgets))))
+        if ( ! cb_data)
         {
-            /* print error */
-            abort_warn("adr_mode_cb():   Cannot malloc memory!\n");
-            return;
+            if ( ! (cb_data = g_malloc(sizeof (struct adr_widgets))))
+            {
+                /* print error */
+                abort_warn("adr_mode_cb():   Cannot malloc memory!\n");
+                return;
+            }
         }
         
         cb_data->cmd_mode = adr_mode;
         
-        gtk_tree_model_get (model, &iter, LST_ADR, &addr,
+        gtk_tree_model_get (model, &iter, LST_ADR,  &addr,
                                           LST_OPCO, &opcod,
                                           LST_PBYT, &pbyt,
                                           LST_MNEM, &mnem,
@@ -701,56 +704,57 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
         /* ******************************************************* *
          * Now create the window to do addressing mode adjustments *
          * ******************************************************* */
-       
-        dialog = build_dialog_cancel_save ("Set Addressing Mode");
-       
-        g_signal_connect (dialog, "response",
-                G_CALLBACK (on_adr_mode_response), cb_data);
-        
-        pack_label (GTK_BOX(GTK_DIALOG(dialog)->vbox), cb_data->cmd_mode);
-        
-        /* Build selection for desired Addressing Mode */
-        
-        pack_hsep (GTK_BOX(GTK_DIALOG (dialog)->vbox));
-        align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG (dialog)->vbox),
-                                      "Addressing Mode");
-        
-        cb_data->label_combo = build_label_selector (NULL, TRUE);
 
+        if ( ! dialog)
+        {
+            dialog = build_dialog_cancel_save ("Set Addressing Mode", TRUE);
+           
+            g_signal_connect (dialog, "response",
+                    G_CALLBACK (on_adr_mode_response), cb_data);
+            
+            mainmode = pack_label (GTK_BOX(GTK_DIALOG(dialog)->vbox), NULL);
+            
+            /* Build selection for desired Addressing Mode */
+            
+            pack_hsep (GTK_BOX(GTK_DIALOG (dialog)->vbox));
+            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG (dialog)->vbox),
+                                          "Addressing Mode");
+            
+            cb_data->label_combo = build_label_selector (NULL, TRUE);
+
+            gtk_container_add(GTK_CONTAINER(align), cb_data->label_combo);
+
+            /* *********************** *
+             * Select address or range *
+             * *********************** */
+            
+            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
+                                          "Select address or address range");
+            
+            cb_data->address_entry = gtk_entry_new();
+            gtk_container_add(GTK_CONTAINER(align), cb_data->address_entry);
+
+            /* **************************** *
+             * Add Offset if desired        *
+             * **************************** */
+
+            cb_data->offset_entry =
+                         pack_offset_entry (GTK_BOX(GTK_DIALOG(dialog)->vbox));
+            
+            gtk_widget_show_all (GTK_WIDGET(GTK_DIALOG(dialog)->vbox));
+        }
+
+        gtk_label_set_text (GTK_LABEL(mainmode), cb_data->cmd_mode);
         gtk_entry_set_text(GTK_ENTRY(GTK_BIN(cb_data->label_combo)->child),
                            guess_addr_mode(mnem));
-        gtk_container_add(GTK_CONTAINER(align), cb_data->label_combo);
-
-        /* *********************** *
-         * Select address or range *
-         * *********************** */
-        
-        align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                      "Select address or address range");
-        
-        cb_data->address_entry = gtk_entry_new();
-        gtk_container_add(GTK_CONTAINER(align), cb_data->address_entry);
         gtk_entry_set_text (GTK_ENTRY(cb_data->address_entry), addr);
-
-        /* **************************** *
-         * Add Offset if desired        *
-         * **************************** */
-
-        cb_data->offset_entry =
-                         pack_offset_entry (GTK_BOX(GTK_DIALOG(dialog)->vbox));
-        
-        /* Initialize to "not" have offset */
-     /*   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (use_offset), FALSE);
-        gtk_widget_set_sensitive (cb_data->offset_entry, FALSE);*/
-        
-        /*gtk_widget_show_all (GTK_DIALOG(dialog)->vbox);
-        gtk_dialog_run(GTK_DIALOG(dialog));*/
-        gtk_widget_show_all (dialog);
+        gtk_entry_set_text (GTK_ENTRY (GTK_BIN(cb_data->offset_entry)->child),
+                            "NONE");
 
         g_free(addr); g_free(opcod); g_free(pbyt);
         g_free(oprand); g_free(mnem);
         
-        /*gtk_widget_destroy(dialog);*/
+        gtk_widget_show (dialog);
     }
 }
 
