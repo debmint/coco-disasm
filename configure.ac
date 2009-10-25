@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(cocodis, 0.9.1)
+AC_INIT(cocodis, 0.10.1)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([g09dis/dasmedit.c])
 AC_CONFIG_HEADER([config.h])

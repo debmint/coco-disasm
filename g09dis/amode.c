@@ -360,6 +360,9 @@ char
     struct lkuptbl *T;
     gint mymode;
     register int sz;
+    char *pseudcodes[] = {"rmb", "fcb", "fcc", "fcs", "fdb", NULL};
+    char **pt;
+    gboolean is_pseud = FALSE;
 
     if( ! strncmp(opcode,"10",2) )
     {
@@ -381,10 +384,20 @@ char
         }
     }
 
+    pt = pseudcodes;
+
+    while (*pt)
+    {
+        if ( ! strcmp (*(pt++), mnemonic))
+        {
+            is_pseud = TRUE;
+            break;
+        }
+    }
+
     while( ((T->cod & 0xff) != opcode_val) ) {
         if( --sz == 0 )
         {
-            g_print("\nEnd of table and no opcode matched!\n");
             return NULL;
         }
         ++T;
@@ -392,7 +405,7 @@ char
 
     mymode = T->amode;
 
-    if( strncmp( mnemonic, T->mnem, strlen(mnemonic) ) )
+    if( ! is_pseud &&  strncmp( mnemonic, T->mnem, strlen(mnemonic) ) )
     {
         GtkWidget *dialog;
           

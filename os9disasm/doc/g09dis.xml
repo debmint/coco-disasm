@@ -121,6 +121,15 @@
         <caption><para>The <command>List Menu</command></para>
         </caption>
       </mediaobject>
+      <section><title>"Search Listing</title>
+        <para>Search Listing searches through the listing display for a
+          string of text.  The search will search for this text in a
+          specified column.  The choices for the column are
+          <command>Address</command>, <command>Label</command>, or
+          <command>Opcode</command>.  Please refer to
+          <xref linkend="searching"/> for more details on searching.
+        </para>
+      </section>
       <para>Of course <command>Open Listing</command> loads a specially
         formatted listing from a file.  What we are now interested in
         are the editing functions.
@@ -248,6 +257,98 @@
           upon close of the editing session.
         </para></note>
       </section>
+    </section>
+    <section id="lblfilepopup"><title>The Label File Popup</title>
+      <para>Right-clicking in the Label File window causes a popup window
+        to appear there.
+      </para>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/lblpopup.png" align="center"/>
+        </imageobject>
+        <caption>
+          <para>The <command>Label File</command> Popup</para>
+        </caption>
+      </mediaobject>
+      <section><title>Search Labels</title>
+        <para>The <command>Search Labels</command> option enables a search
+          through the Label File buffer.  You can perform a search on the
+          <command>Label</command> or the <command>Address</command> fields
+          in this list.  See <xref linkend="searching"/> for details on how
+          searching works.
+        </para>
+      </section>
+      <section><title>Open Label File</title>
+        <para>This option allows you to load a different (or reload the
+          same file) into the buffer.  All old data in the buffer is cleared
+          out and replaced with the new.
+        </para>
+      </section>
+      <section><title>Save LBLFILE (as)</title>
+        <para>Save LBLFILE and Save LBLFILE AS.. saves the buffer data.  If
+          the data was loaded from a file, <command>Save LBLFILE</command>
+          saves the buffer without prompting for a filename.  If the data
+          has all been entered and no lblfile had been loaded,
+          <command>Save LBLFILE</command> acts as
+          <command>Save LBLFILE As..</command>, where it will prompt yo for
+          a filename before trying to save.
+        </para>
+      </section>
+      <section><title>Insert line after</title>
+        <para>This will allow you to enter a line and insert it after the
+          selected line.
+        </para>
+      </section>
+      <section><title>Delete</title>
+        <para>The <command>Delete</command> option removes the currently
+          selected line from the buffer.
+        </para>
+      </section>
+    </section>
+    <section id="searching"><title>Performing Searches</title>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/search.png" align="center"/>
+        </imageobject>
+        <caption>
+          <para>The <command>Search</command> Dialog</para>
+        </caption>
+      </mediaobject>
+      <para>Searches can be made in the <command>Listing</command> and the
+        <command>Label</command> buffers.  They can be made on specific
+        columns, and the search will apply to <emphasis>only</emphasis>
+        that column, ignoring any matches that might occur in any other
+        column.
+      </para>
+      <formalpara><title>Selecting a column to search</title>
+        You may specify which column in which you wish to search by clicking
+        on the desired column in the <command>Column to Search</command>
+        box.  The columns shown will depend upon the buffer being searched.
+      </formalpara>
+      <formalpara><title>Enter Search Text</title>
+        The text for which you wish to search can be specified in the
+        text box labeled by that name.  After a search has been made in a
+        window, the last search will be remembered and be redisplayed on
+        the next search.  The memory is separated, that is, a search on
+        the <command>Listing</command> buffer will bring up the last text
+        searched in that buffer.  A search in the <command>Labels</command>
+        buffer will bring up the last search for that buffer.
+      </formalpara>
+      <formalpara><title>Executing the search</title>
+        Clicking on the <command>Search Backward</command> or the
+        <command>Search Forward</command> button will execute the search.
+        Clicking on the <command>Cancel</command> button will abort the search.
+      </formalpara>
+      <para>If a row is selected, the search will begin at that row, and
+        including that row.  In other words, don't try to perform a search
+        beginning on a row where the match would be in effect, or you will
+        get nowhere.  If the end of the buffer is reached, the search will jump
+        to the opposite end of the buffer and continue until it comes back to
+        the place where the search originally started.  It will stop upon the
+        first match.  However, to continue the search after a match, select the
+        next row (or any row, for that matter) past the match, in the direction
+        of the search, and redo the search.
+      </para>
     </section>
     <section><title>Embedding Label Classes in Files</title>
       <para>There are several Label Classes that are defined by default

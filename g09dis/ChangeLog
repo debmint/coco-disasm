@@ -1,3 +1,15 @@
+rev 129
+menu.c search.c Makefile.am
+  Added menu options to search through the Listing treeview and the Labels
+  treeview on certain columns.  This is a pretty simplistic search, perhaps it
+  might be improved upon.
+
+amode.c
+  Removed a few error messages and error dialogs for when things bounds
+  definitions, etc for things like "fcc", "equ", and such.
+
+--dlb  Sat, 24 Oct 2009 21:08:30 -0500
+
 rev 128
 g09dis/g09dis.c g09dis/amode.c g09dis/filestuff.c g09dis/dasmedit.c
   This revision improves the "Addressing Mode" and the "Data Bounds"

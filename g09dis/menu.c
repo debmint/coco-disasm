@@ -10,7 +10,7 @@
 #include <string.h>
 #include "g09dis.h"
 
-    GtkTooltips *ttip;
+GtkTooltips *ttip;
 
 static void
 hlp_about (GtkAction * action, glbls * hbuf)
@@ -108,12 +108,16 @@ static GtkActionEntry entries[] = {
         NULL, G_CALLBACK(cmd_new_cb)},
     {"LblNew", GTK_STOCK_NEW, "La_bel File", "<shft><ctl>B",
         NULL, G_CALLBACK(lbl_new_cb)},
+    {"LstngSearch",GTK_STOCK_FIND, "Search Listing", NULL,
+        "Search listings for item", G_CALLBACK (listing_srch)},
     {"LstngOpen", GTK_STOCK_OPEN, "Open _Listing", "<control>L",
      "Open a program listing", G_CALLBACK (load_listing)},
     {"CmdOpen", GTK_STOCK_OPEN, "Open _Command File", "<control>C",
         "Open the Command File", G_CALLBACK (load_cmdfile)},
     {"LblOpen", GTK_STOCK_OPEN, "Open La_bel File", "<control>B",
         "Open a Label File", G_CALLBACK (load_lblfile)},
+    {"LblSearch",GTK_STOCK_FIND, "Search Labels", NULL,
+        "Search label list for item", G_CALLBACK (labels_srch)},
 
     {"CmdSave", GTK_STOCK_SAVE, "Save CMDFILE", NULL,
         "Save Cmd file", G_CALLBACK (cmd_save),},
@@ -210,6 +214,7 @@ static const char *ui_description =
     "    </menu>"
     "  </menubar>"
     "  <popup name='ListPopUp'>"
+    "    <menuitem action='LstngSearch'/>"
     "    <menuitem action='LstngOpen'/>"
     "    <separator/>"
     "    <menuitem action='NameLabel'/>"
@@ -219,6 +224,8 @@ static const char *ui_description =
     "  </popup>"
     "  <popup name='LabelPopUp'>"
     "    <menuitem action='LblOpen'/>"
+    "    <separator/>"
+    "    <menuitem action='LblSearch'/>"
     "    <separator/>"
     "    <menuitem action='LblSave'/>"
     "    <menuitem action='LblSaveAs'/>"
