@@ -105,17 +105,17 @@ GLOBAL FILE_WIDGET cmd_prof
 ;
 GLOBAL FILE_WIDGET asmout_prof
 #ifdef MAIN
-= {NULL, NULL, FALSE, "Asm Src File", "output.a", FALSE}
+= {NULL, NULL, FALSE, "Asm Src File", NULL, FALSE}
 #endif
 ;
 GLOBAL FILE_WIDGET listing_prof
 #ifdef MAIN
-= {NULL, NULL, FALSE, "Listing Output", "output.List", FALSE}
+= {NULL, NULL, FALSE, "Listing Output", NULL, FALSE}
 #endif
 ;
 GLOBAL FILE_WIDGET defs_prof
 #ifdef MAIN
-= {NULL, NULL, FALSE, "Defs Path", "/dd/defs", TRUE}
+= {NULL, NULL, FALSE, "Defs Path", NULL, TRUE}
 #endif
 ;
 

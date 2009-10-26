@@ -324,7 +324,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
            "Generate a source file that (should) assemble into a valid binary",
            NULL);
     gtk_box_pack_start (GTK_BOX (entry_box), ofile_toggle, FALSE, FALSE, 2);
-    asmout_wdg->o_entry = build_entry_entry (entry_box, asmout_wdg->fname);
+    asmout_wdg->o_entry = build_entry_entry (entry_box,
+                        asmout_wdg->fname ? asmout_wdg->fname : "output.a");
     asmout_wdg->browse_button = build_browse_button (entry_box,
                                                  asmout_wdg,
                                                  TRUE);
@@ -350,7 +351,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     defs_toggle = gtk_check_button_new_with_label (
                                     "Specify (alternate) path");
     gtk_box_pack_start (GTK_BOX (entry_box), defs_toggle, FALSE, FALSE, 2);
-    defs_wdg->o_entry = build_entry_entry (entry_box, defs_wdg->fname);
+    defs_wdg->o_entry = build_entry_entry (entry_box,
+            defs_wdg->fname ? defs_wdg->fname : "/dd/defs");
     defs_wdg->browse_button = build_browse_button (entry_box,
                                                   defs_wdg,
                                                   FALSE);
@@ -391,7 +393,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
                           "Write the formatted listing to file\nor stdout if filename is blank.\nThis is the regular, space-separated listing",
                           NULL);
     listing_box = gtk_vbox_new (FALSE, 2);
-    listing_wdg->o_entry = build_entry_entry (listing_box, listing_wdg->fname);
+    listing_wdg->o_entry = build_entry_entry (listing_box,
+            listing_wdg->fname ? listing_wdg->fname : "output.List");
     listing_wdg->browse_button = build_browse_button (listing_box,
                                                  listing_wdg,
                                                  TRUE);
@@ -429,14 +432,18 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     
     /* Now pack them all into the vbox */
     
-    gtk_box_pack_start (GTK_BOX(vbx), list_radio_file, FALSE, FALSE, 2);
-    gtk_box_pack_start (GTK_BOX(vbx), listing_box, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
                         FALSE, FALSE, 4);
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_gtk, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
                         FALSE, FALSE, 4);
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_none, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
+                        FALSE, FALSE, 4);
+    gtk_box_pack_start (GTK_BOX(vbx), list_radio_file, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX(vbx), listing_box, FALSE, FALSE, 2);
+    gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
+                        FALSE, FALSE, 4);
     gtk_container_add(GTK_CONTAINER(entry_box), vbx);
     gtk_widget_show_all (m_frame);
     

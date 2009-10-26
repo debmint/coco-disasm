@@ -293,7 +293,19 @@ selectfile_open ( glbls *hbuf,
 
     if ((fnam && strlen(fnam)))
     {
-        gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(fsel), fnam);
+        gchar *base_name = (gchar *)g_path_get_basename (fnam),
+              * dir_name = (gchar *)g_path_get_dirname (fnam);
+
+        gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(fsel), base_name);
+
+        if (g_path_is_absolute (dir_name))
+        {
+            gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(fsel),
+                                                 dir_name);
+        }
+
+        g_free (base_name);
+        g_free (dir_name);
     }
     else
     {
@@ -337,7 +349,20 @@ selectfile_save (glbls *hbuf, const gchar *cur_name, const gchar *type)
 
     if(cur_name)
     {
-        gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fsel), cur_name);
+        gchar *base_name = (gchar *)g_path_get_basename (cur_name),
+              * dir_name = (gchar *)g_path_get_dirname (cur_name);
+
+        gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fsel), base_name);
+        //gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(fsel), cur_name);
+
+        if (g_path_is_absolute (dir_name))
+        {
+            gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(fsel),
+                                                 dir_name);
+        }
+
+        g_free (base_name);
+        g_free (dir_name);
     }
 
 /*	g_signal_connect (G_OBJECT (fsel), "destroy",
