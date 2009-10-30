@@ -40,33 +40,6 @@
  * *******************************************
  */
 
-#ifndef HAVE_DIRNAME
-
-/* ******************************************************** *
- * dirname() - a replacement for the libgen dirname.        *
- *      Note:  This function, like the original, mangles    *
- *              the original string, so in most cases, a    *
- *              dup of the original should be passed        *
- * ******************************************************** */
-
-char *
-dirname (char *path)
-{
-    char *slash = strrchr (path, '/');
-
-    if (slash)
-    {
-        *slash = '\0';
-    }
-    else
-    {
-        strcpy (path, ".");
-    }
-
-    return path;
-}
-#endif
-
 /* *********************************************
  * ending_slash() append a "/" to the end of a *
  * directory pathname if not already there     *
@@ -236,9 +209,7 @@ set_chooser_folder(GtkFileChooser *chooser, glbls *hbuf)
 
     if (path)
     {
-        /* dup path - dirname trashes the original string */
-
-        path = dirname (g_strdup(path));
+        path = g_path_get_dirname (path);
         gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER(chooser), path);
         g_free (path);
     }
@@ -293,19 +264,8 @@ selectfile_open ( glbls *hbuf,
 
     if ((fnam && strlen(fnam)))
     {
-        gchar *base_name = (gchar *)g_path_get_basename (fnam),
-              * dir_name = (gchar *)g_path_get_dirname (fnam);
+        gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(fsel), fnam);
 
-        gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(fsel), base_name);
-
-        if (g_path_is_absolute (dir_name))
-        {
-            gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(fsel),
-                                                 dir_name);
-        }
-
-        g_free (base_name);
-        g_free (dir_name);
     }
     else
     {
@@ -353,7 +313,6 @@ selectfile_save (glbls *hbuf, const gchar *cur_name, const gchar *type)
               * dir_name = (gchar *)g_path_get_dirname (cur_name);
 
         gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fsel), base_name);
-        //gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(fsel), cur_name);
 
         if (g_path_is_absolute (dir_name))
         {
@@ -631,17 +590,8 @@ clear_text_buf( fileinf *fdat)
         g_free (fdat->fname);
         fdat->fname = NULL;
         
-        /* Segmentation fault below??? */
-/*		g_free( fdat->tbuf );*/
-        /* clear out all text */
-        gtk_text_buffer_get_start_iter (fdat->tbuf, &start);
-        gtk_text_buffer_get_end_iter (fdat->tbuf, &end);
+        gtk_text_buffer_get_bounds (fdat->tbuf, &start, &end);
         gtk_text_buffer_delete (fdat->tbuf, &start, &end);
-
-        g_string_free (fdat->tvstring, TRUE);
-        fdat->tvstring = NULL;
-        /* destroy and recreate the text buffer */
-        /*g_object_unref( fdat->tbuf ); */
     }
 }
 
@@ -659,35 +609,38 @@ load_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
 
     clear_text_buf(fdat);
 
-/*	fdat->tbuf = gtk_text_buffer_new(NULL);
-	gtk_text_view_set_buffer ( GTK_TEXT_VIEW(fdat->tview), fdat->tbuf );*/
     fdat->fname = g_strdup (*newfile);
-    g_free (*newfile);          /* filename_to_return */
-    *newfile = NULL;
 
     /* Now open the file and read it */
 
-    if (!(infile = fopen (fdat->fname, "rb")))
+    if ((infile = fopen (fdat->fname, "rb")))
+    {
+
+        /* Read first line and set text in text buffer
+         * This will clear out the buffer if data is present
+         */
+
+        if (fgets (buffer, sizeof (buffer), infile))
+        {
+            gtk_text_buffer_set_text (fdat->tbuf, buffer, -1);
+
+            while (fgets (buffer, sizeof (buffer) - 1, infile))
+            {
+                GtkTextIter end_iter;
+
+                gtk_text_buffer_get_end_iter (fdat->tbuf, &end_iter);
+                gtk_text_buffer_insert (fdat->tbuf, &end_iter, buffer, -1);
+            }
+        }
+
+        fclose (infile);
+
+        doc_set_modified(fdat, FALSE);
+    }
+    else
     {
         fprintf (stderr, "Cannot open file %s for read!\n", fdat->fname);
     }
-
-
-    fdat->tvstring = g_string_new (NULL);
-
-    while (fgets (buffer, sizeof (buffer) - 1, infile))
-    {
-        g_string_append (fdat->tvstring, buffer);
-    }
-
-    fclose (infile);
-
-    strpt = fdat->tvstring->str;
-    /*g_string_free(string,FALSE); */
-
-    gtk_text_buffer_set_text (fdat->tbuf, strpt, -1);
-    
-    doc_set_modified(fdat, FALSE);
 }
 
 /* ****************************************************** *
@@ -790,7 +743,9 @@ load_list_tree (fileinf * fdat, FILE *infile)
     }
 }
 
-/* load_lbl() - load the label file into the GtkTreeView */
+/* ******************************************************** *
+ * load_lbl() - load the label file into the GtkTreeView    *
+ * ******************************************************** */
 
 void
 load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
@@ -801,110 +756,111 @@ load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     list_store_empty(fdat);
 
     fdat->fname = g_strdup (*newfile);
-    g_free (*newfile);
-    *newfile = NULL;
 
     /* Now open the file and read it */
-    if (!(infile = fopen (fdat->fname, "rb")))
+    if ((infile = fopen (fdat->fname, "rb")))
+    {
+        while (fgets (buffer, 160, infile))
+        {
+            gchar **splits;
+
+            /* get rid of newline, leading/trailing whitespaces
+             * if present
+             */
+            g_strstrip(buffer);
+
+            if ((strlen (buffer)) && (*buffer != ' '))
+            {
+                if (*buffer != '*')
+                {
+                    gchar *tmppt;
+                    gint bcnt;
+
+                    /* convert tabs to spaces  
+                     * if file is saved, spaces will be used */
+                   
+                    while ((tmppt = strchr(buffer, '\t')))
+                    {
+                        *tmppt = ' ';
+                    }
+                    
+                    tmppt = buffer;
+
+                    for (bcnt = 1; bcnt<4; ++bcnt)
+                    {
+                        tmppt = strchr(tmppt, ' ');
+
+                        if (tmppt)
+                        {
+                            ++tmppt;
+                            g_strchug (tmppt);
+                        }
+                    }
+                    splits = g_strsplit (buffer, " ", LBL_NCOLS);
+                }
+                else   /* A comment line */
+                {
+                    GString * tmpstr = NULL;
+                    int sspos = 1;  /* Default separator to second position */
+                    
+                    if (buffer[1] == '\\')
+                    {
+                        ++sspos;   /* Bump separator past '\' */
+                        
+                        /* AMode def - add to AMode list */
+                        amode_add_from_string (&buffer[sspos]);
+                    }
+
+                    tmpstr = g_string_new_len (buffer, sspos);
+
+                    if ((!isspace (buffer[sspos])) && (buffer[sspos] != '\t'))
+                    {
+                        g_string_append (tmpstr, " ");
+                    }
+                    
+                    tmpstr = g_string_append (tmpstr, &buffer[sspos]);
+                    
+                    splits = g_strsplit (tmpstr->str, " ", 2);
+
+                    g_string_free (tmpstr, TRUE);
+                }
+
+                /* Now add to ListStore */
+
+                if ((splits) )
+                {
+                    GtkTreeIter iter;
+                    gint lpos = 0;
+
+                    gtk_list_store_append (fdat->l_store, &iter);
+
+                    if (*splits[0] != '*')  /* Label definition */
+                    {
+                        while (splits[lpos] != NULL)
+                        {
+                            gtk_list_store_set (fdat->l_store, &iter,
+                                                lpos, splits[lpos], -1);
+                            ++lpos;
+                        }
+                    }
+                    else   /* else a comment */
+                    {
+                        gtk_list_store_set (fdat->l_store, &iter,
+                                            LBL_LBL, splits[0],
+                                            LBL_EQU, "", LBL_ADDR, "",
+                                            LBL_CLASS, splits[1],
+                                            -1);
+                    }
+                }
+                g_strfreev (splits);
+            }
+        }
+    }
+    else
     {
         fprintf (stderr, "Cannot open file %s for read!\n", fdat->fname);
     }
 
-    while (fgets (buffer, 160, infile))
-    {
-        gchar **splits;
-
-        /* get rid of newline, leading/trailing whitespaces
-         * if present
-         */
-        g_strstrip(buffer);
-
-        if ((strlen (buffer)) && (*buffer != ' '))
-        {
-            if (*buffer != '*')
-            {
-                gchar *tmppt;
-                gint bcnt;
-
-                /* convert tabs to spaces  
-                 * if file is saved, spaces will be used */
-               
-                while ((tmppt = strchr(buffer, '\t')))
-                {
-                    *tmppt = ' ';
-                }
-                
-                tmppt = buffer;
-
-                for (bcnt = 1; bcnt<4; ++bcnt)
-                {
-                    tmppt = strchr(tmppt, ' ');
-
-                    if (tmppt)
-                    {
-                        ++tmppt;
-                        g_strchug (tmppt);
-                    }
-                }
-                splits = g_strsplit (buffer, " ", LBL_NCOLS);
-            }
-            else   /* A comment line */
-            {
-                GString * tmpstr = NULL;
-                int sspos = 1;  /* Default separator to second position */
-                
-                if (buffer[1] == '\\')
-                {
-                    ++sspos;   /* Bump separator past '\' */
-                    
-                    /* AMode def - add to AMode list */
-                    amode_add_from_string (&buffer[sspos]);
-                }
-
-                tmpstr = g_string_new_len (buffer, sspos);
-
-                if ((!isspace (buffer[sspos])) && (buffer[sspos] != '\t'))
-                {
-                    g_string_append (tmpstr, " ");
-                }
-                
-                tmpstr = g_string_append (tmpstr, &buffer[sspos]);
-                
-                splits = g_strsplit (tmpstr->str, " ", 2);
-
-                g_string_free (tmpstr, TRUE);
-            }
-
-            /* Now add to ListStore */
-
-            if ((splits) )
-            {
-                GtkTreeIter iter;
-                gint lpos = 0;
-
-                gtk_list_store_append (fdat->l_store, &iter);
-
-                if (*splits[0] != '*')  /* Label definition */
-                {
-                    while (splits[lpos] != NULL)
-                    {
-                        gtk_list_store_set (fdat->l_store, &iter,
-                                            lpos, splits[lpos], -1);
-                        ++lpos;
-                    }
-                }
-                else   /* else a comment */
-                {
-                    gtk_list_store_set (fdat->l_store, &iter,
-                                        LBL_LBL, splits[0],
-                                        LBL_EQU, "", LBL_ADDR, "",
-                                        LBL_CLASS, splits[1],
-                                        -1);
-                }
-            }
-            g_strfreev (splits);
-        }
-    }
 
     doc_set_modified( fdat, FALSE);
 
@@ -1180,10 +1136,21 @@ do_cmdfileload (glbls * hbuf)
     gtk_text_buffer_set_modified ((hbuf->cmdfile).tbuf, FALSE);
 }
 
+/* **************************************************************** *
+ * load_cmdfile() - Callback for Button click to load command file  *
+ * **************************************************************** */
+
 void
 load_cmdfile (GtkAction * action, glbls * hbuf)
 {
     selectfile_open (hbuf, "Command file", TRUE, cmd_wdg->fname);
+
+    if (cmd_wdg->fname)
+    {
+        g_free (cmd_wdg->fname);
+    }
+
+    cmd_wdg->fname = g_strdup (hbuf->filename_to_return);
     do_cmdfileload (hbuf);
 }
 

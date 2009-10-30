@@ -18,9 +18,11 @@ struct srch_log
     GHashTable * radio_pos; /* Hash of names=>column position (to search)    */
 };
 
+static GtkTooltips *srch_tips;
 static GtkWidget * srch_dialog,
                  * srch_entry;
 static GHashTable *allviews;
+static gboolean exact_match;  /* Toggle button for exact string match */
 
 
 /* ************************************************************************ *
@@ -151,6 +153,91 @@ build_labels_radio_button_group ()
 }
 
 /* ************************************************************************ *
+ * hsep_show_new () - Convenience function to create a new hseparator       *
+ *      widget and show it.                                                 *
+ * ************************************************************************ */
+
+GtkWidget *
+hsep_show_new (void)
+{
+    GtkWidget *sep = gtk_hseparator_new ();
+    gtk_widget_show (sep);
+    return sep;
+}
+
+/* ************************************************************************ *
+ * exact_button_toggled() - callback for when exact_match toggle button is  *
+ *          toggled.  It sets the variable exact_match to correspond with   *
+ *          its state.                                                      *
+ * ************************************************************************ */
+
+void
+exact_button_toggled (GtkToggleButton *button, gpointer user_data)
+{
+    exact_match = gtk_toggle_button_get_active (button);
+}
+
+/* ************************************************************************ *
+ * srch_row_next() - Sets up for next iter in the TreeModel for compare.    *
+ * Passed : (1) The GtkTreeStore being searched                             *
+ *          (2) Pointer to current GtkTreeIter                              *
+ *          (3) Pointer to GtkTreePath where we begin the search.           *
+ *          (4) Integer denoting direction of search, either Forward or     *
+ *              Backward.                                                   *
+ * Returns: FALSE if we have looped back to the original starting point.    *
+ *          I.E., no match was found.                                       *
+ * ************************************************************************ */
+
+static gboolean
+srch_row_next (GtkTreeModel *store, GtkTreeIter *iter, GtkTreePath *stop_path,
+        gint direction)
+{
+    GtkTreePath *tpath = NULL;
+    gboolean retval = TRUE;
+
+    if (direction == 2)      /* Forward */
+    {
+        if ( ! gtk_tree_model_iter_next (store, iter))
+        {
+            gtk_tree_model_get_iter_first (store, iter);
+        }
+
+        tpath = gtk_tree_model_get_path (store, iter);
+    }
+    else if (direction == 1) /* Reverse */
+    {
+        tpath = gtk_tree_model_get_path (store, iter);
+
+        if (gtk_tree_path_prev (tpath))
+        {
+            gtk_tree_model_get_iter (store, iter, tpath);
+        }
+        else
+        {
+            gtk_tree_model_iter_nth_child (
+                                            store,
+                                            iter,
+                                            NULL,
+                                            gtk_tree_model_iter_n_children (
+                                                                    store,
+                                                                    NULL) - 1); 
+        }
+    }
+
+    if ( ! gtk_tree_path_compare (stop_path, tpath))
+    {
+        retval = FALSE;
+    }
+
+    if (tpath)
+    {
+        gtk_tree_path_free (tpath);
+    }
+
+    return retval;
+}
+
+/* ************************************************************************ *
  * do_search () - The generic search function for all the treeviews         *
  *      The main dialog is created on first call to search.                 *
  *      A vbox (cols_vbox) is packed with a vbox of column choice radio     *
@@ -166,8 +253,7 @@ void
 do_search (GtkWidget *widg, gchar *title, gchar *radioname)
 {
     struct srch_log * shown_radios;
-    GtkTreePath * tpath = NULL,
-                * stop_path = NULL;
+    GtkTreePath * stop_path = NULL;
     gint response;
     gchar * curnt_str;
     gint srch_col = -1;     /* Init to unreasonable value */
@@ -176,11 +262,18 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
      * create the search dialog and set it up
      */
 
+    if ( ! srch_tips)
+    {
+        srch_tips = gtk_tooltips_new ();
+    }
+
     if ( ! srch_dialog)
     {
-        GtkWidget * frame,
+        GtkWidget * eventbox,
+                  * frame,
                   * cols_vbox,
-                  * entry_hbox;
+                  * entry_hbox,
+                  * exact_toggle;
 
         if ( ! allviews)
         {
@@ -196,9 +289,11 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
                     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                     NULL);
         gtk_widget_hide_on_delete (srch_dialog);
+        gtk_box_set_spacing (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox), 10);
 
         frame = gtk_frame_new ("Column to Search");
         gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
+        gtk_container_set_border_width (GTK_CONTAINER(frame), 10);
 
         /* The VBox to contain all the buttons groups */
 
@@ -219,9 +314,38 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
 
         gtk_container_add (GTK_CONTAINER(frame), cols_vbox);
         gtk_widget_show (cols_vbox);
+
+        /* Create an eventbox to contain frame in order to make the
+         * tooltip work
+         */
+
+        eventbox = gtk_event_box_new ();
+        gtk_container_add (GTK_CONTAINER(eventbox), frame);
+        gtk_tooltips_set_tip (srch_tips, eventbox,
+                "Selects which column in the view to search\nNot all columns are searchable - only those displayed", NULL);
+
         gtk_box_pack_start_defaults ( GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
-                                      frame);
+                                      eventbox);
         gtk_widget_show (frame);
+        gtk_widget_show (eventbox);
+
+        /* Exact/Partial match check button */
+
+        gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
+                                    hsep_show_new ());
+        exact_toggle = gtk_check_button_new_with_label ("Exact text Match");
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(exact_toggle), TRUE);
+        gtk_widget_show (exact_toggle);
+        g_signal_connect (exact_toggle, "toggled",
+                            G_CALLBACK(exact_button_toggled), NULL);
+        exact_button_toggled (GTK_TOGGLE_BUTTON(exact_toggle),NULL);
+        gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
+                                     exact_toggle);
+        gtk_tooltips_set_tip (srch_tips, exact_toggle,
+            "When checked, the search string must match the entire field\notherwise, the search string may be only a substring of the field",
+            "This has no effect upon the case sensitivity");
+        gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
+                                    hsep_show_new ());
 
         /* the search entry */
 
@@ -233,7 +357,9 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
         gtk_widget_show_all (entry_hbox);
         gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
                                      entry_hbox);
-    }
+    }       /* End build search dialog */
+
+    /* Determine which set of radio buttons to display */
 
     shown_radios = g_hash_table_lookup (allviews, radioname); 
 
@@ -243,6 +369,9 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
     }
 
     gtk_widget_show (shown_radios->radios_box);
+
+    /* Run the dialog to get response */
+
     response = gtk_dialog_run (GTK_DIALOG(srch_dialog));
     gtk_widget_hide (shown_radios->radios_box);
     gtk_widget_hide (srch_dialog);
@@ -274,8 +403,11 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
                 }
             }
 
+            /* Convert to uppercase for partial match concerns */
+
             shown_radios->last_srch =
-                g_strdup (gtk_entry_get_text (GTK_ENTRY(srch_entry)));
+                g_ascii_strup (gtk_entry_get_text (GTK_ENTRY(srch_entry)),
+                               32768);
 
             srch_txt = shown_radios->last_srch; /* For convenience & speed */
 
@@ -326,56 +458,39 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
             /* Iter we began with */
             stop_path = gtk_tree_model_get_path (store, &iter);
 
-            for (;;)
+            while (srch_row_next (store, &iter, stop_path, response))
             {
-                //tpath = gtk_tree_model_get_path (store, &iter);
+                gboolean found_match;
 
                 /* Test the iter */
                 gtk_tree_model_get (store, &iter, srch_col, &store_txt, -1);
 
-                if ( ! g_ascii_strcasecmp (store_txt, srch_txt))
+                if (exact_match)
                 {
+                    found_match =
+                        (g_ascii_strcasecmp (store_txt, srch_txt) == 0);
+                }
+                else
+                {
+                    gchar *store_up = g_ascii_strup (store_txt, 32768);
+
+                    found_match =
+                        (g_strstr_len (store_up, 32768, srch_txt) != NULL);
+                    g_free (store_up);
+                }
+
+                if (found_match)
+                {
+                    GtkTreePath *path;
+
                     gtk_tree_selection_select_iter (selection, &iter);
+                    path = gtk_tree_model_get_path (store, &iter);
+                    gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW(treeview),
+                                                  path,
+                                                  NULL, FALSE, 0, 0);
+                    gtk_tree_path_free (path);
                     break;
                 }
-
-                if (response == 2)      /* Forward */
-                {
-                    if ( ! gtk_tree_model_iter_next (store, &iter))
-                    {
-                        gtk_tree_model_get_iter_first (store, &iter);
-                    }
-
-                    tpath = gtk_tree_model_get_path (store, &iter);
-                }
-                else if (response == 1) /* Reverse */
-                {
-                    tpath = gtk_tree_model_get_path (store, &iter);
-
-                    if (gtk_tree_path_prev (tpath))
-                    {
-                        gtk_tree_model_get_iter (store, &iter, tpath);
-                    }
-                    else
-                    {
-                        gtk_tree_model_iter_nth_child (
-                                        store,
-                                        &iter,
-                                        NULL,
-                                        gtk_tree_model_iter_n_children (
-                                                                store,
-                                                                NULL) - 1); 
-                    }
-                }
-
-                if ( ! gtk_tree_path_compare (stop_path, tpath))
-                {
-                    gtk_tree_path_free (tpath);
-                    break;
-                }
-
-                gtk_tree_path_free (tpath);
-                tpath = NULL;
             }
 
             break;
@@ -387,7 +502,6 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
     {
         gtk_tree_path_free (stop_path);
     }
-
 }
 
 /* **************************************************************** *

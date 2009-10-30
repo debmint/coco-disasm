@@ -180,9 +180,13 @@ on_bnds_define_response (GtkDialog *dialog, gint resp,
                                        *(gtk_entry_get_text(GTK_ENTRY (
                                             GTK_BIN(
                                                 data->label_entry)->child))));
-                offsetdef =
-                    gtk_combo_box_get_active_text (
-                            GTK_COMBO_BOX(data->offset_entry));
+#if (GTK_MAJOR_VERSION < 3) && (GTK_MINOR_VERSION < 6)
+                offsetdef = gtk_entry_get_text (GTK_ENTRY (GTK_BIN (
+                                        data->offset_entry)->child));
+#else
+                offsetdef = gtk_combo_box_get_active_text (
+                                        GTK_COMBO_BOX(data->offset_entry));
+#endif
 
                 if ( strcmp (offsetdef, "NONE"))
                 {

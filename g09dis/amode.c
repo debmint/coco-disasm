@@ -368,19 +368,19 @@ char
     {
         T = Pre10;
         sscanf( &opcode[2], "%02x", &opcode_val);
-        sz = sizeof(Pre10)/sizeof(Pre10[0]);
+        sz = G_N_ELEMENTS(Pre10);
     }
     else {
         if( ! strncmp(opcode,"11",2) )
         {
             T = Pre11;
             sscanf( &opcode[2], "%02x", &opcode_val);
-            sz = sizeof(Pre11)/sizeof(Pre11[0]);
+            sz = G_N_ELEMENTS(Pre11);
         }
         else {
             T = Byte1;
             sscanf( opcode, "%02x", &opcode_val);
-            sz = sizeof(Byte1)/sizeof(Byte1[0]);
+            sz = G_N_ELEMENTS(Byte1);
         }
     }
 

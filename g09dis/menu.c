@@ -215,6 +215,7 @@ static const char *ui_description =
     "  </menubar>"
     "  <popup name='ListPopUp'>"
     "    <menuitem action='LstngSearch'/>"
+    "    <separator/>"
     "    <menuitem action='LstngOpen'/>"
     "    <separator/>"
     "    <menuitem action='NameLabel'/>"
@@ -223,9 +224,9 @@ static const char *ui_description =
     "    <separator/>"
     "  </popup>"
     "  <popup name='LabelPopUp'>"
-    "    <menuitem action='LblOpen'/>"
-    "    <separator/>"
     "    <menuitem action='LblSearch'/>"
+    "    <separator/>"
+    "    <menuitem action='LblOpen'/>"
     "    <separator/>"
     "    <menuitem action='LblSave'/>"
     "    <menuitem action='LblSaveAs'/>"
@@ -292,7 +293,12 @@ get_menubar_menu (GtkWidget * main_window)
 
     gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
                          "/MainMenu/ToolMenu/DasmPrg"),
-                         "Run the disassembler",
+                         "Disassemble the program, sending output to the Listing Window",
+                         NULL);
+
+    gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
+                         "/MainMenu/ToolMenu/DasmToFile"),
+                         "Disassemble the program, sending output to a text file",
                          NULL);
 
     gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,

@@ -455,8 +455,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
      * **************************************************** */
 
     aprbx = gtk_vbox_new(0, 5);     /* Main vbox for appearance page */
-    gtk_container_set_border_width(GTK_CONTAINER(aprbx), 10);
     vbx = gtk_vbox_new(0,5);       /* Vbox for Page Setup widgets   */
+    gtk_container_set_border_width(GTK_CONTAINER(vbx), 10);
 
     /* Begin page setup
      * First, create an hbox to set the page width/depth side by side
@@ -511,8 +511,9 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
 
     frame = gtk_frame_new(0);
     lbl = gtk_label_new(0);
-    gtk_label_set_markup(GTK_LABEL(lbl), "<span face=\"Roman\"foreground=\"blue\" size=\"large\" weight=\"bold\">Appearance</span>");
+    gtk_label_set_markup(GTK_LABEL(lbl), "<span face=\"Bitstream Sans Vera\"foreground=\"blue\" size=\"large\">Appearance</span>");
     gtk_frame_set_label_widget(GTK_FRAME(frame), lbl);
+    gtk_frame_set_label_align (GTK_FRAME(frame), .10, .50);
     
     gtk_container_add(GTK_CONTAINER(frame), vbx);
     gtk_box_pack_start(GTK_BOX(aprbx), frame, FALSE, FALSE, 5);
@@ -522,6 +523,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
      * ******************************** */
 
     vbx = gtk_vbox_new(0,5);       /* Vbox for Types widgets   */
+    gtk_container_set_border_width (GTK_CONTAINER(vbx), 10);
 
     /* do CPU type */
     CPU_toggle = gtk_check_button_new_with_label ("CPU = 6309");
@@ -543,8 +545,9 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     
     frame = gtk_frame_new(0);
     lbl = gtk_label_new(0);
-    gtk_label_set_markup(GTK_LABEL(lbl), "<span face=\"Roman\"foreground=\"blue\" size=\"large\" weight=\"bold\">Types</span>");
+    gtk_label_set_markup(GTK_LABEL(lbl), "<span face=\"Bitstream Sans Vera\"foreground=\"blue\" size=\"large\">Types</span>");
     gtk_frame_set_label_widget(GTK_FRAME(frame), lbl);
+    gtk_frame_set_label_align (GTK_FRAME(frame), .10, .50);
     
     gtk_container_add(GTK_CONTAINER(frame), vbx);
     gtk_box_pack_start(GTK_BOX(aprbx), frame, FALSE, FALSE, 5);
