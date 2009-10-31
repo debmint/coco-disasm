@@ -294,3 +294,47 @@ listlbls ()
         }
     }
 }
+
+#ifndef HAVE_DIRNAME
+
+/* Substitute for dirname() for systems that don't have it */
+
+#define DIRSEP_WIN '\\'
+#define DIRSEP_UNX '/'
+
+char *
+dirname (char *path)
+{
+    static const char *dot = ".";
+    char *dirsep = (char *)0;
+
+#ifdef WIN32
+    /* WIN32 allows either path separator */
+    char *ptr = &path[strlen (path) - 1];
+
+    while (ptr >= path)
+    {
+        if ((*ptr == DIRSEP_WIN) || (*ptr == DIRSEP_UNX))
+        {
+            dirsep = ptr;
+            break;
+        }
+
+        --ptr;
+    }
+#else
+    dirsep = strrchr (path, DIRSEP_UNX);
+#endif
+
+    if (dirsep)
+    {
+        *dirsep = '\0';
+    }
+    else
+    {
+        path = dot;
+    }
+
+    return path;
+}
+#endif

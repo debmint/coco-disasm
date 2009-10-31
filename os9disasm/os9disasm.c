@@ -20,6 +20,10 @@
 
 #include "odis.h"
 
+#ifndef HAVE_DIRNAME
+char *dirname(char *path);
+#endif
+
 #ifdef HAVE_LIBGEN_H
 #   include <libgen.h>
 #endif
@@ -42,25 +46,6 @@ static int doingcmds = 0;              /* Flag: set if doing cmd file */
 static char *DefDir;
 static char *myhome;            /* pointer to HOME environment name */
 char rdbuf[500];
-
-#ifndef HAVE_DIRNAME
-static char *
-dirname (char *path)
-{
-    char *slash = strrchr (path, '/');
-
-    if (slash)
-    {
-        *slash = '\0';
-    }
-    else
-    {
-        strcpy (path, ".");
-    }
-
-    return path;
-}
-#endif
 
 static void
 usage ()
