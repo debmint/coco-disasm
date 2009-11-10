@@ -72,11 +72,11 @@ tip_toggle(GtkToggleAction *ta, glbls *hbuf)
     if( gtk_toggle_action_get_active(ta) )
     {
         gtk_tooltips_enable(ttip);
-        g_print("Tooltips are now ON...\n");
+        sysfailed ("Tooltips are now ON...", FALSE);
     }
     else {
         gtk_tooltips_disable(ttip);
-        g_print("Tooltips are now OFF...\n");
+        sysfailed ("Tooltips are now OFF...", FALSE);
     }
 }
 

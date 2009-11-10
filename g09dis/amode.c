@@ -429,7 +429,7 @@ char
 
           if ( !(reg = strchr(oprand, ',')))
           {
-              g_print("No comma found in operand!!!\n");
+              sysfailed("No comma found in operand!!!", FALSE);
               /* if no comma, we have a PROBLEM! */
               return NULL;
           }
@@ -454,7 +454,7 @@ char
               case 'P':
                   return "R";
               default:
-                  g_print("Lookup for Index Register FAILED ! \n");
+                  sysfailed("Lookup for Index Register FAILED !", FALSE);
                   return NULL;  /* PROBLEM!!! */
           }
       }

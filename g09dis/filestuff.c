@@ -429,7 +429,9 @@ save_lbl(FILEINF *fdat, GtkWidget *my_win, gchar **newfile)
 
     if (!(outfile = fopen (*newfile, "wb")))
     {
-        fprintf (stderr, "Cannot open file %s for write!\n", *newfile);
+        sysfailed (g_strdup_printf ("Cannot open file %s for write!\n",
+                                    *newfile),
+                   TRUE);
     }
 
     /* set up buffer to write */
@@ -524,7 +526,9 @@ save_text (FILEINF * fdat, GtkWidget * my_win, gchar ** newfile)
 
     if ( ! (outfile = fopen (*newfile, "wb")))
     {
-        fprintf (stderr, "Cannot open file %s for write!\n", *newfile);
+        sysfailed (g_strdup_printf ("Cannot open file %s for write!\n",
+                                    *newfile),
+                   TRUE);
     }
 
     /* set up buffer to write */
@@ -639,7 +643,9 @@ load_text (FILEINF * fdat, GtkWidget * my_win, gchar ** newfile)
     }
     else
     {
-        fprintf (stderr, "Cannot open file %s for read!\n", fdat->fname);
+        sysfailed (g_strdup_printf ("Cannot open file %s for read!\n",
+                                    fdat->fname),
+                   TRUE);
     }
 }
 
@@ -858,7 +864,9 @@ load_lbl (FILEINF * fdat, GtkWidget * my_win, gchar ** newfile)
     }
     else
     {
-        fprintf (stderr, "Cannot open file %s for read!\n", fdat->fname);
+        sysfailed (g_strdup_printf ("Cannot open file %s for read!\n",
+                                    fdat->fname),
+                   TRUE);
     }
 
 
@@ -873,7 +881,7 @@ load_lbl (FILEINF * fdat, GtkWidget * my_win, gchar ** newfile)
  * **************************************** */
 
 void
-sysfailed (char *msg)
+sysfailed (char *msg, gboolean free_it)
 {
     GtkWidget *dialog;
 
@@ -884,6 +892,11 @@ sysfailed (char *msg)
                                      msg);
     gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
+
+    if (free_it)
+    {
+        g_free (msg);
+    }
 }
 
 
@@ -911,7 +924,7 @@ run_disassembler (GtkAction * action, glbls * hbuf)
 
         msg = g_strconcat("WARNING!\n",
                           "No program file specified\n",
-                          "Please configure in menu item \"Options\"\n",
+                          "Please configure in menu item \"Options\"",
                           NULL );
         warnwin = gtk_message_dialog_new( GTK_WINDOW(w_main),
                                           GTK_DIALOG_DESTROY_WITH_PARENT ||
@@ -1012,12 +1025,16 @@ run_disassembler (GtkAction * action, glbls * hbuf)
             case 0: /* sucess */
                 break;
             case -1:  /* failed fork */
-                msg = "Could not fork \"os9disasm\"\nIs \"os9disasm\" in your path?";
-                sysfailed(msg);
+                msg = g_strconcat ("Could not fork \"os9disasm\"\n",
+                                   "Is \"os9disasm\" in your path?",
+                                   NULL);
+                sysfailed (msg, TRUE);
                 break;
             default:
-                msg = "Error in executing \"os9disasm\"\nPlease check console for error messages";
-                sysfailed(msg);
+                msg = g_strconcat ("Error in executing \"os9disasm\"\n",
+                                   "Please check console for error messages",
+                                   NULL);
+                sysfailed (msg, TRUE);
         }
     }
     else        /* else we're piping to the GUI */
@@ -1027,8 +1044,9 @@ run_disassembler (GtkAction * action, glbls * hbuf)
         /* Now open the file and read it */
         if (!(infile = popen (cmdline, "r")))
         {
-            g_print ("Cannot pipe \"%s\" for read!\n",
-                              cmdline);
+            sysfailed (g_strdup_printf ("Cannot pipe \"%s\" for read!\n",
+                                        cmdline),
+                       TRUE);;
         }
         else {
             gtk_list_store_clear ((hbuf->list_file).l_store);
@@ -1114,8 +1132,9 @@ load_listing (GtkAction * action, glbls * hbuf)
         
         if (!(infile = fopen ((hbuf->list_file).fname, "r")))
         {
-            fprintf (stderr, "Cannot open file \"%s\" for read!\n",
-                              (hbuf->list_file).fname);
+            sysfailed (g_strdup_printf ("Cannot open file \"%s\" for read!\n",
+                                        (hbuf->list_file).fname),
+                       TRUE);
         }
         else {
             load_list_tree (&hbuf->list_file, infile);

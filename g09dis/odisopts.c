@@ -441,7 +441,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
                 tb = GTK_TOGGLE_BUTTON(list_radio_none);
                 break;
             default:
-                g_print("Internal error: invalid listing output!!!\n");
+                sysfailed ("Internal error: invalid listing output!!!", FALSE);
         }
         gtk_toggle_button_set_active(tb, TRUE);
     }
@@ -854,16 +854,16 @@ cbtn_add_lbl (GtkWidget *btn, gchar *label)
 void
 dlg_set_tips (GtkWidget *btn, GtkDialog *dialog, GtkTooltips *tips)
 {
-    tips = gtk_tooltips_new();
+    font_tips = gtk_tooltips_new();
 
     switch (gtk_dialog_get_response_for_widget (dialog, btn))
     {
         case GTK_RESPONSE_OK:
-            gtk_tooltips_set_tip (tips, btn,
+            gtk_tooltips_set_tip (font_tips, btn,
                     "Exit session, keeping all changes", NULL);
             break;
         default:    /* Cancel */
-            gtk_tooltips_set_tip (tips, btn,
+            gtk_tooltips_set_tip (font_tips, btn,
                     "End session, rejecting all changes made\nduring session.\nAll windows will revert back to\ntheir state on entry into this session", NULL);
     }
 }
@@ -1019,6 +1019,6 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
     }
 
     gtk_object_destroy (GTK_OBJECT(font_tips));
-    font_tips = NULL;               /* Flag it uninitialized */
+    font_tips = NULL;
     gtk_widget_destroy (fonts_main_dialog);
 }
