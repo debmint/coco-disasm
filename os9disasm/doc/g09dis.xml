@@ -1,4 +1,4 @@
-<section><title>G09Dis - A graphical front-end to Os9Dis</title>
+<section><title>&g09dis; - A graphical front-end to &odis;</title>
   <para>&odis; is a command-line application. It is operated from the command
     line and uses the various files to perform its work. This is all well and
     good, but it can become tedious trying to remember all the Addressing modes
@@ -6,87 +6,36 @@
     file</filename>, especially.
   </para>
   <para>This is where a helper application can be beneficial. This is just what
-    g09dis is. With it, you can add command lines to the <filename>command
+    &g09dis; is. With it, you can add command lines to the <filename>command
       file</filename> or the <filename>label file</filename>, depending upon
     the content of the line upon which you are working.
   </para>
-  <section><title>Installing and Compiling G09dis</title>
+  <section><title>Installing and Compiling &g09dis;</title>
     <para>The installation and compilation is in principle the same as the
       general installation, so you are encouraged to read
       <xref linkend="ssetup"/> for instruction on this.
     </para>
   </section>
-  <section><title>Running G09Dis</title>
-    <para>Operation of <command>g09dis</command> is relatively
-      straightforward.  A few notes are in order.
-    </para>
-    <section id="gdisfilesmenu"><title>The Files Menu</title>
-      FIXME!
-    </section>
-    <section id="gdistoolsmenu"><title>The Tools Menu></title>
-      FIXME!
-    </section>
-    <section id="gdisoptionmenu"><title>The Options Menu</title>
-      <para>The Options menu allows you manipulate options both for the
-        disassembler and for preferences in the operation of
-        <command>g09dis</command>.
+  <section id="wndwparts"><title>Components of the &g09dis; Window</title>
+    <section id="listwndw"><title>The Listing Window</title>
+      <para>The Listing Window appears on the left side of the displayed
+        window.  This is a display of the formatted output produced by
+        &odis;, and is equivalent to the output of an assembler when most
+        are normally given the <command>-l</command> option.
       </para>
-      <variablelist><title>Elements of the Options Menu</title>
-        <varlistentry><term>Disassembler Options</term>
-          <listitem>
-            <para>This allows you to set the options passed to the
-              disassembler when disassembling the program.  When Tooltips are
-              turned on, a short description for most is displayed when you
-              hover the mouse over the title momentarily.  Note that to
-              disassemble a program, an entry <emphasis>must</emphasis> be
-              present in "Program to Disassemble".  This is the only item that
-              is definitely required.  Please refer to the documentation for
-              &odis; for a more in-depth explanation of the various options.
-            </para>
-          </listitem>
-        </varlistentry>
-        <varlistentry><term>Load Options from File</term>
-                      <term>Save Options to file</term>
-          <listitem>
-            <para>This is a convenience feature.  If you are working on a
-              larger project, you often won't complete it in one session.
-              Rather than inputting all the data each time, you can, after
-              setting the parameters, click "Save Options to File" and
-              save the settings.  Then, when you come back to work on the
-              project further, simply reload the setting with "Load Options
-              from File".  Note that any of the options can still be changed
-              during the session.  Of course if you want to save these changes,
-              you will need to resave them.
-            </para>
-            <para>Of course, for many of these options, if it is something
-              you wish to be permanent, they can simply be embedded in the
-              command file.
-            </para>
-          </listitem>
-        </varlistentry>
-        <varlistentry><term>Show Tooltips</term>
-          <listitem><para>This is a toggle option.  If it is checked, many
-            of the items appearing in the windows will show some tips if you
-            hover the mouse over the item for a bit.  Not every item has
-            this feature, but many do have some helpful tips.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-    </section>
-    <section><title>Loading and usage of the Listing</title>
-      <para>The Listing is where you will need to reference your work.
-        It is from a reference to a line in the Listing where you add
-        the commands or labels.  This listing is the Listing output
-        from &odis;.
+      <para>The Listing Window is where you will need to reference your work.
+        It is from a reference to a line in the Listing where you add the
+        commands or labels.  This listing is the Listing output from &odis;.
       </para>
       <important><title>Do not use a regular Listing!</title>
         <para>Be sure you do not try to load a regular listing.  These
           <emphasis>WILL NOT LOAD</emphasis>.  You MUST use a specially
-          formatted Listing!  See below for details.
+          formatted Listing!  See <link linkend="loadlist">below</link>
+          for details.
         </para>
       </important>
-      <section>
-        <title>Obtaining and Loading a compatible Listing for G09Dis</title>
+      <section id="loadlist">
+        <title>Obtaining and Loading a compatible Listing for &g09dis;</title>
         <para>As stated above, a normal listing will not work.  If you
           attempt to use one of these, nothing will happen, nothing will
           be loaded.  You must use a specially formatted listing using
@@ -108,11 +57,231 @@
         </orderedlist>
       </section>
     </section>
+    <section id="cmdwndw"><title>The Command File Window</title>
+      <para>The command window is displayed in the top half of the right-hand
+        side of the display.  This displays the command file as used by &odis;.
+        It is either loaded from an file or created here.
+      </para>
+      <para>This section is editable, either directly within the window, or
+        commands can be added from popup windows depending upon the context
+        of the line in the <link linkend="listwndw">Listing Window</link>.
+        See <xref linkend="definebnds"/> and <xref linkend="adrmodewndw"/>.
+      </para>
+    </section>
+    <section id="lblwndw"><title>The Label File Window</title>
+      <para>The Label file window is in the lower half of the right side
+        of the display.  This represents a label file for the program you're
+        working on.  Although &odis; supports up to 16 label files,
+        &g09dis; supports displaying only one label file at a time.
+        This may change in the future.
+      </para>
+      <para>This window is not editable directly, but lines can be added by
+        accessing the
+        <link linkend="lblnamepopup">"Rename Label" popup</link>.
+      </para>
+    </section>
+  </section>
+  <section><title>Running &g09dis;</title>
+    <para>Operation of &g09dis; is relatively straightforward.  A few notes are
+      in order.
+    </para>
+    <section id="gdisfilesmenu"><title>The File Menu</title>
+      <variablelist>
+        <varlistentry><term>The <command>New</command> menu item</term>
+          <listitem>
+            <para>The <command>New</command> menu item clears the specified
+              window and the associated buffer of data.
+              When the <command>New</command> menu item is clicked, it causes
+              a popup submenu to appear.  In this menu, you can choose which
+              window you wish to clear.  Each window is handled individually.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry><term> The <command>Load</command> menu item</term>
+          <listitem>
+            <para>Clicking on this menu item produces a submenu window similar
+              to the <command>New</command> to appear.  This will bring up a
+              File chooser window which will allow you to choose a file to load
+              into the corresponding buffer and it will appear in the
+              corresponding window.  If a buffer for that window is already
+              loaded, it will be cleared, and the data in the buffer and the
+              window will be replaced.
+            </para>
+            <para>No attempt is made to determine the file type of your choice.
+              If an incorrect file is chosen, in most cases, the result is that
+              the file simply will no load.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="buffsave"><term>The <command>Save</command>
+            menu item</term>
+          <listitem>
+            <para>This item allows you to save either the
+              <command>Command File</command> or the
+              <command>Label File</command> buffer to a file.  If the buffer
+              began as a file loaded from an already-existing file, or the
+              buffer has been previously saved to a file, the buffer is saved
+              without any prompt.  If the buffer was created from scratch, and
+              no file for that buffer has yet been accessed, you will be
+              prompted for a filename and path to which to save, in the same
+              manner as <xref linkend="buffsaveas"/>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="buffsaveas"><term>The <command>Save As...</command>
+            menu item</term>
+          <listitem>
+            <para>This will allow you to specify a filename (and path) to which
+              you will save the <command>Command File</command> or the
+              <command>Label File</command>.  A File Chooser window will appear
+              allowing you to specify your choice.  After saving from this
+              menu, you can make further saves to this file by simply clicking
+              the <link linkend="buffsave">Save</link> menu choice.
+            </para>
+            <para>You can choose this option whether this buffer already has a
+              filename associated with it or not.  If you choose this option
+              for a buffer that already had a filename associated with it, this
+              new filename becomes the default name.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+    <section id="viewmenu"><title>The View Menu</title>
+      <variablelist>
+        <varlistentry id="view-fonts"><term>The <command>Fonts</command>
+            menu item</term>
+          <listitem>
+            <para>Clicking on this item allows you to change the font and its
+              pointsize, and the color of the text or background for any of the
+              three display windows.  Please refer to
+              <xref linkend="visualprefs"/> for details on this option.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+    <section id="gdistoolsmenu"><title>The Tools Menu</title>
+      <variablelist>
+        <varlistentry><term>Modify Amode List</term>
+          <listitem>
+            <para>This allows you to modify (temporarily for the duration of
+              the session) the list of
+              <link linkend="laddrmod">Addressing modes</link>
+              recognized by &g09dis;.  Definition modifications added through
+              this menu last only for this session, and are lost when the
+              &g09dis; is closed out.  To make any changes permanent for future
+              sessions, please see<xref linkend="embeddedlblclass"/>.
+            </para>
+            <para>Addressing modes can be added either one at a time through
+              the entry line or they can be added from a file containing
+              addressing mode specifications.
+            </para>
+            <para>If the amodes are loaded from a file, a file is selected, and
+              then it is read, and only lines beginning with the key
+              <emphasis>"*\"</emphasis> are accepted. (see
+              <xref linkend="embeddedlblclass"/>.  In this way, a label file
+              can be read and only the amode specifications will be loaded,
+              with all other lines ignored.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry><term>Disassemble to GUI</term>
+          <listitem>
+            <para>This will cause &odis; to run, disassembling the currently
+              specified program and sending output to the Listing display.
+              This option is disabled unless a program has been specified by
+              either the <emphasis>Options</emphasis> menu
+              <!--          <link linkend=""></link>-->
+              or by loading from a
+              <link linkend="optssave">saved options</link> file.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry><term>Disassemble to File</term>
+          <listitem>
+            <para>This option disassembles the program sending the formatted
+              listing output to a file.  This file is a standard
+              <emphasis>space-separated</emphasis> listing and not one formatted
+              for &g09dis; (see <xref linkend="loadlist"/>).
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+    <section id="gdisoptionmenu"><title>The Options Menu</title>
+      <para>The Options menu allows you manipulate options both for the
+        disassembler and for preferences in the operation of
+        &g09dis;.
+      </para>
+      <variablelist><title>Elements of the Options Menu</title>
+        <varlistentry><term>Disassembler Options</term>
+          <listitem>
+            <para>This brings up an options window allowing you to set various
+              options for the disassembly of the program.  Most of these are
+              options passed to the disassembler when disassembling the
+              program.  When Tooltips are turned on, a short description for
+              most is displayed when you hover the mouse over the title
+              momentarily.
+            </para>
+            <para>The window is broken down into two pages.  The page titled
+              <emphasis>Files</emphasis> pertains to files &odis; will use.
+              The other page, titled <emphasis>Appearance</emphasis> deals
+              primarily with the appearance of the formatted listing that
+              &odis; will output.
+            </para>
+            <para>Note that to disassemble a program, an entry
+              <emphasis>must</emphasis> be present in "Program to Disassemble".
+              This is the only item that
+              is definitely required.  Please refer to the documentation for
+              &odis; for a more in-depth explanation of the various options.
+            </para>
+            <para>
+              Most of these options (with the exception of "Program to
+              Disassemble" and the name of the
+              <emphasis>command file</emphasis> can be specified within the
+              <emphasis>command file</emphasis> itself, if one is used.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="optssave"><term>Load Options from File</term>
+                      <term>Save Options to file</term>
+          <listitem>
+            <para>This is a convenience feature.  If you are working on a
+              larger project, you often won't complete it in one session.
+              Rather than inputting all the data each time, you can, after
+              setting the parameters, click "Save Options to File" and
+              save the settings.  Then, when you come back to work on the
+              project further, simply reload the setting with "Load Options
+              from File".
+            </para>
+            <para>Note that any of the options can still be changed during the
+              session.  Of course if you want these changes to be those you
+              wish to make permanent, you will need to resave them.
+            </para>
+            <para>Of course, any of these options that apply to disassembly
+              particulars can be embedded in the command file itself.  However,
+              the primary benefit of this feature is that this will save and
+              load the name of the Program file to disassemble and also will
+              load the <emphasis>command file</emphasis> and the
+              <emphasis>label file</emphasis> into the buffer for further
+              editing.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry><term>Show Tooltips</term>
+          <listitem><para>This is a toggle option.  If it is checked, many
+            of the items appearing in the windows will show some tips if you
+            hover the mouse over the item for a bit.  Not every item has
+            this feature, but many do have some helpful tips.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
     <section>
-      <title>Adding command or label lines from Listing context</title>
-      <para>To add a command or label, right-click on the desired line
-        displayed in the Listing window.  You will get a pop-up menu
-        like this:
+      <title>The Listing popup menu</title>
+      <para>Right-clicking in the Listing window will bring up the following
+        popup menu:
       </para>
       <mediaobject>
         <imageobject>
@@ -121,18 +290,21 @@
         <caption><para>The <command>List Menu</command></para>
         </caption>
       </mediaobject>
-      <section><title>"Search Listing</title>
-        <para>Search Listing searches through the listing display for a
-          string of text.  The search will search for this text in a
-          specified column.  The choices for the column are
+      <section><title>Search Listing</title>
+        <para><emphasis>Search Listing</emphasis> searches through the listing
+          display for a string of text.  The search will search for this text
+          in a specified column.  The choices for the column are
           <command>Address</command>, <command>Label</command>, or
           <command>Opcode</command>.  Please refer to
           <xref linkend="searching"/> for more details on searching.
         </para>
       </section>
-      <para>Of course <command>Open Listing</command> loads a specially
-        formatted listing from a file.  What we are now interested in
-        are the editing functions.
+      <section><title>Open Listing</title>
+        <para><emphasis>Open Listing</emphasis> loads a specially formatted
+          listing from a file.
+        </para>
+      </section>
+      <para>What we are now interested in are the editing functions.
       </para>
       <note>
         <para>In the following, the window decoration will be different,
@@ -140,7 +312,7 @@
           you are running.
         </para>
       </note>
-      <section>
+      <section id="lblnamepopup">
         <title>The <command>Rename Label</command> Menu Option</title>
         <para>If we click on "<command>Rename Label</command>", we get a
           window similar to the following.
@@ -153,7 +325,7 @@
           </caption>
         </mediaobject>
         <para>Here we see three input boxes.  The <command>Label Name
-          </command> box allows to give the Label a meaningful name.
+          </command> box allows one to give the Label a meaningful name.
         </para>
         <para>The <command>Label Address</command> box is the Address (in
           hexadecimal).  Note that this address <emphasis>MUST</emphasis>
@@ -203,8 +375,15 @@
           link should give more details if needed.  Again, as with "Rename
           Label", you can change this address to any other you wish.
         </para>
+        <formalpara><title>Saving The Data Boundary</title>
+          <para>Clicking <command>Save</command> saves this command as an
+            &odis; Data Bounds command.  Please refer to
+            <xref linkend="cmdsave"/> for details on how the command is saved
+            and positioned in the buffer.
+          </para>
+        </formalpara>
       </section>
-      <section>
+      <section id="adrmodewndw">
         <title>The <command>Set Addressing Mode</command> Window</title>
         <para>This window looks like:
         </para>
@@ -256,6 +435,17 @@
         <note><para>There is no provision to save these entries.  All are lost
           upon close of the editing session.
         </para></note>
+        <formalpara id="cmdsave"><title>Saving the entry</title>
+          <para>Clicking <command>Save</command> will insert the &odis; command
+            apprpriate for this entry in the Command file buffer on a
+            separate line at the position of the cursor.  If the cursor is at
+            the begin of the line, it will insert the line prior to that
+            line.  In any other event, it wll insert it after that line.
+          </para>
+          <para>Clicking <command>Cancel</command> will close out the window
+            and abort the command.
+          </para>
+        </formalpara>
       </section>
     </section>
     <section id="lblfilepopup"><title>The Label File Popup</title>
@@ -339,45 +529,46 @@
         <command>Search Forward</command> button will execute the search.
         Clicking on the <command>Cancel</command> button will abort the search.
       </formalpara>
-      <para>If a row is selected, the search will begin at that row, and
-        including that row.  In other words, don't try to perform a search
-        beginning on a row where the match would be in effect, or you will
-        get nowhere.  If the end of the buffer is reached, the search will jump
-        to the opposite end of the buffer and continue until it comes back to
-        the place where the search originally started.  It will stop upon the
-        first match.  However, to continue the search after a match, select the
-        next row (or any row, for that matter) past the match, in the direction
-        of the search, and redo the search.
+      <para>If a row is selected, the search will begin at the next row
+        according to the direction of the search.  If the end of the buffer is
+        reached, the search will jump to the opposite end of the buffer and
+        continue until it comes back to the place where the search originally
+        started.  It will stop upon the first match.  However, to continue the
+        search after a match, simply begin the search at the row of the match,
+        or any row past the match, in the direction of the search, and redo the
+        search.  The search text will already be set up for the current search
+        text.
       </para>
     </section>
-    <section><title>Embedding Label Classes in Files</title>
-      <para>There are several Label Classes that are defined by default
-        and are inserted on startup.  However, you will find that, with
-        a project of any appreciable size, that you will probably wish
-        to have additional classes besides those already defined.  There
-        is a handy way to reload these definitions into <command>g09dis
-        </command> rather than having to reenter them each time you
-        run the program.  Once you have a label file started, you can
-        embed these classes in a comment line<footnote><simpara>A comment
-        line is  a line beginning with an asterisk (*)</simpara>
-        </footnote>.  All you do is begin a line with "<command>*\
-        </command>" followed by the letter designating the label class.
-        What follows does not matter.  The spacing is totally irrelevant,
-        but a recommended format is
+    <section id="embeddedlblclass">
+      <title>Embedding Label Classes in Files</title>
+      <para>&odis; will have several
+        <link linkend="laddrmod">Label Classes</link> that are defined by
+        default and are inserted on startup.  However, you will find that, with
+        a project of any appreciable size, that you will probably wish to have
+        additional classes defined besides those already defined.
+      </para>
+      <para>There is a convenient way to reload these definitions into &g09dis;
+        rather than having to reenter them each time you run the program.  Once
+        you have a label file started, you can embed these classes in a comment
+        line<footnote><simpara>A comment line is  a line beginning with an
+            asterisk (*)</simpara> </footnote>.  All you do is begin a line
+        with "<command>*\ </command>" followed by the letter designating the
+        label class.  What follows does not matter.  The spacing is totally
+        irrelevant, but a recommended format is
       </para>
       <!-- NOTE: Don't break the following line - it loads literally -->
       <programlisting>*\&lt;space&gt; &lt;class&gt; &lt;space&gt; - &lt;space&gt; &lt;description&gt;</programlisting>
       <para>By using embedded commands, as the label file is loaded, the
-        custom label
-        classes are automatically added.  If the label file is reloaded,
-        they won't be reappended as long as the line remains <emphasis>
-        exactly</emphasis> as it was.  If one of these definitions is
-        loaded and the string is <emphasis>exactly</emphasis> identical to
-        one already present, it won't get reloaded.  However, if you
-        should, for example, load a file, edit the description for
-        one of these defs, save and then reload the file, you will get
-        duplicate entries for that class.  It won't hurt anything except
-        you'll just have two entries in the drop-down list.
+        custom label classes are automatically added.  If the label file is
+        reloaded, they won't be reappended as long as the line remains
+        <emphasis> exactly</emphasis> as it was.  If one of these definitions
+        is loaded and the string is <emphasis>exactly</emphasis> identical to
+        one already present, it won't get reloaded.  However, if you should,
+        for example, load a file, edit the description for one of these defs,
+        save and then reload the file, you will get duplicate entries for that
+        class.  It won't hurt anything except you'll just have two entries in
+        the drop-down list.
       </para>
       <note>
         <simpara>You can also write a separate file for these embedded
@@ -386,28 +577,27 @@
         </simpara>
       </note>
     </section>
-    <section><title>G09Dis and Finding Files</title>
-      <para>If you're not careful, you may encounter problems with <command>
-        g09dis</command> locating specific files.  Here are some details
+    <section><title>&g09dis; and Finding Files</title>
+      <para>If you're not careful, you may encounter problems with &g09dis;
         that might need to be noted.
       </para>
       <itemizedlist>
-        <listitem><para>If you run <command>g09dis</command> from the
+        <listitem><para>If you run &g09dis; from the
             command line, you can specify a full path to the program to get
             it to execute.  If it is not in the PATH environment, and not in
             the current directory, this may be necessary.
           </para>
           <formalpara>
-            <title>If <command>g09dis</command> is in the current directory
+            <title>If &g09dis; is in the current directory
             </title>
             If you are in MS Windows, often simply issuing the command
-            <command>g09dis</command> is sufficient.  However, on any system,
+            &g09dis; is sufficient.  However, on any system,
             if "." is not in the PATH environment, then you will have to
             issue the command <command>./g09dis</command>
           </formalpara>
           <note><para>For Windows use, it may be difficult to operate
-            <command>g09dis</command> by clicking on the icon in Explorer
-            unless this copy of <command>g09dis</command> happens to be
+            &g09dis; by clicking on the icon in Explorer
+            unless this copy of &g09dis; happens to be
             in the same directory as your label files, especially.</para>
           </note>
         </listitem>
@@ -419,25 +609,19 @@
         </title>
         <para>While the full path binary to be disassembled and the command
           file can be specified in the <command>Options</command> menu,
-          the label file could cause some difficulty.
-        </para>
-        <para>This difficulty can arise in the following scenario.  If you
-          specify a label file to include in the <command>command file
-          </command> by merely the filename with out a full path list,
-          &odis; will not be able to find it if you called
-          <command>g09dis</command> from a directory different from
-          that in which the label file resides.  The only case in which
-          this would work would be if the <command>label file</command>
-          happened to be in the "default" directory or in $HOME.  This is
-          caused by the fact that &odis; searches for a file simply specified
-          by the filename in the following manner:
+          the label file could cause some difficulty.  &odis; searches
+          for the label file in the following manner:
         </para>
         <orderedlist>
           <listitem>&odis; first searches in the current directory. (This
-            would be in this case the directory from which <command>g09dis
-            </command> was called from).
+            would be in this case the directory from which &g09dis;
+            was called from).
           </listitem>
           <listitem>Next the "default" directory is searched</listitem>
+          <listitem>The path specified for the label file, if not absolute
+            (preceded by a "/" (or "\" on MS-Win), relative to the absolute
+            path to the command file is tried.
+          </listitem>
           <listitem>Finally the HOME directory is searched.
           </listitem>
         </orderedlist>
@@ -447,6 +631,239 @@
           file will not be included.
         </para>
       </section>
+    </section>
+  </section>
+  <section id="visualprefs"><title>Visual Preferences</title>
+    <para>The visual appearance of the windows in the display can be varied
+      according to taste. The font for the text in the windows can be changed,
+      and the color of the text and the background, also can be altered.
+      This can be done for any of the listings, command file, or the labels
+      file windows.
+    </para>
+    <para>The reason for desiring a different appearance can be simply for
+      aesthetic reasons, or it might be to make it easier to read.
+    </para>
+    <para>This can be done in two ways, either from a
+      <link linkend="rcfile">file in the home directory</link> or at any time
+      <link linkend="fontmenu">during the execution of the program</link>.
+    </para>
+    <section id="rcfile"><title>The RC file</title>
+      <para>An <emphasis>rc file</emphasis> can be used to set up certain
+        conditions each time the program is started up.  It can be used to
+        set fonts and colors for certain sections of the display.  An in-depth
+        explanation of this can be found in the &gtk; documentation.  We will
+        give the parts that pertain to us here.
+      </para>
+      <para>An example file as it might pertain to &g09dis; might be:
+      </para>
+      <para><screen>
+            style "txtstyle"
+            {
+                font_name = "monospace 9"
+                text[NORMAL] = "#df1010"
+                base[NORMAL] = "#d0d0d0"
+            }
+
+            widget "*txtwin" style "txtstyle"
+
+            style "lblstyle"
+            {
+                font_name = "Newspaper 12"
+                text[NORMAL] = "blue"
+                base[NORMAL] = "#c0c0c0"
+            }
+            widget "*.lblwin" style "lblstyle"
+      </screen></para>
+      <para>The word <emphasis>"style"</emphasis> is a keyword  defining a set
+        of parameters that will apply to an element, or group of elements,
+        in the display.  Following this is the name of the style which we are
+        defining.  It doesn't matter what name we use here, it will be used
+        later in the file to determine what style we are applying to a group.
+      </para>
+      <para>Following this style name is a list of settings to be applied to
+        the style.  These settings must be enclosed in a set of brackets
+        ("{" and "}").  Any number of styles can be defined and in any order.
+        The only requirement is that the style be defined before it is assigned
+        to a group.
+      </para>
+      <para>In the example above, we have defined a pair of styles.  Below
+        this, we apply the style "txtstyle" to a group.  The keyword
+        <emphasis>widget</emphasis> and <emphasis>style</emphasis> means that
+        the style <emphasis>txtstyle</emphasis> should be applied to all
+        widgets with the name <emphasis>txtwin</emphasis>.  The asterisk
+        (*) in this case is required.  For our purpose, the period (.) is
+        not necessary.  When present, it means that this style be applied only
+        elements with the name <emphasis>txtwin</emphasis>.  If it were
+        absent, the style would be applied to all elements with names that
+        <emphasis>end</emphasis> with <emphasis>txtwin</emphasis>.
+      </para>
+      <para>We also define a style <emphasis>lblstyle</emphasis>.  This
+        defines a second style, and we apply this style to all widgets
+        with the name <emphasis>lblwin</emphasis>.
+      </para>
+      <para>We have two widget names with which we can apply styles.  The
+        first is named <emphasis>txtwin</emphasis>, and this refers to
+        <link linkend="listwndw">Listing Window</link> and
+        the <link linkend="cmdwndw">Commands Window</link>.  Any style applied
+        to <emphasis>txtwin</emphasis> will be appied to both.  Of course,
+        either can be changed during program execution.
+      </para>
+      <para>The style <emphasis>lblstyle</emphasis> is applied to the the
+        <link linkend="lblwndw">Label window</link>.  This window's properties
+        can also be altered during the running of the program (see
+        <xref linkend="fontmenu"/>).
+      </para>
+      <para>You might not wish to preset any styles (at least the font) on the
+        <emphasis>Label window</emphasis>, as the default
+        <emphasis>Sans 10</emphasis> is pretty With the other windows, however,
+        especially the <link linkend="listwndw">Listing Window</link>
+        one might wish to see more of the line at one time, so a smaller font
+        might be desired.  On the other hand, one might wish to see the text
+        more clearly, and desire a larger font, Therefore, one can specify a
+        default text size for these two windows.
+      </para>
+      <formalpara><title>Styles we can alter</title>
+        <para>We will not deal with an extensive list of style features,
+          although several might apply.  We will only discuss the font and
+          color features.  If more details are desired, the reader is
+          encouraged to consult the &gtk; documentation.  We wish to
+          alter the following features:
+        </para>
+        <para>
+          <variablelist>
+            <varlistentry><term><command>font_name</command></term>
+              <listitem>
+                <para>This determines the font the window will use.  The
+                  definition is a text string.  The best way to find out
+                  which fonts and font names are applicable, simply run
+                  the program and click on
+                  <link linkend="fontmenu">File->Fonts</link> and search
+                  through the various fonts.  Selecting one will display
+                  some sample text at the bottom of the window.
+                </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry id="txtcolor">
+              <term><command>text[NORMAL]</command></term>
+              <listitem>
+                <para>This selects the color for the text.  The keyword
+                  <emphasis>[NORMAL]</emphasis> is necessary.  This represents
+                  the state of the text, and there are four other states,
+                  mostly referring to the condition of the mouse when and
+                  whether it is over the text.  There are four other states,
+                  but for us, NORMAL is our primary concern.
+                </para>
+                <para>The color can be defined in several ways.  In any case,
+                  the value must be enclosed in quotes, either single (') or
+                  double ("").  It doesn't matter which, but they must match on
+                  both ends of the value.
+                  <itemizedlist mark="bullet">
+                    <listitem><formalpara><title>A color Name</title> - The
+                        color can be defined by simply a color name, such
+                        as <emphasis>"blue"</emphasis>,
+                        <emphasis>"green"</emphasis>, or the like.
+                    </formalpara></listitem>
+                    <listitem>
+                      <formalpara>
+                        <title>Numeric definition for the color</title> - The
+                        color can be defined by the use of a hexadecimal
+                        number representing the intensity of each of the
+                        three basic colors.  These colors, in order, are
+                        '<emphasis>RED</emphasis>',
+                        '<emphasis>GREEN</emphasis>', and
+                        '<emphasis>BLUE</emphasis>'.
+                      </formalpara>
+                      <para>This number is preceded by a pound sign ("#"), and
+                        can be expressed as either a 24-bit number, such as
+                        <emphasis>'#df1010'</emphasis> (a red color), or
+                        as a 72-bit value, such as
+                        <emphasis>'#10001000df00'</emphasis> (rather blue).
+                      </para>
+                    </listitem>
+                  </itemizedlist>
+                </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry><term><command>base[NORMAL]</command></term>
+              <listitem>
+                <para>This defines the background color for the window.  The
+                  syntax for the selection is the same as for the
+                  <link linkend="txtcolor">foreground</link>.
+                </para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </para>
+      </formalpara>
+      <para>It is not required that we define a style for any of the
+        widgets.  If either is not defined, the default will be black
+        text over a white background, with a Sans 10 font, which is
+        pretty much acceptable.
+      </para>
+    </section>
+    <section id="fontmenu">
+      <title>Changing fonts and colors during program execution</title>
+      <para>The font and colors for all three windows can be reset at any
+        time during the execution of the program.  This can be done by
+        clicking the <emphasis>File->Fonts</emphasis> from the Main Menu bar.
+      </para>
+      <para>When you do this, you will see the following window pop up:
+      </para>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/fontselect.png" align="center"/>
+        </imageobject>
+        <caption><para>The Font Selection Window</para>
+        </caption>
+      </mediaobject>
+      <formalpara><title>Selecting a window to affect</title>
+        <para>On the left side of the window, you see a set of radio buttons
+          with the name of the window you wish to affect.  The settings you
+          choose will apply to only one window - the one you have selected
+          here.  By default, the <emphasis>Listings</emphasis> window will
+          always be chosen upon entry.  To affect another window, simply
+          click the button beside the name of the desired window.
+        </para>
+        <formalpara><title>Performing the actual font/color selection</title>
+          <para>To do the actual font or color selection, click on the
+            correct button in the section on the right.  The top button
+            selects the font, and the current font together with its point
+            size for the currently-selected window is displayed inside this
+            button.  Clicking this button will bring up a Font Selection
+            window.  This window is very much self explanatory so no effort
+            to describe it will be made.
+          </para>
+          <para>The color selection buttons are below the font selection
+            button.  Clicking the button labeled
+            <emphasis>Background</emphasis> or <emphasis>Foreground</emphasis>
+            will bring up a Color Selection window, which will allow you to
+            select a color for the respective field.  Note that the current
+            color for the  currently-selected window is displayed in the
+            respective color-select button.
+          </para>
+          <note>Choosing a different Window on the left will cause the buttons
+            on the right to display the font or colors for
+            <emphasis>that</emphasis> window.
+          </note>
+        </formalpara>
+        <formalpara><title>Aborting with no changes</title>
+          <para>After making a font or color selection, by clicking
+            <command>OK</command> this change takes effect upon the window
+            immediately.  Clicking <command>Cancel</command> in the font
+            or color selection window will abort that choice attemt.  In
+            either case, however, the main Font/Color choice window will
+            remain up until <command>OK</command> or <command>Cancel</command>
+            is pressed.
+          </para>
+          <para>Clicking <command>OK</command> will exit the Font choice
+            window and all changes will remain.  However, if
+            <command>Cancel</command> is pressed,
+            <command>all changes made during that session will be undone
+            </command>, and <command>all</command> windows will revert back to
+            the state they were in upon entry into the session.
+          </para>
+        </formalpara>
+      </formalpara>
     </section>
   </section>
 </section>

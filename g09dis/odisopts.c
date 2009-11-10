@@ -1,17 +1,31 @@
-/* ******************************************************** *
- *                                                          $
- * odisopts.c - setup options to pass to assembler          $
- *                                                          $
- * NOTE:  This newer version will create the widgets within $
- *        a single table rather than stacking hboxes within $
- *        the dialog->vbox                                  $
- *                                                          $
- * $Id::                                                    $
- * ******************************************************** */
+/* ******************************************************************** *
+ *                                                                      $
+ * odisopts.c - setup options to pass to assembler                      $
+ *                                                                      $
+ * NOTE:  This newer version will create the widgets within a single    $
+ *        table rather than stacking hboxes within the dialog->vbox     $
+ *                                                                      $
+ * $Id::                                                                $
+ * ******************************************************************** */
 
 
 #include <string.h>
+#include <glib/gprintf.h>
 #include "g09dis.h"
+
+struct fontsel_data {
+    gchar * oldfont,
+          * newfont;
+    GtkWidget * font_btn,
+              * cb_fg,
+              * cb_bg;
+    GHashTable * list_to_widg;
+    GtkStyle * style;
+};
+
+static GtkWidget * selected_view;
+static GtkTooltips *optips;
+static GtkTooltips *font_tips;  /* Created/destroyed each call to fonts dlg */
 
 /* ************************************************ *
  * newspin1() - create a new spin button            *
@@ -252,7 +266,6 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     /*GtkWidget *hsep1;*/
     GSList * list_radio_group = NULL;
     gint result;
-    GtkTooltips *optips;
     int files_page, misc_page;  /* Save page numbers */
 
     dialog =
@@ -265,7 +278,10 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
                                      NULL);
     gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
 
-    optips = gtk_tooltips_new();
+    if ( ! optips)
+    {
+        optips = gtk_tooltips_new();
+    }
     
     /* ********************** *
      *                        *
@@ -661,3 +677,348 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
 
 }
 
+/* ******************************************************************** *
+ * font_sel_cb () - Main (top-level) callback for modifying the font of *
+ *          one of the views.                                           *
+ * ******************************************************************** */
+
+static void
+font_select_cb (GtkButton *btn, struct fontsel_data *w_sel)
+{
+    w_sel->newfont = NULL;
+    w_sel->oldfont = pango_font_description_to_string (w_sel->style->font_desc);
+
+    /* Save the font name for now - we may wish to eliminate this step
+     * later */
+    w_sel->newfont = (gchar *)gtk_font_button_get_font_name (
+                                        GTK_FONT_BUTTON(w_sel->font_btn));
+    gtk_widget_modify_font (selected_view,
+                        pango_font_description_from_string (w_sel->newfont));
+}
+
+/* ******************************************************************** *
+ * color_sel_cb () - Callback for when a color selection button is      *
+ *          pressed.                                                    *
+ * ******************************************************************** */
+
+static void
+color_select_cb (GtkButton *btn, struct fontsel_data *w_sel)
+{
+    gboolean is_fg;
+    const gchar *btn_name = gtk_widget_get_name (GTK_WIDGET(btn));
+    GdkColor colr;
+
+    is_fg = (g_ascii_strcasecmp (btn_name, "foreground") == 0);
+    gtk_color_button_get_color (GTK_COLOR_BUTTON(btn), &colr);
+
+    if (is_fg) {
+        gtk_widget_modify_text (selected_view, GTK_STATE_NORMAL, &colr);
+    }
+    else {
+        gtk_widget_modify_base (selected_view, GTK_STATE_NORMAL, &colr);
+    }
+}
+
+/* ******************************************************************** *
+ * set_list_ptr() - Callback for when a Listing selection radio button  *
+ *          is toggled.                                                 *
+ *          If it became active, set "selected_view" to the proper      *
+ *          window.  If it became inactive, do nothing.                 *
+ *          Also sets the colors in the color selection buttons.        *
+ * ******************************************************************** */
+
+static void
+set_list_ptr (GtkWidget *rb, struct fontsel_data *w_sel)
+{
+    if ( gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb)))
+    {
+        selected_view = g_hash_table_lookup (w_sel->list_to_widg,
+                                             gtk_widget_get_name (rb));
+        w_sel->style = gtk_widget_get_style (selected_view);
+        gtk_font_button_set_font_name (GTK_FONT_BUTTON(w_sel->font_btn),
+                    pango_font_description_to_string(w_sel->style->font_desc));
+        gtk_color_button_set_color (GTK_COLOR_BUTTON(w_sel->cb_bg),
+                                    &(w_sel->style->base[0]));
+        gtk_color_button_set_color (GTK_COLOR_BUTTON(w_sel->cb_fg),
+                                    &(w_sel->style->text[0]));
+    }
+}
+
+/* ******************************************************************** *
+ * reset_lists() - Resets a list window to the state in which it was on *
+ *      entry to the procedure.  This is called when the "Cancel"       *
+ *      button is pressed in the Fonts/Colors select.                   *
+ * ******************************************************************** */
+
+static void
+reset_lists (fileinf *inf)
+{
+    GtkStyle *style = gtk_widget_get_style (inf->tview);
+    gchar * name = pango_font_description_to_string (style->font_desc);
+
+    if ( name && g_ascii_strcasecmp (name, inf->fontname))
+    {
+        gtk_widget_modify_font (inf->tview,
+                pango_font_description_from_string (inf->fontname));
+    }
+
+    if (inf->txtcolor && ! gdk_color_equal (inf->txtcolor, &(style->text[0])))
+    {
+        gtk_widget_modify_text (inf->tview, GTK_STATE_NORMAL, inf->txtcolor);
+    }
+
+    if (inf->bakcolor && ! gdk_color_equal (inf->bakcolor, &(style->base[0])))
+    {
+        gtk_widget_modify_base (inf->tview, GTK_STATE_NORMAL, inf->bakcolor);
+    }
+}
+
+/* ******************************************************************** *
+ * replace_gdkcolor () - replaces the GdkColor if it is different       *
+ * ******************************************************************** */
+
+static void
+replace_gdkcolor (GdkColor **oldcolor, GdkColor *newcolor)
+{
+    GdkColor * delcolor = NULL;
+
+    if (*oldcolor && ! gdk_color_equal (*oldcolor, newcolor))
+    {
+        delcolor = *oldcolor;
+    }
+
+    if ( ! *oldcolor ||  ! gdk_color_equal (*oldcolor, newcolor))
+    {
+        *oldcolor = gdk_color_copy (newcolor);
+    }
+
+    /* Does the following work ??? */
+
+    if (delcolor)
+    {
+        gdk_color_free (delcolor);
+    }
+}
+
+/* ******************************************************************** *
+ * update_lists() - update the fileinf data passed as a parameter       *
+ *      to reflect the current font and {fore,back}ground colors        *
+ * ******************************************************************** */
+
+void
+update_lists (fileinf *inf)
+{
+    GtkStyle *style = gtk_widget_get_style (inf->tview);
+    gchar *name;
+
+    name = pango_font_description_to_string (style->font_desc);
+
+    if (inf->fontname) {
+        if (g_ascii_strcasecmp (inf->fontname, name)) {
+            g_free (name);
+        }
+    }
+    else {
+        inf->fontname = "";      /* To avoid segfault */
+    }
+
+    if (g_ascii_strcasecmp (inf->fontname, name)) {
+        inf->fontname = pango_font_description_to_string (style->font_desc);
+    }
+
+    replace_gdkcolor (&(inf->txtcolor), &(style->text[0]));
+    replace_gdkcolor (&(inf->bakcolor), &(style->base[0]));
+}
+
+/* ******************************************************************** *
+ * cbtn_add_lbl() - Finds the GtkFrame in the gtk_color_button and set  *
+ *          the label to that passed as the second parameter.           *
+ * ******************************************************************** */
+
+static void
+cbtn_add_lbl (GtkWidget *btn, gchar *label)
+{
+    while (! GTK_IS_FRAME (btn))
+    {
+        btn = gtk_bin_get_child (GTK_BIN(btn));
+    }
+
+    gtk_frame_set_label (GTK_FRAME(btn), label);
+}
+
+/* ******************************************************************** *
+ * dlg_set_tips() - Parses the GList of Buttons in the dialog and sets  *
+ *          tooltips for them.                                          *
+ * ******************************************************************** */
+
+void
+dlg_set_tips (GtkWidget *btn, GtkDialog *dialog, GtkTooltips *tips)
+{
+    tips = gtk_tooltips_new();
+
+    switch (gtk_dialog_get_response_for_widget (dialog, btn))
+    {
+        case GTK_RESPONSE_OK:
+            gtk_tooltips_set_tip (tips, btn,
+                    "Exit session, keeping all changes", NULL);
+            break;
+        default:    /* Cancel */
+            gtk_tooltips_set_tip (tips, btn,
+                    "End session, rejecting all changes made\nduring session.\nAll windows will revert back to\ntheir state on entry into this session", NULL);
+    }
+}
+
+/* ******************************************************************** *
+ * fonts_main_dialog () - Callback for main menu choice to select a     *
+ *      different font and/or color for the listing, commands, or       *
+ *      labels display(s).                                              *
+ *      This dialog will be destroyed at the end of usage, since it     *
+ *      should not be called often, surely only once in a session.      *
+ * ******************************************************************** */
+
+void
+fonts_main_dialog (GtkAction *action, glbls *globals)
+{
+    GtkWidget *fonts_main_dialog,
+              * hbox_main,
+              * frame,
+              * tmp_vbox,
+              * tmp_hbox,
+              * radiolist = NULL;
+    struct fontsel_data fs_data;
+    gint response;
+    GList *btnlist;
+
+    /* Build the dialog */
+
+    fonts_main_dialog = gtk_dialog_new_with_buttons (
+                            "Choose Font",
+                            GTK_WINDOW(window),
+                            GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                            "Cancel", GTK_RESPONSE_CANCEL,
+                            "OK",     GTK_RESPONSE_OK,
+                            NULL);
+    btnlist = gtk_container_get_children (
+                GTK_CONTAINER(GTK_DIALOG(fonts_main_dialog)->action_area));
+    g_list_foreach (btnlist, (GFunc)dlg_set_tips, fonts_main_dialog);
+    hbox_main = gtk_hbox_new (FALSE, 10);
+
+    selected_view = globals->list_file.tview;
+    fs_data.style = gtk_widget_get_style (selected_view);
+    /* Listings radio group on left-hand side */
+
+    /* Build a list_to_widg hash */
+    fs_data.list_to_widg = g_hash_table_new (g_str_hash, g_str_equal);
+    g_hash_table_insert (fs_data.list_to_widg, "listing",
+                                               globals->list_file.tview);
+    g_hash_table_insert (fs_data.list_to_widg, "cmds",
+                                               globals->cmdfile.tview);
+    g_hash_table_insert (fs_data.list_to_widg, "labels",
+                                               globals->lblfile.tview);
+    tmp_vbox = gtk_vbox_new (FALSE, 5);
+    gtk_container_set_border_width (GTK_CONTAINER(tmp_vbox), 10);
+    radiolist = gtk_radio_button_new_with_label (NULL, "Listings");
+    gtk_widget_set_name (radiolist, "listing");
+    g_signal_connect (radiolist, "toggled", G_CALLBACK(set_list_ptr), &fs_data);
+    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), GTK_WIDGET(radiolist));
+    radiolist = gtk_radio_button_new_with_label_from_widget (
+                                                GTK_RADIO_BUTTON(radiolist),
+                                                "Commands");
+    gtk_widget_set_name (radiolist, "cmds");
+    g_signal_connect (radiolist, "toggled", G_CALLBACK(set_list_ptr), &fs_data);
+    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), GTK_WIDGET(radiolist));
+    radiolist = gtk_radio_button_new_with_label_from_widget (
+                                                GTK_RADIO_BUTTON(radiolist),
+                                               "Labels");
+    gtk_widget_set_name (radiolist, "labels");
+    g_signal_connect (radiolist, "toggled", G_CALLBACK(set_list_ptr), &fs_data);
+    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), GTK_WIDGET(radiolist));
+
+    /* This may be a temporary thing... */
+    /* Following is not necessary, but the list is originally set up in
+     * reverse order, so we pick the last button in the list to gt the first */
+
+    frame = gtk_frame_new ("Listings to alter");
+    gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
+    gtk_container_set_border_width (GTK_CONTAINER(frame), 10);
+    gtk_container_add (GTK_CONTAINER(frame), tmp_vbox);
+    gtk_box_pack_start_defaults (GTK_BOX(hbox_main), frame);
+
+    /* Select Font/Color buttons on right-hand side */
+
+    /* The fonts button */
+    tmp_vbox = gtk_vbox_new (FALSE, 5);
+    gtk_container_set_border_width (GTK_CONTAINER(tmp_vbox), 10);
+    fs_data.font_btn = gtk_font_button_new ();
+    g_signal_connect (fs_data.font_btn, "font-set", G_CALLBACK(font_select_cb),
+                                               &fs_data);
+    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), fs_data.font_btn);
+
+    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), gtk_hseparator_new());
+
+    /* The colors buttons */
+
+    tmp_hbox = gtk_hbox_new (FALSE, 5);
+    gtk_container_set_border_width (GTK_CONTAINER(tmp_hbox), 10);
+
+    /* The background button */
+    fs_data.cb_bg = gtk_color_button_new ();
+    g_signal_connect (fs_data.cb_bg, "color-set", G_CALLBACK(color_select_cb),
+                                                  &fs_data);
+    gtk_color_button_set_title (GTK_COLOR_BUTTON(fs_data.cb_bg),
+                                "Background");
+    gtk_widget_set_name(fs_data.cb_bg, "background");
+    cbtn_add_lbl (fs_data.cb_bg, "Background");
+    gtk_box_pack_start_defaults (GTK_BOX(tmp_hbox), fs_data.cb_bg);
+
+    /* The foreground button */
+    fs_data.cb_fg = gtk_color_button_new ();
+    g_signal_connect (fs_data.cb_fg, "color-set", G_CALLBACK(color_select_cb),
+                                                   &fs_data);
+    gtk_color_button_set_title (GTK_COLOR_BUTTON(fs_data.cb_fg),
+                                "Foreground");
+    gtk_widget_set_name(fs_data.cb_fg, "foreground");
+    cbtn_add_lbl (fs_data.cb_fg, "Foreground");
+    gtk_box_pack_start_defaults (GTK_BOX(tmp_hbox), fs_data.cb_fg);
+
+    frame = gtk_frame_new ("Select Font/Color");
+    gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
+    gtk_container_set_border_width (GTK_CONTAINER(frame), 10);
+    gtk_container_add (GTK_CONTAINER(tmp_vbox), tmp_hbox);
+    gtk_container_add (GTK_CONTAINER(frame), tmp_vbox);
+
+    gtk_box_pack_start_defaults (GTK_BOX(hbox_main), frame);
+
+    /* Set up for the first radio button in the list-selection */
+
+    set_list_ptr (GTK_WIDGET(g_slist_last (gtk_radio_button_get_group (
+                            GTK_RADIO_BUTTON(radiolist)))->data), &fs_data);
+    gtk_color_button_set_color (GTK_COLOR_BUTTON(fs_data.cb_bg),
+                                &(fs_data.style->base[0]));
+    gtk_color_button_set_color (GTK_COLOR_BUTTON(fs_data.cb_fg),
+                                &(fs_data.style->text[0]));
+
+    /* Now pack all into the dialog vbox */
+    gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(fonts_main_dialog)->vbox),
+                                 hbox_main);
+    gtk_widget_show_all (hbox_main);
+
+    response = gtk_dialog_run (GTK_DIALOG(fonts_main_dialog));
+
+    switch (response)
+    {
+        case GTK_RESPONSE_OK:
+            update_lists (&(globals->list_file));
+            update_lists (&(globals->cmdfile));
+            update_lists (&(globals->lblfile));
+            break;
+        default:
+            reset_lists (&(globals->list_file));
+            reset_lists (&(globals->cmdfile));
+            reset_lists (&(globals->lblfile));
+    }
+
+    gtk_object_destroy (GTK_OBJECT(font_tips));
+    font_tips = NULL;               /* Flag it uninitialized */
+    gtk_widget_destroy (fonts_main_dialog);
+}

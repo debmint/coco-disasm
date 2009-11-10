@@ -164,6 +164,7 @@ new_lbl_win (GtkWidget **view)
                                     GTK_POLICY_AUTOMATIC,
                                     GTK_POLICY_AUTOMATIC);
     *view = gtk_tree_view_new ();
+    gtk_widget_set_name (GTK_WIDGET (*view), "lblwin");
 
     /* ************** *
      * Create columns *
@@ -394,6 +395,11 @@ main (int argc, char *argv[])
     /* Show the widgets */
 
     gtk_widget_show_all (window);
+
+    /* Initialize font and colors */
+    update_lists (&O9Dis.list_file);
+    update_lists (&O9Dis.cmdfile);
+    update_lists (&O9Dis.lblfile);
 
     /* Finished - now enter continuous loop */
     gtk_main ();

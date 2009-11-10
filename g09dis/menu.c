@@ -93,6 +93,9 @@ static GtkActionEntry entries[] = {
     {"File_New", GTK_STOCK_NEW, "_New"},
     {"OpenMenu", GTK_STOCK_OPEN, "_Open"},
     {"SaveAsMenu", GTK_STOCK_SAVE_AS, "Save _As"},
+    {"FontsChange", NULL, "Fonts", NULL,
+        "Change Font settings for labels, listing, and command displays",
+        G_CALLBACK(fonts_main_dialog)},
     {"DisOptions", GTK_STOCK_EXECUTE, "Disassembler Options", NULL,
         "Set disassembler options/parameters", G_CALLBACK (set_dis_opts_cb)},
     {"AModeListEdit", NULL, "Modify Amode List", NULL,
@@ -194,6 +197,7 @@ static const char *ui_description =
     "      <menuitem action='QuitProg'/>"
     "    </menu>"
     "    <menu action='ViewMenu'>"
+    "      <menuitem action='FontsChange'/>"
     "    </menu>"
     "    <menu action='ToolMenu'>"
     "      <menuitem action='AModeListEdit'/>"
@@ -303,7 +307,11 @@ get_menubar_menu (GtkWidget * main_window)
 
     gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
                          "/MainMenu/OptionMenu/DisOptions"),
-                         "Set command-line options\n to pass to disassembler",
+                         "Set command-line options\nto pass to disassembler.",
+                         NULL);
+    gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
+                         "/MainMenu/ViewMenu/FontsChange"),
+                         "Reset Font, foreground and background colors for the view windows",
                          NULL);
 
     gtk_tooltips_enable(ttip);

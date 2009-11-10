@@ -60,12 +60,15 @@ GLOBAL GtkWidget *lbl_win;
 
 typedef struct
 {
-    gchar *fname;
-    GtkWidget *tview;
-    GString *tvstring;          /* ptr to "tview" data for later deletion */
-    GtkListStore *l_store;
-    GtkTextBuffer *tbuf;
+    gchar     * fname;
+    GtkWidget * tview;
+    GString   * tvstring;          /* ptr to "tview" data for later deletion */
+    GtkListStore * l_store;
+    GtkTextBuffer * tbuf;
     gboolean altered;
+    gchar * fontname;
+    GdkColor * txtcolor,
+             * bakcolor;
 } fileinf;
 
 typedef struct
