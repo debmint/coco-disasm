@@ -13,7 +13,7 @@ struct srch_log
 {
     GtkWidget * buttongrp;  /* The radio group for the treeviews column btns */
     GtkWidget * radios_box; /* The vbox containing the buttons - to show/hide*/
-    fileinf * tvdat;        /* The global data for the treeview */
+    FILEINF * tvdat;        /* The global data for the treeview */
     gchar * last_srch;      /* The previous string searched for in this TV   */
     GHashTable * radio_pos; /* Hash of names=>column position (to search)    */
 };

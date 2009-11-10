@@ -211,7 +211,7 @@ delete_combo_changed (GtkComboBox *cbox, GtkWidget *call_win)
         GtkWidget *dialog;
         gchar *element = g_list_nth_data (amode_list, index);
 
-        dialog = gtk_message_dialog_new (GTK_WINDOW(window),
+        dialog = gtk_message_dialog_new (GTK_WINDOW(w_main),
                                          GTK_DIALOG_MODAL |
                                            GTK_DIALOG_DESTROY_WITH_PARENT,
                                          GTK_MESSAGE_QUESTION,
@@ -258,7 +258,7 @@ delete_amode_cb (GtkButton *button, gpointer zilch)
               *combo;
 
     dialog = gtk_dialog_new_with_buttons (" Amode Entry Delete",
-                                          GTK_WINDOW(window),
+                                          GTK_WINDOW(w_main),
                                           GTK_DIALOG_MODAL |
                                             GTK_DIALOG_DESTROY_WITH_PARENT,
                                           GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
@@ -293,7 +293,7 @@ amode_list_edit_cb(GtkAction * action, glbls *fdat)
               *man_entry;
 
     dialog = gtk_dialog_new_with_buttons ("Modify Addressing Mode List",
-                                          GTK_WINDOW (window),
+                                          GTK_WINDOW(w_main),
                                           /*GTK_DIALOG_MODAL|*/
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
                                           GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
@@ -409,7 +409,7 @@ char
     {
         GtkWidget *dialog;
           
-        dialog = gtk_message_dialog_new( GTK_WINDOW(window),
+        dialog = gtk_message_dialog_new( GTK_WINDOW(w_main),
                                   GTK_DIALOG_MODAL |
                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                   GTK_MESSAGE_ERROR,
@@ -704,7 +704,7 @@ adr_mode_cb(GtkAction * action, glbls *fdat)
                                  "please report a bug",
                                  NULL);
 
-            errdialog = gtk_message_dialog_new (GTK_WINDOW(window),
+            errdialog = gtk_message_dialog_new (GTK_WINDOW(w_main),
                                                 GTK_DIALOG_DESTROY_WITH_PARENT,
                                                 GTK_MESSAGE_WARNING,
                                                 GTK_BUTTONS_CLOSE,

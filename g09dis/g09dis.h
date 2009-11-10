@@ -69,15 +69,15 @@ typedef struct
     gchar * fontname;
     GdkColor * txtcolor,
              * bakcolor;
-} fileinf;
+} FILEINF;
 
 typedef struct
 {
     gchar *progfile;            /* The program file to disassemble */
-    fileinf list_file;          /* The formatted listing file      */
-    fileinf cmdfile;            /* The os9disasm COMMAND FILE      */
+    FILEINF list_file;          /* The formatted listing file      */
+    FILEINF cmdfile;            /* The os9disasm COMMAND FILE      */
     /* TODO : include the ability to see all 16 label files */
-    fileinf lblfile;            /* An os9disasm label file         */
+    FILEINF lblfile;            /* An os9disasm label file         */
     gchar *filename_to_return;  /* tmp storage for file selection */
 /*	GtkWidget *fsel;*/
 } glbls;
@@ -175,7 +175,7 @@ GLOBAL gchar *obj_file,
 GLOBAL gint write_list;
 GLOBAL gchar *listing_output;
 
-GLOBAL GtkWidget *window;       /* The main, base, window */
+GLOBAL GtkWidget *w_main;       /* The main, base, window */
 
 /* The following two are needed for define in menu.h, use in filestuff.c */
 GLOBAL GtkUIManager *ui_manager;

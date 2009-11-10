@@ -248,7 +248,7 @@ selectfile_open ( glbls *hbuf,
     hbuf->filename_to_return = NULL;
 
     fsel = gtk_file_chooser_dialog_new (title,
-                                        GTK_WINDOW (window),
+                                        GTK_WINDOW (w_main),
                                         action_type,
                                         GTK_STOCK_CANCEL,
                                         GTK_RESPONSE_CANCEL,
@@ -296,7 +296,7 @@ selectfile_save (glbls *hbuf, const gchar *cur_name, const gchar *type)
     hbuf->filename_to_return = NULL;
 
     fsel = gtk_file_chooser_dialog_new (title,
-                                        GTK_WINDOW (window),
+                                        GTK_WINDOW (w_main),
                                         GTK_FILE_CHOOSER_ACTION_SAVE,
                                         GTK_STOCK_CANCEL,
                                         GTK_RESPONSE_CANCEL,
@@ -353,7 +353,7 @@ save_all_query()
     GtkWidget *dialog;
     gint result;
 
-    dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+    dialog = gtk_message_dialog_new(GTK_WINDOW(w_main),
                                     GTK_DIALOG_MODAL |
                                        GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
@@ -390,7 +390,7 @@ save_warn_OW (gchar *type, gchar *fnam, gboolean can_cancel)
         fn = "(Untitled)";
     }
     
-    dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+    dialog = gtk_message_dialog_new(GTK_WINDOW(w_main),
                                     GTK_DIALOG_MODAL |
                                        GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_QUESTION,
@@ -419,7 +419,7 @@ save_warn_OW (gchar *type, gchar *fnam, gboolean can_cancel)
  * ************************* */
 
 static void
-save_lbl(fileinf *fdat, GtkWidget *my_win, gchar **newfile)
+save_lbl(FILEINF *fdat, GtkWidget *my_win, gchar **newfile)
 {
     FILE *outfile;
     GtkTreeModel *model;
@@ -467,7 +467,7 @@ save_lbl(fileinf *fdat, GtkWidget *my_win, gchar **newfile)
      * ************************************ */
 
 void
-list_store_empty( fileinf *fdat)
+list_store_empty( FILEINF *fdat)
 {
     /* If data currently there and has been altered, save it?
      * NOTE: This function is called by both label and listing,
@@ -486,7 +486,7 @@ list_store_empty( fileinf *fdat)
             case GTK_RESPONSE_YES: /* save changes */
                 /* Note: in calling save_lbl, pass GtkWidget *window
                  * as a dummy - it won't be needed */
-                save_lbl(fdat, window, &fdat->fname);
+                save_lbl(fdat, w_main, &fdat->fname);
                 break;
         }
     }
@@ -510,7 +510,7 @@ list_store_empty( fileinf *fdat)
  * ************************* */
 
 static void
-save_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
+save_text (FILEINF * fdat, GtkWidget * my_win, gchar ** newfile)
 {
     FILE *outfile;
     gchar *buf;
@@ -538,7 +538,7 @@ save_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
     {
         GtkWidget *dialog;
         
-        dialog = gtk_message_dialog_new (GTK_WINDOW(window),
+        dialog = gtk_message_dialog_new (GTK_WINDOW(w_main),
                                          GTK_DIALOG_DESTROY_WITH_PARENT,
                                          GTK_MESSAGE_ERROR,
                                          GTK_BUTTONS_OK,
@@ -560,7 +560,7 @@ save_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
          * ************************************** */
 
 void
-clear_text_buf( fileinf *fdat)
+clear_text_buf( FILEINF *fdat)
 {
 
     /* If data currently there and has been altered, save it? */
@@ -575,7 +575,7 @@ clear_text_buf( fileinf *fdat)
             case GTK_RESPONSE_YES: /* save changes */
                 /* Note: in calling save_lbl, pass GtkWidget *window
                  * as a dummy - it won't be needed */
-                save_text(fdat, window, &fdat->fname);
+                save_text(fdat, w_main, &fdat->fname);
                 break;
         }
     }
@@ -601,7 +601,7 @@ clear_text_buf( fileinf *fdat)
  * ************************* */
 
 void
-load_text (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
+load_text (FILEINF * fdat, GtkWidget * my_win, gchar ** newfile)
 {
     register FILE *infile;
     gchar buffer[500];
@@ -694,7 +694,7 @@ str_xdigit (char *str)
  * ****************************************************** */
 
 static void
-load_list_tree (fileinf * fdat, FILE *infile)
+load_list_tree (FILEINF * fdat, FILE *infile)
 {
     gchar buffer[500];
 
@@ -748,7 +748,7 @@ load_list_tree (fileinf * fdat, FILE *infile)
  * ******************************************************** */
 
 void
-load_lbl (fileinf * fdat, GtkWidget * my_win, gchar ** newfile)
+load_lbl (FILEINF * fdat, GtkWidget * my_win, gchar ** newfile)
 {
     FILE *infile;
     gchar buffer[500];
@@ -877,7 +877,7 @@ sysfailed (char *msg)
 {
     GtkWidget *dialog;
 
-    dialog = gtk_message_dialog_new (GTK_WINDOW(window),
+    dialog = gtk_message_dialog_new (GTK_WINDOW(w_main),
                                      GTK_DIALOG_DESTROY_WITH_PARENT ||
                                          GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
@@ -913,7 +913,7 @@ run_disassembler (GtkAction * action, glbls * hbuf)
                           "No program file specified\n",
                           "Please configure in menu item \"Options\"\n",
                           NULL );
-        warnwin = gtk_message_dialog_new( GTK_WINDOW(window),
+        warnwin = gtk_message_dialog_new( GTK_WINDOW(w_main),
                                           GTK_DIALOG_DESTROY_WITH_PARENT ||
                                           GTK_DIALOG_MODAL,
                                           GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,

@@ -270,7 +270,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
 
     dialog =
         gtk_dialog_new_with_buttons ("Command Line options for os9disasm",
-                                     GTK_WINDOW (window),
+                                     GTK_WINDOW(w_main),
                                      GTK_DIALOG_MODAL |
                                      GTK_DIALOG_DESTROY_WITH_PARENT,
                                      GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
@@ -751,7 +751,7 @@ set_list_ptr (GtkWidget *rb, struct fontsel_data *w_sel)
  * ******************************************************************** */
 
 static void
-reset_lists (fileinf *inf)
+reset_lists (FILEINF *inf)
 {
     GtkStyle *style = gtk_widget_get_style (inf->tview);
     gchar * name = pango_font_description_to_string (style->font_desc);
@@ -801,12 +801,12 @@ replace_gdkcolor (GdkColor **oldcolor, GdkColor *newcolor)
 }
 
 /* ******************************************************************** *
- * update_lists() - update the fileinf data passed as a parameter       *
+ * update_lists() - update the FILEINF data passed as a parameter       *
  *      to reflect the current font and {fore,back}ground colors        *
  * ******************************************************************** */
 
 void
-update_lists (fileinf *inf)
+update_lists (FILEINF *inf)
 {
     GtkStyle *style = gtk_widget_get_style (inf->tview);
     gchar *name;
@@ -893,7 +893,7 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
 
     fonts_main_dialog = gtk_dialog_new_with_buttons (
                             "Choose Font",
-                            GTK_WINDOW(window),
+                            GTK_WINDOW(w_main),
                             GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                             "Cancel", GTK_RESPONSE_CANCEL,
                             "OK",     GTK_RESPONSE_OK,

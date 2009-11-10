@@ -23,7 +23,7 @@ hlp_about (GtkAction * action, glbls * hbuf)
                        "  This version is strictly BETA!!!",
                        NULL);
 
-    dialog = gtk_message_dialog_new (GTK_WINDOW (window),
+    dialog = gtk_message_dialog_new (GTK_WINDOW(w_main),
                                      GTK_DIALOG_DESTROY_WITH_PARENT,
                                      GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
                                      msg);

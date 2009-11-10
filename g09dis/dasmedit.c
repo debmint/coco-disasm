@@ -29,12 +29,12 @@ gchar *bounds_list[] = {"A - ASCII string",
 /* ******************************************************** *
  * doc_set_modified():                                      *
  *                                                          *
- *     sets the fileinf->altered flag to value              *
+ *     sets the FILEINF->altered flag to value              *
  *     if it is already this value, do nothing              *
  * ******************************************************** */
 
 void
-doc_set_modified(fileinf *doc, gboolean value)
+doc_set_modified(FILEINF *doc, gboolean value)
 {
     if(doc->altered != value)
     {
@@ -221,7 +221,7 @@ void abort_warn (char *msg)
 
     warnmsg = g_strconcat(msg, "\n\n", "Cannot continue with task", NULL);
     
-    dialog = gtk_message_dialog_new (GTK_WINDOW(window),
+    dialog = gtk_message_dialog_new (GTK_WINDOW(w_main),
                                      GTK_DIALOG_DESTROY_WITH_PARENT |
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_WARNING,
@@ -244,7 +244,7 @@ build_dialog_cancel_save (gchar *title, gboolean hide_on_delete)
 {
     GtkWidget *dlg;
     dlg = gtk_dialog_new_with_buttons(title,
-                                      GTK_WINDOW(window),
+                                      GTK_WINDOW(w_main),
                                       /*GTK_DIALOG_MODAL |*/
                                       GTK_DIALOG_DESTROY_WITH_PARENT,
                                       GTK_STOCK_CANCEL,
@@ -639,7 +639,7 @@ lbl_insert_line (GtkAction * action, glbls *fdat)
             GtkWidget *err_dial;
 
             /* warn about error and redo dialog */
-            err_dial = gtk_message_dialog_new (GTK_WINDOW(window),
+            err_dial = gtk_message_dialog_new (GTK_WINDOW(w_main),
                                                GTK_DIALOG_DESTROY_WITH_PARENT |
                                                   GTK_DIALOG_MODAL,
                                                GTK_MESSAGE_WARNING,

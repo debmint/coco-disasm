@@ -26,19 +26,19 @@ GString *odlist;
 char *text;
 
 static void
-cmdbuf_changed_cb (GtkTextBuffer *buffer, fileinf *cmdbuf)
+cmdbuf_changed_cb (GtkTextBuffer *buffer, FILEINF *cmdbuf)
 {
     doc_set_modified (cmdbuf, TRUE);
 }
 
 /* ******************************************************************** *
  * build_cmd_window() - create and set up a text window ( cmd file )    *
- *   Passed:   the box into which new window goes ptr to valid fileinf  *
+ *   Passed:   the box into which new window goes ptr to valid FILEINF  *
  *             data structure                                           *
  * ******************************************************************** */
 
 static GtkWidget *
-build_cmd_window (GtkWidget * mainbox, fileinf * fi)
+build_cmd_window (GtkWidget * mainbox, FILEINF * fi)
 {
     GtkWidget *s_win;
 
@@ -76,12 +76,12 @@ build_cmd_window (GtkWidget * mainbox, fileinf * fi)
  * build_list_window() - Creates a Window containing a  *
  *                 Treeview for the listing             *
  * Passed:  (1) Container for Treeview window           *
- *          (2) Associated fileinf structure            *
+ *          (2) Associated FILEINF structure            *
  * Returns: The Window widget                           *
  * **************************************************** */
 
 static GtkWidget *
-build_list_window (GtkWidget * mainbox, fileinf * fi)
+build_list_window (GtkWidget * mainbox, FILEINF * fi)
 {
     GtkWidget *view, *s_win;
     GtkCellRenderer *renderer;
@@ -332,24 +332,24 @@ main (int argc, char *argv[])
 
     /* Create top-level window */
     
-    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    g_signal_connect (G_OBJECT (window), "destroy",
+    w_main = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    g_signal_connect (G_OBJECT (w_main), "destroy",
                       G_CALLBACK (window_quit), NULL);
-    g_signal_connect (G_OBJECT(window), "delete-event",
+    g_signal_connect (G_OBJECT(w_main), "delete-event",
                       G_CALLBACK (window_quit), NULL);
-    gtk_window_set_title (GTK_WINDOW (window), "G-O9DisAsm");
-    gtk_window_set_default_size(GTK_WINDOW (window), WWIDTH, WHEIGHT);
+    gtk_window_set_title (GTK_WINDOW (w_main), "G-O9DisAsm");
+    gtk_window_set_default_size(GTK_WINDOW (w_main), WWIDTH, WHEIGHT);
 
     /* Make a vbox to put the three menus in */
     
     main_vbox = gtk_vbox_new (FALSE, 1);
     gtk_container_set_border_width (GTK_CONTAINER (main_vbox), 1);
-    gtk_container_add (GTK_CONTAINER (window), main_vbox);
+    gtk_container_add (GTK_CONTAINER (w_main), main_vbox);
 
     /* Get the three types of menu */
     /* Note: all three menus are separately created, so they are not the
      *      same menu */
-    menubar = get_menubar_menu (window);
+    menubar = get_menubar_menu (w_main);
 
     /* Pack it all together */
     gtk_box_pack_start (GTK_BOX (main_vbox), menubar, FALSE, TRUE, 0);
@@ -394,7 +394,7 @@ main (int argc, char *argv[])
 
     /* Show the widgets */
 
-    gtk_widget_show_all (window);
+    gtk_widget_show_all (w_main);
 
     /* Initialize font and colors */
     update_lists (&O9Dis.list_file);
