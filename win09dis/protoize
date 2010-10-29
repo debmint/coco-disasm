@@ -1,0 +1,3 @@
+#! /bin/sh
+
+cproto -I. -I.. $(grep '^GCSRC' Makefile.am | sed 's/GCSRC *= *//') | grep -v WinMain | sed 's/\(AboutDlgProc\|WndProc\)/CALLBACK &/'

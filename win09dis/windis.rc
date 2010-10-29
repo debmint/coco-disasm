@@ -1,0 +1,94 @@
+/* ***************************************************************** *
+ * windis.rc - resource file for Win09Dis                            $
+ * $Id::                                                             $
+ * ***************************************************************** */
+ 
+#include <windows.h>
+#include <winresrc.h>
+#include "resource.h"	//for id declarations
+#define IDC_STATIC -1   //not defined for DevC++
+//----------------------------------------------------------------------------
+// Resource languages: Codes for languages and sub-languages are declared in winnt.h
+// eg for US english replace SUBLANG_ENGLISH_UK with SUBLANG_ENGLISH_US
+// eg for FRENCH replace LANG_ENGLISH with LANG_FRENCH and then replace SUBLANG_ENGLISH_UK
+// with either SUBLANG_FRENCH,SUBLANG_FRENCH_BELGIAN,SUBLANG_FRENCH_CANADIAN,
+// SUBLANG_FRENCH_SWISS,SUBLANG_FRENCH_LUXEMBOURG,SUBLANG_FRENCH_MONACO depending
+// on which national or regional variation of the language corresponds best with
+// your requirements.
+//
+// English (U.K.) resources
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK	//codes for these are declared in winnt.h
+#endif //_WIN32
+
+// ------------------------------
+// Main Menu
+// ------------------------------
+
+
+IDR_MENU1 MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        POPUP "New"
+        BEGIN
+            MENUITEM "Listing", ID_LSTNGNEW
+            MENUITEM "Command File", ID_CMDNEW
+            MENUITEM "Label File", ID_LBLNEW
+        END
+        POPUP "Open"
+        BEGIN
+            MENUITEM "Open Listing", ID_LSTNGOPEN
+            MENUITEM "Open Command File", ID_CMDOPEN
+	    MENUITEM "Open Label File", ID_LBLOPEN
+        END
+        MENUITEM SEPARATOR
+        POPUP "Save As"
+        BEGIN
+            MENUITEM "Save CMDFILE As...", ID_CMDSAVEAS
+            MENUITEM "Save LBLFILE As...", ID_LBLSAVEAS
+        END
+        MENUITEM SEPARATOR
+        POPUP "Save"
+        BEGIN
+            MENUITEM "Save Cmd File", ID_CMDSAVEAS
+            MENUITEM "Save Lbl File", ID_LBLSAVEAS
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Quit", WM_QUIT
+    END
+    POPUP "&View"
+    BEGIN
+    END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "Disassemble to GUI", ID_DASMPROG, GRAYED
+        MENUITEM "Disassemble to File", ID_DASMTOFILE, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Modify Amode List", ID_AMLISTEDIT
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "Set disassembler options/parameters", ID_DISOPTS
+        MENUITEM SEPARATOR
+        MENUITEM "Load Options from File", ID_OPTSLOAD
+        MENUITEM "Save Options to File", ID_OPTSSAVE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "About", ID_HLPABOUT
+    END
+END
+
+// About Dialog....
+
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 239, 76
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Win09Dis"
+//FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&OK",IDOK,174,18,50,14
+    GROUPBOX        "About Win09Dis...",IDC_STATIC,7,7,225,62
+    LTEXT           "",IDC_ABTTXT,16,18,144,43   // To be filled in by the app
+END
+

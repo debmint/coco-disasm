@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(cocodis, 0.10.1)
+AC_INIT(cocodis, 0.11.1)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([g09dis/dasmedit.c])
 AC_CONFIG_HEADER([config.h])
@@ -27,6 +27,18 @@ AC_FUNC_STAT
 
 AC_CHECK_FUNCS([memset strcasecmp strchr strdup stpcpy strncasecmp strstr isblank dirname])
 
+AC_ARG_WITH([win09dis],
+               [AS_HELP_STRING([--with-win09dis],
+	                       [include win09dis (default=no)])],
+	       [case "${withval}" in
+	         yes) compile_win09dis=true;;
+		 no)  compile_win09dis=false;;
+		 *) AC_MSG_ERROR(bad value ${withval} for --with-win09dis) ;;
+	       [esac]],[compile_win09dis=false])
+AM_CONDITIONAL(WITHWIN09DIS, test x$compile_win09dis = xtrue)
+
+AC_SUBST(compile_win09dis)
+
 # Establish pkg-config paths
 AC_ARG_WITH([g09dis],
                [AS_HELP_STRING([--with-g09dis],
@@ -44,16 +56,17 @@ AC_SUBST(compile_g09dis)
 AC_CANONICAL_HOST
 case $host_os in
     *mingw32*)
-        winflags="-mms-bitfields -mno-cygwin"
+        winflags="-mwindows -mno-cygwin"
     ;;
     *cygwin)
-        winflags="-mms-bitfields"
-   ;;
+        winflags="-mwindows"
+    ;;
 esac
 
 AC_SUBST(winflags)
 
 AC_CONFIG_FILES([Makefile
                  g09dis/Makefile
+		 win09dis/Makefile
                  os9disasm/Makefile])
 AC_OUTPUT
