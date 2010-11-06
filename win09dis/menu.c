@@ -15,9 +15,9 @@ HINSTANCE hInst;
 RECT wnbx;
 
 DLGPROC CALLBACK AboutDlgProc ( HWND hwndDlg,	// handle to dialog box
-                             UINT uMsg,	        // message
-                             WPARAM wParam,	    // first message parameter
-                             LPARAM lParam)	    // second message parameter
+                                UINT uMsg,	        // message
+                                WPARAM wParam,	    // first message parameter
+                                LPARAM lParam)	    // second message parameter
 {
     switch (uMsg)
     {
@@ -67,27 +67,38 @@ DLGPROC CALLBACK AboutDlgProc ( HWND hwndDlg,	// handle to dialog box
     return (DLGPROC)TRUE;
 }
 
-//void
-//menu_do_dis_sensitize(void)
-//{
-//    gint binstat;
-//
-//    binstat = (prog_wdg->fname) && (strlen(prog_wdg->fname) > 0);
-//    
-//    gtk_widget_set_sensitive(gtk_ui_manager_get_widget(ui_manager,
-//                             "/MainMenu/ToolMenu/DasmPrg"),
-//                             binstat);
-//    gtk_widget_set_sensitive(gtk_ui_manager_get_widget(ui_manager,
-//                             "/MainMenu/ToolMenu/DasmToFile"),
-//                             binstat);
-//    
-//}
-//static void
-//listing_new_cb (GtkAction * action, glbls * hbuf)
-//{
-//    list_store_empty(&(hbuf->list_file));
-//}
-//
+void
+menu_do_dis_sensitize (HWND hWnd)
+{
+    HMENU menuMain,
+          optsMenu;
+    UINT enableFlag = MF_GRAYED;
+
+    if ((O9Dis.binfile.fname) && (strlen (O9Dis.binfile.fname) > 0))
+    {
+        enableFlag = MF_ENABLED;
+    }
+
+    if ((menuMain = GetMenu (hWnd)))
+    {
+        if ((optsMenu = GetSubMenu (menuMain, 2)))
+        {
+            EnableMenuItem (optsMenu, 0, MF_BYPOSITION | enableFlag);
+            EnableMenuItem (optsMenu, 1, MF_BYPOSITION | enableFlag);
+        }
+        else
+        {
+            MessageBox (hWnd, "Failed to get Options SubMenu", "Error !!",
+                    MB_ICONERROR | MB_OK);
+        }
+    }
+    else
+    {
+        MessageBox (hWnd, "Could not obtain Main Menu", "Error !!",
+                    MB_ICONERROR | MB_OK);
+    }
+}
+
 //static void
 //cmd_new_cb (GtkAction * action, glbls * hbuf)
 //{

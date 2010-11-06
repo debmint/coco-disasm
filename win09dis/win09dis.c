@@ -87,6 +87,78 @@ listview_insert_cols (HWND listview, int totcols, char **titles)
     }
 }
 
+/* ******************************************************************** *
+ * window_quit() - Clean up before exit                                 *
+ *          Checks for and notifies user about modified files           *
+ * ******************************************************************** */
+
+BOOL
+window_quit (HWND hWnd)
+{
+    BOOL savelbl = FALSE,
+         savecmd = FALSE,
+         cmd_altered = SendMessage (O9Dis.cmdfile.l_store, EM_GETMODIFY, 0, 0);
+    
+    // First, check if BOTH are altered
+
+    if ((cmd_altered) && (O9Dis.lblfile.altered))
+    {
+        switch (save_all_query (hWnd))
+        {
+            case IDCANCEL:
+                return FALSE;
+            case ID_SAVEALL:
+                savelbl = savecmd = TRUE;
+                break;
+            default:    // ID_SELECTEM: We pick the individual files below...
+                break;
+        }
+    }
+
+    if ((cmd_altered) && ! (savecmd))
+    {
+        switch (save_warn_OW (hWnd, O9Dis.cmdfile.fname,
+                                    "Command", FALSE))
+        {
+            case IDYES:
+                savecmd = TRUE;
+                break;
+            default:    // The only other response is "NO"
+                break;
+        }
+    }
+
+    if ((O9Dis.lblfile.altered) && ! (savelbl))
+    {
+        switch (save_warn_OW (hWnd, O9Dis.lblfile.fname,
+                                    "Label", FALSE))
+        {
+            case IDYES:
+                savelbl = TRUE;
+                break;
+            default:    // The only other response is "NO"
+                break;
+        }
+    }
+
+    if ( ! (savecmd) && ! (savelbl))
+    {
+        return FALSE;
+    }
+
+    if (savecmd)
+    {
+        cmd_save (&(O9Dis.cmdfile));
+    }
+
+    if (savelbl)
+    {
+        lbl_save (&(O9Dis.lblfile));
+    }
+    return TRUE;
+}
+
+
 /* ======================================================================= *
  * WndProc() - Callback for Main Menu actions                              *
  * ======================================================================= */
@@ -165,9 +237,8 @@ WndProc ( HWND hwnd,
         case WM_COMMAND:
             switch (LOWORD (wParam))
             {
-                case IDR_MENU1:
                 case ID_LSTNGNEW:
-                    not_implemented (hwnd);
+                     list_store_empty (&(O9Dis.list_file));
                     break;
                 case ID_CMDNEW:
                     clear_text_buf (&O9Dis.cmdfile);
@@ -184,17 +255,33 @@ WndProc ( HWND hwnd,
                 case ID_LBLOPEN:
                     load_lblfile (&(O9Dis.lblfile));
                     break;
+                case ID_CMDSAVE:
+                    cmd_save (&(O9Dis.cmdfile));
+                    break;
+                case ID_LBLSAVE:
+                    lbl_save (&(O9Dis.lblfile));
+                    break;
                 case ID_CMDSAVEAS:
                     cmd_save_as (&(O9Dis.cmdfile));
                     break;
                 case ID_LBLSAVEAS:
+                    lbl_save_as (&(O9Dis.lblfile));
+                    break;
                 case ID_DASMPROG:
+                    run_disassembler (hwnd, &O9Dis);
+                    break;
                 case ID_DASMTOFILE:
                 case ID_AMLISTEDIT:
-                case ID_DISOPTS:
-                case ID_OPTSLOAD:
-                case ID_OPTSSAVE:
                     not_implemented (hwnd);
+                    break;
+                case ID_DISOPTS:
+                    set_dis_opts_cb (hwnd);
+                    break;
+                case ID_OPTSLOAD:
+                    opts_load (hwnd, &(O9Dis));
+                    break;
+                case ID_OPTSSAVE:
+                    opts_save (hwnd, &(O9Dis));
                     break;
                 case ID_HLPABOUT:
                     {
@@ -203,19 +290,29 @@ WndProc ( HWND hwnd,
                                    hwnd, (DLGPROC)AboutDlgProc);  
                     }
                     break;
+                case WM_NOTIFY:
+                    if (wParam == IDC_LBL_WIN)
+                    {
+                        switch (((LPNMHDR)lParam)->code)
+                        {
+                            case LVN_ITEMCHANGED:
+                                if ( ! O9Dis.lblfile.altered)
+                                {
+                                    O9Dis.lblfile.altered = TRUE;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 case WM_QUIT:
+                    window_quit (hwnd);
                     PostQuitMessage(0);
                     return 0;
             }
             return 0;
-        case EM_GETMODIFY:
-            MessageBox (hwnd, "EM_GETMODIFY message passed", "Got IT!!",
-                    MB_ICONINFORMATION | MB_OK);
-            return DefWindowProc (hwnd, Message, wParam, lParam);
         case WM_DESTROY:
             PostQuitMessage(0);
-            return 0;
-        case WM_INITDIALOG:
             return 0;
         default:
             return DefWindowProc (hwnd, Message, wParam, lParam);
@@ -266,6 +363,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     {
         MessageBox (NULL, "Window Creation failed", "Error!",
                     MB_ICONEXCLAMATION | MB_OK);
+        return 0;
+    }
+
+    if ( ! initPageFillClass (hInstance))
+    {
         return 0;
     }
 

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "win09dis.h"
 #include <commctrl.h>
+#include <shlobj.h>
 //#include <string.h>
 ///*#include <unistd.h>*/
 //#include <stdlib.h>
@@ -25,18 +26,18 @@
 //#define DIRSTR "/"
 //#define DIRCHR '/'
 //#endif
-//
-//#define OPT_BIN "BIN-FILE:"
-//#define OPT_CMD "CMD-FILE:"
-//#define OPT_LBL "LBL-FILE:"
-//#define OPT_DEF "ALT-DEFS:"
-//#define OPT_OBJ "SRC-FILE:"
-//#define OPT_RS  "RS-FILE:"
-//#define OPT_CPU "CPU:"
-//#define OPT_UPC "UPCASE:"
-//#define OPT_PGW "PGWDTH:"
-//#define OPT_PGD "PGDPTH:"
-//#define OPT_LST "LISTING:"
+
+#define OPT_BIN "BIN-FILE:"
+#define OPT_CMD "CMD-FILE:"
+#define OPT_LBL "LBL-FILE:"
+#define OPT_DEF "ALT-DEFS:"
+#define OPT_OBJ "SRC-FILE:"
+#define OPT_RS  "RS-FILE:"
+#define OPT_CPU "CPU:"
+#define OPT_UPC "UPCASE:"
+#define OPT_PGW "PGWDTH:"
+#define OPT_PGD "PGDPTH:"
+#define OPT_LST "LISTING:"
 
 static char *filefilters =
                 "Command files\0*.cmd\0Label files\0*.lbl\0All Files\0*.*\0";
@@ -49,57 +50,26 @@ static char *filefilters =
 // * directory pathname if not already there     *
 // * *********************************************/
 //
-//gchar *
-//ending_slash (const gchar * dirnm)
+//char *
+//ending_slash (const char * dirnm)
 //{
 //    if (!dirnm)
 //    {
-//        return g_strdup ("");
+//        return strdup ("");
 //    }
 //
 //    if (dirnm[strlen (dirnm) - 1] == DIRCHR)
 //    {
-//        return g_strdup (dirnm);
+//        return strdup (dirnm);
 //    }
 //    else
 //    {
 //        return g_strconcat (dirnm, DIRSTR, NULL);
 //    }
 //}
-//
-///* **************************************************************** *
-// * set_fname() - Generic filename setup, called by the following    *
-// *               file-selection callbacks.                          *
-// *               Checks that filename is present in                 *
-// *               hbuf->filename_to_return, and if so, clears and    *
-// *               resets the filename ptr passed as a reference in   *
-// *               "flag".                                            *
-// * Passed : (1) - Ptr to the glbls structure                        *
-// *          (2) - Pointer to the appropriate filename ptr           *
-// * **************************************************************** */
-//
-//void
-//set_fname (glbls *hbuf, gchar **flag)
-//{
-//    if (hbuf->filename_to_return)
-//    {
-//        if (strlen(hbuf->filename_to_return))
-//        {
-//            if (*flag != NULL)
-//            {
-//                g_free(*flag);
-//            }
-//
-//            *flag = g_strdup(hbuf->filename_to_return);
-//        }
-//
-//        g_free(hbuf->filename_to_return);
-//        hbuf->filename_to_return = NULL;
-//    }
-//}
-//
+
 ///* Returns column number or -1 if not found or on error */
-//
+
 //gint
 //get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
 //{
@@ -117,12 +87,12 @@ static char *filefilters =
 //
 //    return num;
 //}
-//
+
 ///* Callback for click on a row in the Listing display */
-//
-//gboolean
+
+//BOOL
 //onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
-//                      gchar *menu_name)
+//                      char *menu_name)
 //{
 //    GtkTreeSelection *selection;
 //
@@ -173,51 +143,28 @@ static char *filefilters =
 //    /* we did nothing */
 //    return FALSE;
 //}
-//
-///* ******************************************************************** *
-// * set_chooser_folder() - Sets the folder path in the GtkFileChooser    *
-// *               if appropriate.                                        *
-// * Passed:  (1) - GtkFileChooser in which to set folder                 *
-// *          (2) - glbls * hbuf in which to search for paths             *
-// * ******************************************************************** */
-//
-//void
-//set_chooser_folder(GtkFileChooser *chooser, glbls *hbuf)
-//{
-//    gchar *path;
-//
-//    path = NULL;
-//    
-//    /* Try to guess a suitable path */
-//
-//    if (cmd_wdg->fname)
-//    {
-//        path = cmd_wdg->fname;
-//    }
-//    else if ((hbuf->cmdfile).fname)
-//    {
-//        path = (hbuf->cmdfile).fname;
-//    }
-//    else if ((hbuf->lblfile).fname)
-//    {
-//        path = (hbuf->lblfile).fname;
-//    }
-//    else if (prog_wdg->fname)
-//    {
-//        path = prog_wdg->fname;
-//    }
-//    else if (LastPath)
-//    {
-//        path = LastPath;
-//    }
-//
-//    if (path)
-//    {
-//        path = g_path_get_dirname (path);
-//        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER(chooser), path);
-//        g_free (path);
-//    }
-//}
+
+/* ************************************************************ *
+ * od_memset() - Convenience function for malloc():  allocates  *
+ *      memory using malloc(), but issues an error message on   *
+ *      failure.                                                *
+ * ************************************************************ */
+
+void *
+od_memset (HWND hWnd, int memsize)
+{
+    void *mem;
+
+    mem = malloc (memsize);
+
+    if ( ! mem)
+    {
+        MessageBox (hWnd, "Cannot allocate requested memory",
+                "Memory Error !", MB_ICONERROR | MB_OK);
+    }
+
+    return mem;
+}
 
 /* Clean up */
 
@@ -231,22 +178,74 @@ free_reference (char **fname)
     }
 }
 
-/* ********************************************************* *
- * selectfile_open() - Select a file to open                 *
- * Passed:  (1) - ptr to appropriate glbls struct            *
- *          (2) - Type (string for prompt                    *
- *          (3) - Boolean TRUE if file, FALSE if dir         *
- *          (4) - Filename to display or NULL                *
- * Runs gtk_file_chooser_dialog                              *
- * Sets hbuf->filename_to_return to selected file            *
- * ********************************************************* */
+/* ************************************************************ *
+ * browse_for_directory() - Browse for a folder name.           *
+ *      We use the shell extension browser, as I don't know     *
+ *      how to do it any other way.  It seems complicated, but  *
+ *      hopefully, we have it right.  And hopefully, we got all *
+ *      the memory freed correctly...                           *
+ * ************************************************************ */
 
-BOOL
+char *
+browse_for_directory (HWND hWnd, FILEINF *fdat)
+{
+    BROWSEINFO bi;
+    LPMALLOC g_pMalloc;
+    LPITEMIDLIST pidlBrowse;
+    char dispName[MAX_PATH + 1];
+
+    if (SUCCEEDED(SHGetMalloc (&g_pMalloc)))
+    {
+    
+        ZeroMemory (&bi, sizeof (bi));
+        
+        bi.hwndOwner = hWnd;
+        bi.pszDisplayName = dispName;
+
+        pidlBrowse = SHBrowseForFolder (&bi);
+
+        if (pidlBrowse)
+        {
+            if (SHGetPathFromIDList (pidlBrowse, dispName))
+            {
+                strdup (dispName);
+            }
+            else
+            {
+                dispName[0] = '\0';
+            }
+
+            g_pMalloc->lpVtbl->Free (g_pMalloc, pidlBrowse);
+        }
+        else
+        {
+            dispName[0] = '\0';  // In case SHBrowseForFolder did something
+        }
+        
+        g_pMalloc->lpVtbl->Release (g_pMalloc);
+    }
+
+    return (strlen (dispName)) ? dispName : NULL;
+}
+
+/* **************************************************************** *
+ * selectfile_open() - Select a file to open                        *
+ * Passed:  (1) - Handle of parent window                           *
+ *          (2) - Type (string for prompt                           *
+ *          (3) - Boolean TRUE if file, FALSE if dir                *
+ *                                                                  *
+ * Returns: Ptr to chosen filepath, or NULL if no choice made       *
+ * Runs GetOpenFilename() Dialog to obtain a file choice            *
+ * Allocates storage for the path string.  It is up to the caller   *
+ * to set the proper pointer.                                       *
+ * **************************************************************** */
+
+char *
 selectfile_open ( HWND hwnd,
                   const char *type,
-                  BOOL IsFile,
-                  char **fnam)
+                  BOOL IsFile)
 {
+    char *filename = NULL;
     OPENFILENAME ofn;
     char szFileName[MAX_PATH] = "";
 
@@ -264,26 +263,19 @@ selectfile_open ( HWND hwnd,
 
     if ( ! GetOpenFileName (&ofn))
     {
-        return FALSE;
+        return NULL;
     }
 
-    // First, free any previously-allocated filename buffer
-
-    //free_reference (&(hbuf->filename_to_return));
-
-    free_reference (fnam);
-    
-    if ( ! (*fnam = malloc (strlen (ofn.lpstrFile) + 1)))
+    if ( ! (filename = strdup (ofn.lpstrFile)))
     {
         MessageBox (hwnd, "Memory allocation failure", "Error!",
                 MB_ICONERROR | MB_OK);
-        return FALSE;
+        return NULL;
     }
 
-    strcpy (*fnam, ofn.lpstrFile);
-   // hbuf->filename_to_return = fnam;
+    strcpy (filename, ofn.lpstrFile);
 
-    return TRUE;
+    return filename;
 }
 
 /* ************************************************************ *
@@ -296,7 +288,12 @@ selectfile_open ( HWND hwnd,
  *                       memory !!!!!                           *
  * Returns: Pointer to new name on selection or                 *
  *          NULL if no selection is made                        *
- * Memory is allocated for the string                           *
+ * ************************************************************ */
+
+/* ************************************************************ *
+ * Memory is allocated for the selected pathname and is placed  *
+ * in "dest" unless the path strings are the same.              *
+ * If "dest" points to a string, this memory is freed.          *
  * ************************************************************ */
 
 char *
@@ -317,27 +314,26 @@ selectfile_save (HWND parent, char **dest)
     ofn.nMaxFile = MAX_PATH;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT; 
 
-//    if (fdat->fname)
-//    {
-//        strcpy (ofn.lpstrFile, fdat->fname);
-//    }
-    
     if (GetSaveFileName (&ofn))
     {
         char *fnam;
-        
-        free_reference (dest);
 
-        if ( ! (fnam = malloc (strlen (ofn.lpstrFile) + 1)))
+        if ((*dest == NULL) || (strcmp (*dest, ofn.lpstrFile) != 0))
         {
-            MessageBox (parent, "Memory allocation failure", "Error!",
-                    MB_ICONERROR | MB_OK);
-            return NULL;
+
+            if ( ! (fnam = malloc (strlen (ofn.lpstrFile) + 1)))
+            {
+                MessageBox (parent, "Memory allocation failure", "Error!",
+                        MB_ICONERROR | MB_OK);
+                return NULL;
+            }
+
+            strcpy (fnam, ofn.lpstrFile);
+            free_reference (dest);
+            *dest = fnam;
         }
 
-        strcpy (fnam, ofn.lpstrFile);
-        *dest = fnam;
-        return fnam;
+        return *dest;
     }
 
     return NULL;
@@ -349,7 +345,7 @@ selectfile_save (HWND parent, char **dest)
 
 /* ****************************************************** *
  * strstrip () - strips leading whitespaces and trailing  *
- *             returns and newlinesfrom string.           *
+ *             returns and newlines from string.          *
  *             Advances pointer to first non-white char   *
  * Returns: Possibly newly-advanced pointer to begin of   *
  *          string.                                       *
@@ -376,34 +372,35 @@ strstrip (char *ptr)
     return ptr;
 }
 
-///* ******************************************** *
-// * save_all_query() - notify user that multiple *
-// * files (might) need saving returns choice of  *
-// * NONE, ALL, or USER SELECT                    *
-// * ******************************************** */
-//
-//gint
-//save_all_query()
-//{
-//    GtkWidget *dialog;
-//    gint result;
-//
-//    dialog = gtk_message_dialog_new(GTK_WINDOW(window),
-//                                    GTK_DIALOG_MODAL |
-//                                       GTK_DIALOG_DESTROY_WITH_PARENT,
-//                                    GTK_MESSAGE_QUESTION,
-//                                    GTK_BUTTONS_NONE,
-//                                    "You are about to exit and your files have been altered\nWhat do you wish to do?"); 
-//
-//    gtk_dialog_add_buttons (GTK_DIALOG(dialog),
-//                            "Exit without saving", SAVALL_NONE,
-//                            "Save All", SAVALL_ALL,
-//                            "Select files", SAVALL_SOME,
-//                            NULL);
-//    result = gtk_dialog_run(GTK_DIALOG(dialog));
-//    gtk_widget_destroy(dialog);
-//    return result;
-//}
+static BOOL CALLBACK
+SaveAllQueryDlgProc (HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
+{
+    switch (Message)
+    {
+        case WM_INITDIALOG:
+            return FALSE;
+        case IDCANCEL:
+        case ID_SAVEALL:
+        case ID_SELECTEM:
+            return EndDialog (hWnd, Message);
+        default:
+            return TRUE;
+    }
+
+    return TRUE;
+}
+
+/* ************************************************************ *
+ * save_all_query() - notify user that multiple files (might)   *
+ *      need saving returns choice of NONE, ALL, or USER SELECT *
+ * ************************************************************ */
+
+int
+save_all_query (HWND hWnd)
+{
+    return DialogBox (GetModuleHandle (NULL), MAKEINTRESOURCE(IDD_WINDOWQUIT),
+                                            hWnd, SaveAllQueryDlgProc);
+}
 
 /* ******************************************************** *
  * doc_set_modified():                                      *
@@ -415,7 +412,7 @@ strstrip (char *ptr)
 void
 doc_set_modified (FILEINF *doc, BOOL value)
 {
-    if(doc->altered != value)
+    if (doc->altered != value)
     {
         doc->altered = value;
     }
@@ -424,104 +421,113 @@ doc_set_modified (FILEINF *doc, BOOL value)
 /* ***************************************************** *
  * save_warn_OW() - Alert user that a single altered but *
  *     not-saved buffer is about to be overwritten       *
+ * Returns: Result of MessageBox() query                 *
  * ***************************************************** */
 
 int
-save_warn_OW (FILEINF *fdat, char *type, BOOL can_cancel)
+save_warn_OW (HWND hWnd, char *filename, char *type, BOOL can_cancel)
 {
     int MB_BUTTONSET;
-    char warnmsg[100];
-//    GtkWidget *dialog;
-//    gint response;
+    char *warnmsg;
     char *fn;
+    const char *fmt =
+        "About to discard altered %s file buffer\nDo you wish to save to %s\n";
+    int retval;
 
     MB_BUTTONSET= can_cancel ? MB_YESNOCANCEL : MB_YESNO;
 
-    if (fdat->fname)
+    if (filename)
     {
-        fn = fdat->fname;
+        fn = filename;
     }
     else {
         fn = "(Untitled)";
     }
 
-    sprintf (warnmsg,
-       "About to discard altered %s file buffer\nDo you wish to save to %s\n",
-       type, fn);
+    if (! (warnmsg = od_memset (hWnd,
+                strlen (fmt) + strlen (type) * strlen (fn) + 20)))
+    {
+        return 0;
+    }
+    
+    sprintf (warnmsg, fmt, type, fn);
 
-    return MessageBox (fdat->l_store, warnmsg, "Warning!",
-            MB_ICONWARNING | MB_BUTTONSET);
-
-//    dialog = gtk_message_dialog_new(GTK_WINDOW(window),
-//                                    GTK_DIALOG_MODAL |
-//                                       GTK_DIALOG_DESTROY_WITH_PARENT,
-//                                    GTK_MESSAGE_QUESTION,
-//                                    GTK_BUTTONS_NONE,
-//                                    "About to discard altered %s file buffer\nDo you wish to save to %s\n", type, fn); 
-//
-//    gtk_dialog_add_button (GTK_DIALOG(dialog),
-//                           "Discard Changes", GTK_RESPONSE_NO);
-//    if(can_cancel) {
-//        gtk_dialog_add_button (GTK_DIALOG(dialog),
-//                               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
-//    }
-//    gtk_dialog_add_button (GTK_DIALOG(dialog),
-//                           "Save Changes", GTK_RESPONSE_YES);
-//    
-//    gtk_widget_show_all(dialog);
-//
-//    response = gtk_dialog_run(GTK_DIALOG(dialog));
-//    gtk_widget_destroy(dialog);
-//    return response;
+    retval = MessageBox (hWnd, warnmsg, "Warning!",
+                               MB_ICONWARNING | MB_BUTTONSET);
+    free (warnmsg);
+    return retval;
 }
 
-///* ************************* *
-// * save_lbl() : save a label *
-// *        buffer to a file   *
-// * ************************* */
-//
-//static void
-//save_lbl(FILEINF *fdat, GtkWidget *my_win, gchar **newfile)
-//{
-//    FILE *outfile;
-//    GtkTreeModel *model;
-//    GtkTreeIter iter;
-//
-//    /* TODO: rename file if it exists? */
-//
-//    if (!(outfile = fopen (*newfile, "wb")))
-//    {
-//        fprintf (stderr, "Cannot open file %s for write!\n", *newfile);
-//    }
-//
-//    /* set up buffer to write */
-//    model= gtk_tree_view_get_model (GTK_TREE_VIEW(O9Dis.lblfile.tview));
-//    
-//    if (gtk_tree_model_get_iter_first (model, &iter))
-//    {
-//        gchar *label, *addr, *mode;
-//        do {
-//            gtk_tree_model_get (model, &iter,
-//                                LBL_LBL, &label,
-//                                LBL_ADDR, &addr,
-//                                LBL_CLASS, &mode,
-//                                -1);
-//            if (*label != '*')
-//            {
-//                fprintf (outfile, "%s equ %s %c\n", label, addr, *mode);
-//            }
-//            else {  /* do differently for comment */
-//                fprintf (outfile, "%s %s\n", label, mode);
-//            }
-//            
-//            g_free(label); g_free(addr), g_free(mode);
-//        } while (gtk_tree_model_iter_next(model, &iter));
-//    }
-//
-//    doc_set_modified(fdat, FALSE);
-//    
-//    fclose (outfile);
-//}
+/* ************************************************ *
+ * wrt_lbl_file() : save a label buffer to a file   *
+ * ************************************************ */
+
+static void
+wrt_lbl_file (FILEINF *fdat, char **newfile)
+{
+    int itemCount;
+
+    /* TODO: rename file if it exists? */
+
+    if ((itemCount = ListView_GetItemCount (fdat->l_store)))
+    {
+        FILE *outfile;
+        LV_ITEM lvi;
+        char buf[LBL_NCOLS][100];  // Allow long strings for comments
+        int col,
+            itm;
+
+        if ( ! (outfile = fopen (*newfile, "wb")))
+        {
+            const char *fmt = "Cannot open file %s for write!";
+            char *msg;
+
+            if ( ! (msg = od_memset (fdat->l_store,
+                                    strlen (fmt) + strlen (*newfile) + 10)))
+            {
+                return;
+            }
+
+            sprintf (msg, fmt, *newfile);
+            MessageBox (fdat->l_store, msg, "Error!", MB_ICONERROR | MB_OK);
+            free (msg);
+            return;
+        }
+
+        ZeroMemory (&lvi, sizeof (lvi));
+
+        lvi.mask = LVIF_TEXT;
+        lvi.cchTextMax = sizeof (buf[0]);
+
+        for (itm = 0; itm < itemCount; itm++)
+        {
+
+            lvi.iItem = itm;
+
+            for (col = 0; col < LBL_NCOLS; ++col)
+            {
+                lvi.iSubItem = col;
+                lvi.pszText = buf[col];
+
+                ListView_GetItem (fdat->l_store, &lvi);
+            }
+
+            if ( !strchr(buf[0], '*'))
+            {
+                fprintf (outfile,"%s equ %s %c\n",
+                        buf[0],buf[2],*buf[3]);
+            }
+            else
+            {
+                fprintf (outfile, "%s %s\n", buf[0], buf[1]);
+            }
+        }
+    
+        fclose (outfile);
+    }
+
+    doc_set_modified(fdat, FALSE);
+}
 
     /* ************************************ *
      * This function clears out the data in *
@@ -539,36 +545,28 @@ list_store_empty (FILEINF *fdat)
      * (we don't save the listing
      */
 
-//    if (fdat->altered == TRUE)
-//    {
-//        switch(save_warn_OW ("Label", fdat->fname, TRUE)) {
-//            case GTK_RESPONSE_NO: /* discard changes */
-//                break;
-//            case GTK_RESPONSE_CANCEL: /* cancel overwrite */
-//                return;
-//                break;
-//            case GTK_RESPONSE_YES: /* save changes */
-//                /* Note: in calling save_lbl, pass GtkWidget *window
-//                 * as a dummy - it won't be needed */
-//                save_lbl(fdat, window, &fdat->fname);
-//                break;
-//        }
-//    }
+    if (fdat->altered == TRUE)
+    {
+        switch (save_warn_OW (GetParent (mytv), fdat->fname,
+                                        "Label", TRUE))
+        {
+            case IDNO:      /* discard changes */
+                break;
+            case IDCANCEL:  /* cancel overwrite */
+                return;
+                break;
+            case IDYES:     /* save changes */
+                /* Note: in calling wrt_lbl_file, pass GtkWidget *window
+                 * as a dummy - it won't be needed */
+                lbl_save (fdat);
+                break;
+        }
+    }
 
     /* clear out current list_store */
 
-//    while (ListView_GetItemCount (mytv))
-//    {
-//        ListView_DeleteItem (mytv, 0);  // Delete the first item each time
-//    }
     ListView_DeleteAllItems (mytv);
-
-//    if (fdat->fname != NULL)
-//    {
-//        doc_set_modified (fdat, FALSE);
-//        free (fdat->fname);
-//        fdat->fname = NULL;
-//    }
+    fdat->altered = FALSE;
 }
 
 /* ************************************************ *
@@ -578,14 +576,14 @@ list_store_empty (FILEINF *fdat)
  * ************************************************ */
 
 static BOOL
-save_text (HWND hEdit, char ** newfile)
+save_text (HWND hEdit, char *newfile)
 {
 
     HANDLE hFile;
     BOOL bSuccess = FALSE;
     DWORD dwTextLength;
 
-    hFile = CreateFile (*newfile, GENERIC_WRITE, 0, NULL,
+    hFile = CreateFile (newfile, GENERIC_WRITE, 0, NULL,
                         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
@@ -605,61 +603,23 @@ save_text (HWND hEdit, char ** newfile)
         
         if (pszText != NULL)
         {
-            if (GetWindowText(hEdit, pszText, dwBufferSize))
+            if (GetWindowText (hEdit, pszText, dwBufferSize))
             {
                 DWORD dwWritten;
 
-                if (WriteFile(hFile, pszText, dwTextLength, &dwWritten, NULL))
+                if (WriteFile (hFile, pszText, dwTextLength, &dwWritten, NULL))
+                {
                     bSuccess = TRUE;
+                }
             }
 
-            GlobalFree(pszText);
+            GlobalFree (pszText);
         }
     }
 
-    CloseHandle(hFile);
+    CloseHandle (hFile);
+    SendMessage (hEdit, EM_SETMODIFY, FALSE, 0);
     return bSuccess;
-//    FILE *outfile;
-//    char *buf;
-//    GtkTextIter begin, end;
-//
-//    /*fdat->fname = g_strdup (*newfile);
-//    g_free (*newfile);
-//    *newfile = NULL;*/
-//    
-//    /* TODO: rename file if it exists? */
-//
-//    if ( ! (outfile = fopen (*newfile, "wb")))
-//    {
-//        fprintf (stderr, "Cannot open file %s for write!\n", *newfile);
-//    }
-//
-//    /* set up buffer to write */
-//
-//    gtk_text_buffer_get_start_iter (fdat->tbuf, &begin);
-//    gtk_text_buffer_get_end_iter (fdat->tbuf, &end);
-//    buf = gtk_text_buffer_get_text (fdat->tbuf, &begin, &end, FALSE);
-//    doc_set_modified(fdat, FALSE);
-//
-//    if ((fputs (buf,outfile)) == EOF)
-//    {
-//        GtkWidget *dialog;
-//        
-//        dialog = gtk_message_dialog_new (GTK_WINDOW(window),
-//                                         GTK_DIALOG_DESTROY_WITH_PARENT,
-//                                         GTK_MESSAGE_ERROR,
-//                                         GTK_BUTTONS_OK,
-//                                         "Error writing data to \"%s\"",
-//                                            *newfile);
-//        gtk_dialog_run (GTK_DIALOG(dialog));
-//        gtk_widget_destroy (dialog);
-//
-//        g_free(buf);
-//    }
-//
-//    doc_set_modified(fdat, FALSE);
-//
-//    fclose (outfile);
 }
 
 /* ******************************************************************** *
@@ -674,37 +634,26 @@ clear_text_buf( FILEINF *fdat)
     //char msg[100];
 
     /* If data currently there and has been altered, save it? */
-    if (SendMessage (fdat->l_store, EM_GETMODIFY,0, 0) == TRUE)
+    if (SendMessage (fdat->l_store, EM_GETMODIFY, 0, 0) == TRUE)
     {
-        switch (save_warn_OW (fdat, "Command", TRUE)) {
+        switch (save_warn_OW (GetParent (fdat->l_store), 
+                                 fdat->fname, "Command", TRUE))
+        {
             case IDNO:         /* discard changes */
                 break;
             case IDCANCEL: /* cancel overwrite */
                 return FALSE;
                 break;
             case IDYES: /* save changes */
-                save_text (fdat->l_store, &fdat->fname);
+                cmd_save (fdat);
                 break;
         }
     }
 
-    //doc_set_modified (fdat,FALSE);
-
-    /* free up any memory previously allocated (if any) */
-    //free_reference (&(fdat->fname));
-    
-//    if (fdat->fname != NULL)
-//    {
-        //GtkTextIter start, end;
-
-//        free (fdat->fname);
-//        fdat->fname = NULL;
         
-        SendMessage (fdat->l_store, EM_SETSEL, 0, -1);
-       // SendMessage (fdat->l_store, WM_CLEAR, 0, 0);
-//        gtk_text_buffer_get_bounds (fdat->tbuf, &start, &end);
-//        gtk_text_buffer_delete (fdat->tbuf, &start, &end);
-//    }
+    SendMessage (fdat->l_store, EM_SETSEL, 0, -1);
+    SendMessage (fdat->l_store, WM_CLEAR, 0, 0);
+    SendMessage (fdat->l_store, EM_SETMODIFY, FALSE, 0);
 
     return TRUE;
 }
@@ -714,7 +663,7 @@ clear_text_buf( FILEINF *fdat)
  * ******************************************************************** */
 
 BOOL
-load_text (FILEINF *fdat, char **newfile)
+load_text (FILEINF *fdat, char *newfile)
 {
     register FILE *infile;
     char buffer[500];
@@ -724,10 +673,10 @@ load_text (FILEINF *fdat, char **newfile)
 
     clear_text_buf (fdat);
 
-    if ( newfile && *newfile)
+    if (newfile)
     {
         free_reference ( &(fdat->fname));
-        fdat->fname = strdup (*newfile);
+        fdat->fname = newfile;
     }
 
     stat (fdat->fname, &cmd_stat);
@@ -791,7 +740,7 @@ load_text (FILEINF *fdat, char **newfile)
 
         GlobalFree (pszFileText);
         fclose (infile);
-        doc_set_modified(fdat, FALSE);
+        doc_set_modified (fdat, FALSE);
     }
 
     return bSuccess;
@@ -810,15 +759,18 @@ load_text (FILEINF *fdat, char **newfile)
  * ******************************************************************** */
 
 BOOL
-mswin_load_text (FILEINF * fdat, char **newfile)
+mswin_load_text (FILEINF * fdat, char *newfile)
 {
     HANDLE hFile;
     BOOL bSuccess = FALSE;
 
     clear_text_buf (fdat);
 
-    free_reference ( &(fdat->fname));
-    fdat->fname = strdup (*newfile);
+    if (newfile)
+    {
+        free_reference ( &(fdat->fname));
+        fdat->fname = newfile;
+    }
 
     /* Now open the file and read it */
 
@@ -1003,7 +955,7 @@ load_list_tree (FILEINF *fdat, FILE *infile)
 
                 if (ListView_InsertItem (fdat->l_store, &lv) == -1)
                 {
-                    char mesg[30];
+                    char mesg[50];
 
                     sprintf (mesg, "Failed to insert item - %d,%d",
                                   itemcount - 1, fldnum);
@@ -1021,38 +973,68 @@ load_list_tree (FILEINF *fdat, FILE *infile)
     doc_set_modified (fdat, (BOOL)FALSE);
 }
 
+/* ******************************************************************** *
+ * fname_replace () - Replaces the fname if the new name is different   *
+ * NOTE: the newname MUST be a name that can be freed                   *
+ * ******************************************************************** */
+
+void
+fname_replace (FILEINF *fdat, char *newname)
+{
+    if (newname != NULL)
+    {
+        if ((fdat->fname == NULL) || (strcmp (fdat->fname, newname) != 0))
+        {
+            free_reference (&fdat->fname);
+            fdat->fname = newname;
+        }
+        else
+        {   // New name is the same as the old name.. we don't need new name
+            free (newname);
+        }
+    }
+}
+
 /* ************************************************************** *
  * do_lblfileload() - load the label file into the GtkTreeView    *
  * ************************************************************** */
 
 void
-do_lblfileload(FILEINF *fdat)
+do_lblfileload (FILEINF *fdat, char *newfile)
 {
     FILE *infile;
     char buffer[500];
+    char *bufend;
     int itemcount = 0;
 
+    bufend = &buffer[sizeof(buffer)];
     LV_ITEM lv;
     ZeroMemory (&lv, sizeof (lv));
     lv.mask = LVIF_TEXT;
 
     list_store_empty (fdat);
 
-//    if (fdat->fname)
-//    {
-//        free_reference (&fdat->fname);
-//    }
-
     /* Now open the file and read it */
 
-    if ( ! (infile = fopen (fdat->fname, "rb")))
+    if ( ! (infile = fopen (newfile, "rb")))
     {
-        char emsg[80];
-        sprintf (emsg, "Cannot open file %s for read!", fdat->fname);
+        char *emsg;
+        const char *fmt = "Cannot open file %s for read!";
+
+        if ( !(emsg = od_memset (fdat->l_store,
+                        strlen (fdat->fname) + strlen (fmt))))
+        {
+            return;
+        }
+
+        sprintf (emsg, fmt, fdat->fname);
         MessageBox (fdat->l_store, emsg, "Error!",
                 MB_ICONERROR | MB_OK);
         return;
     }
+
+    free_reference (&fdat->fname);
+    fdat->fname = newfile;
 
     while (fgets (buffer, 160, infile))
     {
@@ -1092,6 +1074,17 @@ do_lblfileload(FILEINF *fdat)
                     if (fldnum < (LBL_NCOLS - 1))
                     {
                         tmppt = strchr (tmppt, ' ');
+
+                        if (tmppt == NULL)      // Error!  Not enough fields
+                        {                       // This is probably not a
+                            fclose (infile);    // Label file !!!
+                            MessageBox (fdat->l_store,
+                                    "End of line encountered before 4th field\nThis is probably not a Label File",
+                                    "Abort !!!",
+                                    MB_ICONERROR | MB_OK);
+                            return;
+                        }
+                        
                         *(tmppt++) = '\0';
                     }
                 }
@@ -1139,7 +1132,7 @@ do_lblfileload(FILEINF *fdat)
             if (ListView_InsertItem (fdat->l_store, &lv) == -1)
             {
                 static int failcount;
-                char mesg[30];
+                char mesg[50];
 
                 sprintf (mesg, "Failed to insert item - %d,%d",
                               itemcount, fldnum);
@@ -1167,199 +1160,215 @@ do_lblfileload(FILEINF *fdat)
     fclose (infile);
 }
 
-///* **************************************** *
-// * sysfailed() - report failure of system() *
-// *     call                                 *
-// * **************************************** */
-//
-//void
-//sysfailed (char *msg)
-//{
-//    GtkWidget *dialog;
-//
-//    dialog = gtk_message_dialog_new (GTK_WINDOW(window),
-//                                     GTK_DIALOG_DESTROY_WITH_PARENT ||
-//                                         GTK_DIALOG_MODAL,
-//                                     GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
-//                                     msg);
-//    gtk_dialog_run (GTK_DIALOG (dialog));
-//    gtk_widget_destroy (dialog);
-//}
-//
-//
-///* **************************************************** *
-// * run_disassembler  - a callback from the menu does a  *
-// *                     disassembly pass                 *
-// * Passed: action, the global variables                 *
-// * **************************************************** */
-//
-//void
-//run_disassembler (GtkAction * action, glbls * hbuf)
-//{
-//    GString *CmdL;
-//    gchar *cmdline;
-//    gboolean PipeIt = FALSE;
-//
-//    CmdL = g_string_new("os9disasm ");
-//
-//    /* We MUST have a binary file to disassemble */
-//    
-//    if( ! prog_wdg->fname )
-//    {
-//        GtkWidget *warnwin;
-//        gchar *msg;
-//
-//        msg = g_strconcat("WARNING!\n",
-//                          "No program file specified\n",
-//                          "Please configure in menu item \"Options\"\n",
-//                          NULL );
-//        warnwin = gtk_message_dialog_new( GTK_WINDOW(window),
-//                                          GTK_DIALOG_DESTROY_WITH_PARENT ||
-//                                          GTK_DIALOG_MODAL,
-//                                          GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
-//                                          msg );
-//        gtk_dialog_run (GTK_DIALOG(warnwin));
-//        gtk_widget_destroy (warnwin);
-//        g_string_free (CmdL,TRUE);
-//        return;
-//    }
-//    else {
-//        g_string_append (CmdL,prog_wdg->fname);
-//    }
-//
-//    if (cmd_wdg->fname)
-//    {
-//        g_string_append (CmdL, " -c=");
-//        g_string_append (CmdL, cmd_wdg->fname);
-//    }
-//
-//    if (alt_defs)
-//    {
-//        g_string_append_printf (CmdL, " -d=%s", defs_wdg->fname);
-//    }
-//   
-//    if (isrsdos)
-//    {
-//        g_string_append (CmdL, " -x=c");
-//    }
+/* **************************************** *
+ * sysfailed() - report failure of system() *
+ *     call                                 *
+ * **************************************** */
+
+void
+sysfailed (HWND hWnd, char *msg)
+{
+    MessageBox (hWnd, msg, "Error!", MB_ICONERROR | MB_OK);
+}
+
+
+/* **************************************************** *
+ * run_disassembler  - a callback from the menu does a  *
+ *                     disassembly pass                 *
+ * Passed: action, the global variables                 *
+ * **************************************************** */
+
+void
+run_disassembler (HWND hWnd, glbls *hbuf)
+{
+    char *cmdline = NULL;
+    char tmpstr[MAX_PATH + 50];
+    BOOL PipeIt = FALSE;
+    int memneed = MAX_PATH;
+
+    // Calculate approximate memory needed
+
+    /* We MUST have a binary file to disassemble */
+    
+    if ( ! O9Dis.binfile.fname )
+    {
+
+        MessageBox (hWnd, "WARNING!\r\nNo program file specified\r\nPlease configure in menu item \"Options\"", "Error - No Program",
+                MB_ICONERROR | MB_OK);
+        free (cmdline);
+        return;
+    }
+
+    if (strlen (O9Dis.binfile.fname))
+    {
+        memneed += strlen (O9Dis.binfile.fname);
+    }
+
+    if ( (O9Dis.cmdfile.fname) && (strlen (O9Dis.cmdfile.fname)))
+    {
+        memneed += strlen (O9Dis.cmdfile.fname);
+    }
+
+    if ( (O9Dis.defsfile.fname) && (strlen (O9Dis.defsfile.fname)))
+    {
+        memneed += strlen (O9Dis.defsfile.fname);
+    }
+
+    if ( (O9Dis.asmout.fname) && (strlen (O9Dis.asmout.fname)))
+    {
+        memneed += strlen (O9Dis.asmout.fname);
+    }
+
+    if ( (O9Dis.list_file.fname) && (strlen (O9Dis.list_file.fname)))
+    {
+        memneed += strlen (O9Dis.list_file.fname);
+    }
+
+    if ( !(cmdline = od_memset (hWnd, memneed)))
+    {
+        return;
+    }
+
+    {
+        strcpy (cmdline, "os9disasm ");
+        strcat (cmdline, O9Dis.binfile.fname);
+    }
+
+    if (O9Dis.cmdfile.fname)
+    {
+        sprintf (tmpstr, " -c=%s", O9Dis.cmdfile.fname);
+        strcat (cmdline, tmpstr);
+    }
+
+    if ((O9Dis.defsfile.fname) && (strlen(O9Dis.defsfile.fname)))
+    {
+        sprintf (tmpstr, " -d=%s", O9Dis.defsfile.fname);
+        strcat (cmdline, tmpstr);
+    }
+   
+    if (RsDos.set)
+    {
+        strcat (cmdline, " -x=c");
+    }
+
 //    if (write_obj)
 //    {
-//        if (asmout_wdg->fname)
-//        {
-//            if (strlen(asmout_wdg->fname))
-//            {
-//                g_string_append (CmdL, " -o=");
-//                g_string_append (CmdL, asmout_wdg->fname);
-//            }
-//        }
+        if ((O9Dis.asmout.fname) && (strlen (O9Dis.asmout.fname)))
+        {
+            if (strlen(O9Dis.asmout.fname))
+            {
+                sprintf (tmpstr, " -o=%s", O9Dis.asmout.fname);
+                strcat (cmdline, tmpstr);
+            }
+        }
 //    }
-//    
-//    if( cputype )
-//    {
-//        g_string_append (CmdL, " -3");
-//    }
-//
-//    if (upcase)
-//    {
-//        g_string_append (CmdL, " -u");
-//    }
-//
-//    if (showzeros)
-//    {
-//        g_string_append (CmdL, " -z");
-//    }
-//
-//    if (pgwdth)
-//    {
-//        g_string_append_printf (CmdL, " -pw=%d", pgwdth);
-//    }
-//
-//    if (pgdpth)
-//    {
-//        g_string_append_printf (CmdL, " -pd=%d", pgdpth);
-//    }
-//
-//
-//    switch (write_list) {
-//        case LIST_FILE:
-//            if (listing_wdg->fname)
-//            {
-//                if (strlen(listing_wdg->fname))
-//                {
-//                    g_string_append_printf (CmdL, " > %s", listing_wdg->fname);
-//                }
-//            }
-//            break;
-//        case LIST_NONE:
-//            /* handle bit-bucket output */
-//            /* g_string_append (CmdL, "-q");*/
-//            break;
-//        case LIST_GTK:
-//            g_string_append (CmdL, " -g");
-//            PipeIt = TRUE;
-//            break;
-//    }
-//
-//    cmdline = g_string_free (CmdL, FALSE);
-//    
-//    if ( ! (PipeIt))   /* Output is to stdout or a file */
-//    {
-//        int retval;
-//        char *msg = NULL;
-//        
-//        switch (retval = system (cmdline))
-//        {
-//            case 0: /* sucess */
-//                break;
-//            case -1:  /* failed fork */
-//                msg = "Could not fork \"os9disasm\"\nIs \"os9disasm\" in your path?";
-//                sysfailed(msg);
-//                break;
-//            default:
-//                msg = "Error in executing \"os9disasm\"\nPlease check console for error messages";
-//                sysfailed(msg);
-//        }
-//    }
-//    else        /* else we're piping to the GUI */
-//    {
-//        FILE *infile;
-//        
-//        /* Now open the file and read it */
-//        if (!(infile = popen (cmdline, "r")))
-//        {
-//            g_print ("Cannot pipe \"%s\" for read!\n",
-//                              cmdline);
-//        }
-//        else {
-//            gtk_list_store_clear ((hbuf->list_file).l_store);
-//            load_list_tree (&hbuf->list_file, infile);
-//            pclose (infile);
-//        }
-//    }
-//
-//    g_free (cmdline);
-//}
-//
-///* Disassemble listing to file */
-//
-//void
-//dasm_list_to_file_cb (GtkAction *action, glbls *hbuf)
-//{
-//    gint old_write = write_list;
-//
-//    selectfile_save (hbuf, listing_wdg->fname, "File for Listing");
-//    set_fname (hbuf, &listing_wdg->fname);
-//    write_list = LIST_FILE;
-//    run_disassembler (action, hbuf);
-//    write_list = old_write;
-//}
+    
+    if (CpuType.set)
+    {
+        strcat (cmdline, " -3");
+    }
 
-///* ******************************************** *
-// * Callbacks for file selection                 *
-// * Passed:  (1) GtkAction *action,              *
-// *          (2) address of global data pointer  *
-// * ******************************************** */
-//
+    if (UpCase.set)
+    {
+        strcat (cmdline, " -u");
+    }
+
+    if (ShowZeros.set)
+    {
+        strcat (cmdline, " -z");
+    }
+
+    if (PgWdth.set)
+    {
+        sprintf (tmpstr, " -pw=%d", PgWdth.set);
+        strcat (cmdline, tmpstr);
+    }
+
+    if (PgDpth.set)
+    {
+        sprintf (tmpstr, " -pd=%d", PgDpth.set);
+        strcat (cmdline, tmpstr);
+    }
+
+
+    switch (write_list) {
+        case LIST_FILE:
+            if (O9Dis.list_file.fname)
+            {
+                if (strlen (O9Dis.list_file.fname))
+                {
+                    sprintf (tmpstr, " > %s", O9Dis.list_file.fname);
+                    strcat (cmdline, tmpstr);
+                }
+            }
+            break;
+        case LIST_NONE:
+            /* handle bit-bucket output */
+            /* g_string_append (CmdL, "-q");*/
+            break;
+        case LIST_GTK:
+            strcat (cmdline, " -g");
+            PipeIt = TRUE;
+            break;
+    }
+
+    if ( ! (PipeIt))   /* Output is to stdout or a file */
+    {
+        int retval;
+        
+        switch (retval = system (cmdline))
+        {
+            case 0: /* sucess */
+                break;
+            case -1:  /* failed fork */
+                MessageBox (hWnd, "Could not fork \"os9disasm\"\r\nIs \"os9disasm\" in your path?", "Fork Error!", MB_ICONERROR | MB_OK);;
+                //sysfailed(msg);
+                break;
+            default:
+                MessageBox (hWnd, "Error in executing \"os9disasm\"\r\nPlease check console for error messages", "Error!", MB_ICONERROR | MB_OK);
+                //sysfailed (msg);
+        }
+    }
+    else        /* else we're piping to the GUI */
+    {
+        FILE *infile;
+        
+        /* Now open the file and read it */
+        if ( !(infile = popen (cmdline, "r")))
+        {
+            MessageBox (hWnd, cmdline, "Read Error on Command...",
+                              MB_ICONERROR | MB_OK);
+        }
+        else {
+            list_store_empty (&(hbuf->list_file));
+            load_list_tree (&hbuf->list_file, infile);
+            pclose (infile);
+        }
+    }
+
+    free (cmdline);
+}
+
+/* Disassemble listing to file */
+
+void
+dasm_list_to_file_cb (HWND hWnd, glbls *hbuf)
+{
+    int old_write = write_list;     // Temp save write_list
+
+    selectfile_save (hWnd, &(O9Dis.list_file.fname));
+    //set_fname (hbuf, &O9Dis.list_file.fname);
+    write_list = LIST_FILE;     // Substitute outpath to file
+    run_disassembler (hWnd, hbuf);
+    write_list = old_write;     // Restore original outpath
+}
+
+/* ******************************************** *
+ * Callbacks for file selection                 *
+ * Passed:  (1) GtkAction *action,              *
+ *          (2) address of global data pointer  *
+ * ******************************************** */
+
 //void
 //compile_listing (GtkAction * action, glbls * hbuf)
 //{
@@ -1373,7 +1382,7 @@ do_lblfileload(FILEINF *fdat)
 //
 //    write_list = old_write_list;        /* restore write_list */
 //}
-//
+
 /* ******************************************************** *
  * load_listing() - A callback from the menu(s).            *
  *          This is the "top-level" function for loading    *
@@ -1384,10 +1393,11 @@ void
 load_listing (FILEINF *fdat)
 {
     FILE *infile;
+    char *tmpname;
 
+    tmpname = selectfile_open (fdat->l_store, "Prog Listing", TRUE);
 
-    if ( ! selectfile_open (fdat->l_store, "Prog Listing", TRUE,
-                                            &(fdat->fname)))
+    if (tmpname == NULL)
     {
         return;    // We had either "Cancel" or failure
     }
@@ -1399,11 +1409,9 @@ load_listing (FILEINF *fdat)
     list_store_empty (fdat);
 
 //    (hbuf->list_file).fname = strdup (hbuf->filename_to_return);
-//    free_reference (&(hbuf->filename_to_return));
-
     /* Now open the file and read it */
     
-    if ( ! (infile = fopen (fdat->fname, "rb")))
+    if ( ! (infile = fopen (tmpname, "rb")))
     {
         int lasterr;
         char errstr[200];
@@ -1414,19 +1422,10 @@ load_listing (FILEINF *fdat)
         return;
     }
 
+    fname_replace (fdat, tmpname);
+
     load_list_tree (fdat, infile);
     fclose (infile);
-}
-
-void
-do_cmdfileload (FILEINF *fdat)
-{
-    if (fdat->fname != NULL)       /* Leak? */
-    {
-        load_text (fdat, NULL);
-    }
-
-    //free_reference (&hbuf->filename_to_return);
 }
 
 /* **************************************************************** *
@@ -1436,33 +1435,28 @@ do_cmdfileload (FILEINF *fdat)
 void
 load_cmdfile (FILEINF *fdat)
 {
-    if (selectfile_open (fdat->l_store, "Command file", TRUE, &(fdat->fname)))
+    char *tmpname;
+
+    tmpname = selectfile_open (fdat->l_store, "Command file", TRUE);
+
+    if (tmpname != NULL)
     {
-//        free_reference (&(cmd_wdg->fname));
-//        cmd_wdg->fname = strdup (hbuf->filename_to_return);
-        do_cmdfileload (fdat);
+        //free_reference (&(fdat->fname));
+        //fdat->fname = tmpname;
+        load_text (fdat, tmpname);
     }
 }
-
-//void
-//do_lblfileload (FILEINF *fdat)
-//{
-//    if (fdat->fname != NULL)       /* Leak? */
-//    {
-//        load_lbl (fdat, fdat->l_store,
-//                &(fdat->fname));
-//    }
-//
-//    //free_reference (&hbuf->filename_to_return);
-//}
 
 void
 load_lblfile (FILEINF *fdat)
 {
-    if (selectfile_open (fdat->l_store, "Label File", TRUE,
-                        &(fdat->fname)))
+    char *filetmp;
+    
+    filetmp = selectfile_open (fdat->l_store, "Label File", TRUE);
+
+    if (filetmp != NULL)
     {
-        do_lblfileload (fdat);
+        do_lblfileload (fdat, filetmp);
     }
 }
 
@@ -1475,280 +1469,327 @@ load_lblfile (FILEINF *fdat)
 void
 cmd_save_as (FILEINF *fdat)
 {
-    if ( ! selectfile_save (fdat->l_store, &(fdat->fname)))
+    char *tmpname;
+    
+    if (GetWindowTextLength (fdat->l_store) > 2) // Only an MS-Dos EOL set
+    {
+        tmpname = selectfile_save (fdat->l_store, &(fdat->fname));
+
+        if (tmpname != NULL)
+        {
+            save_text (fdat->l_store, tmpname);
+            SendMessage (fdat->l_store, EM_SETMODIFY, FALSE, 0);
+        }
+
+        // handle fname
+
+    // Don't think we need this -- selectfile_save did it, I think
+//    fname_replace (fdat, tmpname);
+    }
+    else
+    {
+        MessageBox (fdat->l_store, "Insufficient data to save...",
+                "No Data", MB_ICONEXCLAMATION | MB_OK);
+    }
+}
+
+void
+cmd_save (FILEINF *fdat)
+{
+
+    if (GetWindowTextLength (fdat->l_store) > 2) // Only an MS-Dos EOL set
+    {
+        // If we don't yet have a filename, we must use Save As...
+        if (fdat->fname == NULL)
+        {
+            cmd_save_as (fdat);
+        }
+        else {
+            save_text (fdat->l_store, fdat->fname);
+            SendMessage (fdat->l_store, EM_SETMODIFY, FALSE, 0);
+        }
+    }
+    else
+    {
+        MessageBox (fdat->l_store, "Insufficient data to save...",
+                "No Data", MB_ICONEXCLAMATION | MB_OK);
+    }
+}
+
+void
+lbl_save_as (FILEINF *fdat)
+{
+    char *tmpname;
+    
+    tmpname = selectfile_save (fdat->l_store, &(fdat->fname));
+    
+    if (tmpname != NULL)       /* Leak? */
+    {
+        wrt_lbl_file (fdat, &tmpname);
+        fdat->altered = FALSE;
+    }
+}
+
+void
+lbl_save (FILEINF *fdat)
+{
+    // If we have not yet established a filename, go to Save As..
+
+    if( fdat->fname == NULL)
+    {
+        lbl_save_as (fdat);
+    }
+    else {
+        wrt_lbl_file (fdat, &fdat->fname);
+        fdat->altered = FALSE;
+    }
+}
+
+/* **************************************************** *
+ * Options load/save callbacks                          *
+ * **************************************************** */
+
+/* ******************************************************** *
+ * opt_put() - check for state of variable ptr and if set,  *
+ *          write to optsave file                           *
+ * ******************************************************** */
+
+static void
+opt_put (FILEINF *fi, char *hdr, FILE *fp)
+{
+    if (fi->fname && strlen(fi->fname))
+    {
+        fprintf (fp, "%s%s\n", hdr, fi->fname);
+    }
+}
+
+/* ******************************************************************** *
+ * fix_opt_path () Massages the input options line, bumping pointer to  *
+ *   file path past whitespaces, removing newline characters, and       *
+ *   stores value into designated place (freeing string previously      *
+ *   referred to if applicable.                                         *
+ * ******************************************************************** */
+
+static void
+fix_opt_path (char **pthptr,    // something->fname..
+               char *pthnm,     // the pathname string
+               BOOL *flag,      // An option flag (sometimes present)
+               char *hdr)       // the begin of the string - to be bypassed
+{
+    char *start = pthnm;
+
+    start += strlen (hdr);
+    
+    if (flag)
+    {
+        *flag = TRUE;
+    }
+
+    strstrip (start);
+    free_reference (pthptr);
+    *pthptr = strdup (start);
+}
+
+/* **************************************************************** *
+ * opt_get_val() - check for a match in the HDR and store the value *
+ *          of matched                                              *
+ * PASSED: hdr string to check against buffer holding the loaded    *
+ *          line address to store value if matched                  *
+ * Returns: value if matched, NULL if no match                      *
+ * **************************************************************** */
+
+static int
+opt_get_val ( char *ctrl, char *buf, int *addr)
+{
+    char *start = buf;
+
+    if (!strncmp (ctrl, buf, strlen (ctrl)))
+    {
+        start += strlen (ctrl);
+        strstrip (start);
+        sscanf (start, "%d", addr);
+        return *addr;
+    }
+
+    return 0;
+}
+
+void
+opts_save (HWND hWnd, glbls *hbuf)
+{
+    FILE *optfile;
+    char *fname;
+    char msg[100];
+
+    selectfile_save (hWnd, &fname);
+    sprintf (msg, "Could not open options file '%s'", fname);
+    free (fname);
+    
+    if (!(optfile = fopen (fname, "w")))
+    {
+        MessageBox (hWnd, msg, "File Open Failed!", MB_ICONERROR | MB_OK);
+        return;
+    }
+    
+
+    opt_put (&O9Dis.binfile, OPT_BIN, optfile);
+    opt_put (&O9Dis.cmdfile, OPT_CMD, optfile);
+    opt_put (&O9Dis.list_file, OPT_LBL, optfile);
+    opt_put (&O9Dis.defsfile, OPT_DEF, optfile);
+    opt_put (&O9Dis.asmout, OPT_OBJ, optfile);
+    fprintf (optfile, "%s%d\n", OPT_RS, RsDos.set);
+    fprintf (optfile, "%s%d\n", OPT_CPU, CpuType.set);
+    fprintf (optfile, "%s%d\n", OPT_UPC, UpCase.set);
+    fprintf (optfile, "%s%d\n", OPT_PGW, PgWdth.set);
+    fprintf (optfile, "%s%d\n", OPT_PGD, PgDpth.set);
+    fprintf (optfile, "%s%d ", OPT_LST, write_list);
+    
+    switch (write_list)
+    {
+        case LIST_FILE:
+            if (O9Dis.list_file.fname)
+            {
+                if (strlen (O9Dis.list_file.fname))
+                {
+                    fprintf (optfile, "%s\n", O9Dis.list_file.fname);
+                }
+            }
+            break;
+        default:
+            fputc('\n', optfile);
+    }
+
+    fclose (optfile);
+}
+
+void
+opts_load (HWND hwnd, glbls *hbuf)
+{
+    FILE *optfile;
+    char buf[MAX_PATH];
+    char *tmpfile;
+    
+    if ( !(tmpfile = selectfile_open (hwnd, "n Options File", TRUE)))
     {
         return;
     }
+    
+    optfile = fopen (tmpfile, "rb");
+    sprintf (buf, "Could not open options file %s", buf);
+    free (buf);
+    
+    if ( ! optfile)
+    {
+        MessageBox (hwnd, buf, "File Open Failed!", MB_ICONERROR | MB_OK);
+        return;
+    }
 
-        /* handle fname */
-        
-//    free_reference (hbuf->cmdfile.fname);
-//    fdat->fname = strdup (hbuf->filename_to_return);
-        
-        /* save cmd file */
-    save_text (fdat->l_store, &(fdat->fname));
+    while (fgets (buf, sizeof (buf), optfile))
+    {
+        if ( ! strncmp (OPT_BIN, buf, strlen(OPT_BIN)))
+        {
+            fix_opt_path (&(O9Dis.binfile.fname), buf, NULL, OPT_BIN);
+            menu_do_dis_sensitize (hwnd);
+            continue;
+        }
 
-//    free_reference (&hbuf->filename_to_return);
+        if ( ! strncmp (OPT_CMD, buf, strlen (OPT_CMD)))
+        {
+            fix_opt_path (&(O9Dis.cmdfile.fname), buf, NULL, OPT_CMD);
+//            hbuf->filename_to_return = strdup (O9Dis.cmdfile.fname);
+//            do_cmdfileload (hbuf);        // NEED TO CHANGE PARAMETER
+            continue;
+        }
 
+        if ( ! strncmp (OPT_LBL, buf, strlen (OPT_LBL)))
+        {
+            fix_opt_path (&(hbuf->lblfile.fname), buf, NULL, OPT_LBL);
+//            hbuf->filename_to_return = strdup (hbuf->lblfile.fname);
+//            do_lblfileload (hbuf);
+            continue;
+        }
+
+        if ( ! strncmp (OPT_DEF, buf, strlen(OPT_DEF)))
+        {
+            fix_opt_path (&(O9Dis.defsfile.fname), buf, NULL, OPT_DEF);
+            continue;
+        }
+
+        if ( ! strncmp (OPT_OBJ, buf, strlen (OPT_OBJ)))
+        {
+            fix_opt_path (&(O9Dis.asmout.fname), buf, NULL, OPT_OBJ);
+            continue;
+        }
+
+        if ( ! strncmp (OPT_LST, buf, strlen (OPT_LST)))
+        {
+            char *splits[2];
+            BOOL failed = FALSE;
+
+            splits[0] = buf;
+            
+            splits[0] += strlen (OPT_LST);
+            splits[0] = strstrip (splits[0]);
+            splits[1] = splits[0];
+
+            while (*splits[1] != ' ')
+            {
+                ++(splits[1]);
+
+                if (*splits[1] == '\0')
+                {
+                    failed = TRUE;
+                    break;
+                }
+            }
+
+            if (failed)
+            {
+                continue;
+            }
+
+            *splits[1] = '\0';
+
+            if (splits[0])
+            {
+                sscanf (splits[0], "%d", &write_list);
+            }
+
+            if (write_list == LIST_FILE)
+            {
+               
+                if (splits[1])
+                {
+                    char *nambegin;
+                    free_reference (&O9Dis.list_file.fname);
+                    nambegin = strstrip (splits[1]);
+
+                    if (strlen (nambegin))
+                    {
+                        O9Dis.list_file.fname = strdup (nambegin);
+                    }
+                }
+            }
+
+            continue;
+        }
+
+        if (!opt_get_val (OPT_RS, buf, &RsDos.set))
+        {
+            if (!opt_get_val (OPT_CPU, buf, &CpuType.set))
+            {
+                if (!opt_get_val (OPT_UPC, buf, &UpCase.set))
+                {
+                    if (!opt_get_val (OPT_PGW, buf, &PgWdth.set))
+                    {
+                        /* Here, quietly test the last one and just
+                         * ignore the line if this does not match
+                         */
+                        opt_get_val (OPT_PGD, buf, &PgDpth.set);
+                    }
+                }
+            }
+        }
+    }
 }
 
-//void
-//cmd_save(GtkAction *action, glbls *hbuf)
-//{
-//    if (!(hbuf->cmdfile.fname))
-//    {
-//        cmd_save_as(action, hbuf);
-//    }
-//    else {
-//        save_text (&hbuf->cmdfile, list_win, &(hbuf->cmdfile.fname));
-//    }
-//
-//    gtk_text_buffer_set_modified ((hbuf->cmdfile).tbuf, FALSE);
-//}
-//
-//void
-//lbl_save_as (GtkAction * action, glbls * hbuf)
-//{
-//    selectfile_save(hbuf, hbuf->lblfile.fname, "Label File");
-//    
-//    if (hbuf->filename_to_return != NULL)       /* Leak? */
-//    {
-//        if (hbuf->lblfile.fname)
-//        {
-//            g_free(hbuf->lblfile.fname);
-//        }
-//
-//        hbuf->lblfile.fname = g_strdup(hbuf->filename_to_return);
-//        
-//        /* save label file */
-//        save_lbl (&hbuf->lblfile, list_win, &(hbuf->filename_to_return));
-//    }
-//
-//    free_reference (&hbuf->filename_to_return);
-//}
-//
-//void
-//lbl_save (GtkAction *action, glbls *hbuf)
-//{
-//    if( !(hbuf->lblfile.fname))
-//    {
-//        lbl_save_as(action, hbuf);
-//    }
-//    else {
-//        save_lbl (&hbuf->lblfile, list_win, &(hbuf->lblfile.fname));
-//    }
-//}
-//
-///* **************************************************** *
-// * Options load/save callbacks                          *
-// * **************************************************** */
-//
-///* ******************************************************** *
-// * opt_put() - check for state of variable ptr and if set,  *
-// *          write to optsave file                           *
-// * ******************************************************** */
-//
-//static void
-//opt_put (gboolean isset, char *nam, char *hdr, FILE *fp)
-//{
-//    gchar *line;
-//    
-//    if (isset)
-//    {
-//        line = g_strconcat (hdr, nam, "\n", NULL);
-//        fputs (line, fp);
-//        g_free (line);
-//    }
-//}
-//
-//static void
-//opt_load_path (gchar **pthptr, gchar *pthnm, gboolean *flag, gchar* hdr)
-//{
-//    char *start = pthnm;
-//
-//    start += strlen (hdr);
-//    
-//    if (flag)
-//    {
-//        *flag = TRUE;
-//    }
-//
-//    g_strstrip (start);
-//    *pthptr = g_strdup (start);
-//}
-//
-///* **************************************************************** *
-// * opt_get_val() - check for a match in the HDR and store the value *
-// *          of matched                                              *
-// * PASSED: hdr string to check against buffer holding the loaded    *
-// *          line address to store value if matched                  *
-// * Returns: value if matched, NULL if no match                      *
-// * **************************************************************** */
-//
-//static gint
-//opt_get_val ( gchar *ctrl, gchar *buf, gint *addr)
-//{
-//    gchar *start = buf;
-//
-//    if (!strncmp (ctrl, buf, strlen (ctrl)))
-//    {
-//        start += strlen (ctrl);
-//        g_strstrip (start);
-//        sscanf (start, "%d", addr);
-//        return *addr;
-//    }
-//
-//    return 0;
-//}
-//
-//void
-//opts_save (GtkAction *action, glbls *hbuf)
-//{
-//    FILE *optfile;
-//
-//    selectfile_save (hbuf, NULL, "Options File");
-//    optfile = fopen(hbuf->filename_to_return, "rb");
-//    
-//    if (!(optfile = fopen (hbuf->filename_to_return, "wb")))
-//    {
-//        /* Report Error */
-//        free_reference ( &(hbuf->filename_to_return));
-//        return;
-//    }
-//    
-//    free_reference ( &(hbuf->filename_to_return));
-//
-//    opt_put ((gboolean)prog_wdg->fname, prog_wdg->fname, OPT_BIN, optfile);
-//    opt_put ((gboolean)cmd_wdg->fname, cmd_wdg->fname, OPT_CMD, optfile);
-//    opt_put ((gboolean)hbuf->lblfile.fname, hbuf->lblfile.fname, OPT_LBL,
-//            optfile);
-//    opt_put (alt_defs, defs_wdg->fname, OPT_DEF, optfile);
-//    opt_put (write_obj, asmout_wdg->fname, OPT_OBJ, optfile);
-//    fprintf (optfile, "%s%d\n", OPT_RS, (int)isrsdos);
-//    fprintf (optfile, "%s%d\n", OPT_CPU, (int)cputype);
-//    fprintf (optfile, "%s%d\n", OPT_UPC, (int)upcase);
-//    fprintf (optfile, "%s%d\n", OPT_PGW, (int)pgwdth);
-//    fprintf (optfile, "%s%d\n", OPT_PGD, (int)pgdpth);
-//    fprintf (optfile, "%s%d ", OPT_LST, (int)write_list);
-//    
-//    switch (write_list)
-//    {
-//        case LIST_FILE:
-//            if (listing_wdg->fname)
-//            {
-//                if (strlen (listing_wdg->fname))
-//                {
-//                    fprintf (optfile, "%s\n", listing_wdg->fname);
-//                }
-//            }
-//            break;
-//        default:
-//            fputc('\n', optfile);
-//    }
-//
-//    fclose (optfile);
-//}
-//
-//void opts_load (GtkAction *action, glbls *hbuf)
-//{
-//    FILE *optfile;
-//    gchar buf[200];
-//    
-//    selectfile_open (hbuf, "n Options File", TRUE, NULL);  //Final parameter should point to a char * !!!!
-//    optfile = fopen(hbuf->filename_to_return, "rb");
-//    
-//    if ( ! optfile)
-//    {
-//        /* Print Error message */
-//        
-//        free_reference ( &(hbuf->filename_to_return));
-//        return;
-//    }
-//    
-//    free_reference ( &(hbuf->filename_to_return));
-//
-//    while (fgets (buf, 200, optfile))
-//    {
-//        if ( ! strncmp (OPT_BIN, buf, strlen(OPT_BIN)))
-//        {
-//            opt_load_path (&(prog_wdg->fname), buf, NULL, OPT_BIN);
-//            menu_do_dis_sensitize();
-//            continue;
-//        }
-//        if ( ! strncmp (OPT_CMD, buf, strlen (OPT_CMD)))
-//        {
-//            opt_load_path (&(cmd_wdg->fname), buf, NULL, OPT_CMD);
-//            hbuf->filename_to_return = g_strdup (cmd_wdg->fname);
-//            do_cmdfileload (hbuf);        // NEED TO CHANGE PARAMETER
-//            continue;
-//        }
-//
-//        if ( ! strncmp (OPT_LBL, buf, strlen (OPT_LBL)))
-//        {
-//            opt_load_path (&(hbuf->lblfile.fname), buf, NULL, OPT_LBL);
-//            hbuf->filename_to_return = g_strdup (hbuf->lblfile.fname);
-//            do_lblfileload (hbuf);
-//            continue;
-//        }
-//
-//        if ( ! strncmp (OPT_DEF, buf, strlen(OPT_DEF)))
-//        {
-//            opt_load_path (&(defs_wdg->fname), buf, &alt_defs, OPT_DEF);
-//            continue;
-//        }
-//        if ( ! strncmp (OPT_OBJ, buf, strlen (OPT_OBJ)))
-//        {
-//            opt_load_path (&(asmout_wdg->fname), buf, &write_obj, OPT_OBJ);
-//            continue;
-//        }
-//        if ( ! strncmp (OPT_LST, buf, strlen (OPT_LST)))
-//        {
-//            gchar *start = buf;
-//            gchar **splits;
-//
-//            start += strlen (OPT_LST);
-//            splits = g_strsplit (start," ", -1);
-//
-//            if (splits[0])
-//            {
-//                sscanf (splits[0], "%d", &write_list);
-//            }
-//
-//            if (write_list == LIST_FILE)
-//            {
-//                free_reference (&listing_wdg->fname);
-//               
-//                if (splits[1])
-//                {
-//                    g_strstrip (splits[1]);
-//
-//                    if (strlen(splits[1]))
-//                    {
-//                        listing_wdg->fname = g_strdup (splits[1]);
-//                    }
-//                }
-//            }
-//
-//            g_strfreev (splits);
-//            continue;
-//        }
-//
-//        if (!opt_get_val (OPT_RS, buf, &isrsdos))
-//        {
-//            if (!opt_get_val (OPT_CPU, buf, &cputype))
-//            {
-//                if (!opt_get_val (OPT_UPC, buf, &upcase))
-//                {
-//                    if (!opt_get_val (OPT_PGW, buf, &pgwdth))
-//                    {
-//                        /* Here, quietly test the last one and just
-//                         * ignore the line if this does not match
-//                         */
-//                        opt_get_val (OPT_PGD, buf, &pgdpth);
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-//

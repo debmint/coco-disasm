@@ -58,93 +58,105 @@ enum
     SAVALL_ALL,
     SAVALL_SOME
 };
- 
+
+typedef struct
+{
+	HWND btn;
+	int set;
+} OPTSETTING;
+
+OPTSETTING PgWdth,
+           PgDpth,
+           CpuType,
+           RsDos,
+           ShowZeros,
+           UpCase;
+
+//typedef struct
+//{
+//    OPTSETTING pgwdth,
+//               pgdpth,
+//               cputype,
+//	       rsdos,		// Flag - if set, disassemble for RS-DOS
+//               showzeros,    // Flag - if set, show 0,R offsets
+//               upcase;       // Flag - if set, display output in upper case
+//	  // The following may not be needed, as each has a FILEINF
+//	  // structure but we'll leave them here for now anyway
+//    char *binfile,      // Ptr to name of module to disassemble
+//         *odiscmd,      // Ptr to path to win09dis cmd file
+//         *objfile,      // Ptr to .asm filename to output (NULL if none)
+//         *altdefs,      // Ptr to path to alt DEFS directory (NULL if none)
+//         *listingpath;  // Ptr to pathname of listing (NULL if none)
+//} OPTSTBL;
+
 typedef struct
 {
     char *fname;
-    HWND tview;
-    char *tvstring;          // ptr to "tview" data for later deletion
-    HWND  l_store;          //GtkListStore *l_store;
-    int  *tbuf;             //GtkTextBuffer *tbuf;
+    const char *dialog_ttl;
+    HWND o_entry,  //GtkWidget *o_entry;
+         browse_button, //GtkWidget *browse_button;
+         tview,
+         l_store;      // GtkListStore *l_store;
+    char *tvstring;     // ptr to "tview" data for later deletion
+    int  *tbuf;         // GtkTextBuffer *tbuf;
     BOOL altered;
+    BOOL is_read;       /* For file_chooser - if TRUE, search for read, */
+    BOOL is_dir;
 } FILEINF;
 
 typedef struct
 {
-    char *progfile;            /* The program file to disassemble */
-    FILEINF list_file;          /* The formatted listing file      */
-    FILEINF cmdfile;            /* The os9disasm COMMAND FILE      */
-    /* TODO : include the ability to see all 16 label files */
-    FILEINF lblfile;            /* An os9disasm label file         */
+    FILEINF binfile,        // The binary file to disassemble
+            list_file,      // The formatted listing file
+            cmdfile,        // The os9disasm COMMAND FILE
+            lblfile,        // An os9disasm label file
+            asmout,         // The assembly source file to output (optional)
+            defsfile,       // The alternate DEFS path (optional)
+            list_out;       // Filename for listing output (if specified)
     char *filename_to_return;  /* tmp storage for file selection */
 /*	GtkWidget *fsel;*/
 } glbls;
 
 GLOBAL glbls O9Dis;
 
-typedef struct ofile_widgets
-{
-    int *o_entry;  //GtkWidget *o_entry;
-    int *browse_button; //GtkWidget *browse_button;
-    BOOL is_dir;
-    const char *dialog_ttl;
-    char *fname;
-    BOOL is_read;       /* For file_chooser - if TRUE, search for read, */
-                            /* else search for saving                       */
-} FILE_WIDGET;
+//typedef struct ofile_widgets
+//{
+//    HWND o_entry;  //GtkWidget *o_entry;
+//    HWND browse_button; //GtkWidget *browse_button;
+//    BOOL is_dir;
+//    const char *dialog_ttl;
+//    char *fname;
+//    BOOL is_read;       /* For file_chooser - if TRUE, search for read, */
+//                            /* else search for saving                       */
+//} FILE_WIDGET;
+//
+//GLOBAL FILE_WIDGET prog_prof
+//#ifdef MAIN
+//= {NULL, NULL, FALSE, "File to Disassemble", NULL, TRUE}
+//#endif
+//;
+//
+//GLOBAL FILE_WIDGET cmd_prof
+//#ifdef MAIN
+//= {NULL, NULL, FALSE, "Command File", NULL, TRUE}
+//#endif
+//;
+//GLOBAL FILE_WIDGET asmout_prof
+//#ifdef MAIN
+//= {NULL, NULL, FALSE, "Asm Src File", NULL, FALSE}
+//#endif
+//;
+//GLOBAL FILE_WIDGET listing_prof
+//#ifdef MAIN
+//= {NULL, NULL, FALSE, "Listing Output", NULL, FALSE}
+//#endif
+//;
+//GLOBAL FILE_WIDGET defs_prof
+//#ifdef MAIN
+//= {NULL, NULL, FALSE, "Defs Path", NULL, TRUE}
+//#endif
+//;
 
-GLOBAL FILE_WIDGET prog_prof
-#ifdef MAIN
-= {NULL, NULL, FALSE, "File to Disassemble", NULL, TRUE}
-#endif
-;
-
-GLOBAL FILE_WIDGET cmd_prof
-#ifdef MAIN
-= {NULL, NULL, FALSE, "Command File", NULL, TRUE}
-#endif
-;
-GLOBAL FILE_WIDGET asmout_prof
-#ifdef MAIN
-= {NULL, NULL, FALSE, "Asm Src File", NULL, FALSE}
-#endif
-;
-GLOBAL FILE_WIDGET listing_prof
-#ifdef MAIN
-= {NULL, NULL, FALSE, "Listing Output", NULL, FALSE}
-#endif
-;
-GLOBAL FILE_WIDGET defs_prof
-#ifdef MAIN
-= {NULL, NULL, FALSE, "Defs Path", NULL, TRUE}
-#endif
-;
-
-GLOBAL FILE_WIDGET *prog_wdg
-#ifdef MAIN
-= &prog_prof
-#endif
-;
-GLOBAL FILE_WIDGET *cmd_wdg
-#ifdef MAIN
-= &cmd_prof
-#endif
-;
-GLOBAL FILE_WIDGET *asmout_wdg
-#ifdef MAIN
-= &asmout_prof
-#endif
-;
-GLOBAL FILE_WIDGET *listing_wdg
-#ifdef MAIN
-= &listing_prof
-#endif
-;
-GLOBAL FILE_WIDGET *defs_wdg
-#ifdef MAIN
-= &defs_prof
-#endif
-;
 
 /* include proto.h here so that all structures can be defined */
 
@@ -161,27 +173,10 @@ struct adr_widgets {
               *offset_entry;
 };
 
-/* os9disasm options */
-GLOBAL int pgwdth;
-GLOBAL int pgdpth;
-GLOBAL int cputype;
-GLOBAL int showzeros;
-GLOBAL BOOL isrsdos;
-GLOBAL int upcase;
-GLOBAL char *bin_file;
-GLOBAL char *cmd_cmd;
-GLOBAL BOOL write_obj,
-                alt_defs;
-GLOBAL char *obj_file,
-             *alt_defs_path;
 GLOBAL int write_list;
-GLOBAL char *listing_output;
-
-//GLOBAL GtkWidget *window;       /* The main, base, window */
 
 /* The following two are needed for define in menu.h, use in filestuff.c */
-//GLOBAL GtkUIManager *ui_manager;
-/*GLOBAL GtkTreeSelection *list_selection;*/
+
 GLOBAL char *LastPath;      /* Last path - used for setting path in */
                                     /*  file chooser dialog                 */
 

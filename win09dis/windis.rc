@@ -6,7 +6,11 @@
 #include <windows.h>
 #include <winresrc.h>
 #include "resource.h"	//for id declarations
-#define IDC_STATIC -1   //not defined for DevC++
+
+#ifndef IDC_STATIC
+#  define IDC_STATIC -1   //not defined for DevC++
+#endif
+
 //----------------------------------------------------------------------------
 // Resource languages: Codes for languages and sub-languages are declared in winnt.h
 // eg for US english replace SUBLANG_ENGLISH_UK with SUBLANG_ENGLISH_US
@@ -20,6 +24,11 @@
 #ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK	//codes for these are declared in winnt.h
 #endif //_WIN32
+
+#define OPT_W 400
+#define OPT_H 270
+#define FILE_WDTH (OPT_W - 12)/2 - 3
+#define FILE_HGHT (OPT_H -50)/4
 
 // ------------------------------
 // Main Menu
@@ -43,16 +52,15 @@ BEGIN
 	    MENUITEM "Open Label File", ID_LBLOPEN
         END
         MENUITEM SEPARATOR
+        POPUP "Save"
+        BEGIN
+            MENUITEM "Save Cmd File", ID_CMDSAVE
+            MENUITEM "Save Lbl File", ID_LBLSAVE
+        END
         POPUP "Save As"
         BEGIN
             MENUITEM "Save CMDFILE As...", ID_CMDSAVEAS
             MENUITEM "Save LBLFILE As...", ID_LBLSAVEAS
-        END
-        MENUITEM SEPARATOR
-        POPUP "Save"
-        BEGIN
-            MENUITEM "Save Cmd File", ID_CMDSAVEAS
-            MENUITEM "Save Lbl File", ID_LBLSAVEAS
         END
         MENUITEM SEPARATOR
         MENUITEM "Quit", WM_QUIT
@@ -82,7 +90,7 @@ END
 
 // About Dialog....
 
-IDD_ABOUT DIALOG DISCARDABLE  0, 0, 239, 76
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 339, 76
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Win09Dis"
 //FONT 8, "MS Sans Serif"
@@ -92,3 +100,27 @@ BEGIN
     LTEXT           "",IDC_ABTTXT,16,18,144,43   // To be filled in by the app
 END
 
+// ---------------------
+// Set options Dialog...
+// ---------------------
+
+IDD_OPTS DIALOG DISCARDABLE 0, 0, OPT_W, OPT_H
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Set Win09Dis Options"
+BEGIN
+  PUSHBUTTON  "Cancel",IDC_CANCEL,OPT_W - 120,OPT_H - 20,30,15
+  PUSHBUTTON  "Apply",IDC_APPLY,OPT_W - 80,OPT_H - 20,30,15
+  PUSHBUTTON  "Ok",IDC_OK,OPT_W - 40,OPT_H - 20,30,15
+END
+
+IDD_WINDOWQUIT DIALOG DISCARDABLE 0, 0, 300, 200
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP
+CAPTION "Files have been altered"
+BEGIN
+  CTEXT     "You are about to exit and your files have been altered",
+                IDC_STATIC,20,50,200,10
+  CTEXT     "What do you wish to do?",IDC_STATIC, 0,70,300,10
+  PUSHBUTTON "Exit without saving",IDCANCEL, 0,120,300,20
+  PUSHBUTTON "Save All",ID_SAVEALL,200,120,80,20
+  PUSHBUTTON "Select Files",ID_SELECTEM,240,120,80,20
+END
