@@ -6,11 +6,8 @@
 
 bin_PROGRAMS = win09dis
 
-#GCSRC = g09dis.c filestuff.c menu.c odisopts.c dasmedit.c amode.c search.c
-#GHDR = g09dis.h proto.h
-
-GCSRC = win09dis.c filestuff.c menu.c odisopts.c
-#GHDR = g09dis.h proto.h
+GCSRC = win09dis.c filestuff.c menu.c odisopts.c amode.c dasmedit.c search.c
+#GHDR = win09dis.h proto.h
 
 win09dis_SOURCES = ${GCSRC} windis.rc
 

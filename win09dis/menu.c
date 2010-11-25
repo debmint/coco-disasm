@@ -14,10 +14,11 @@ HINSTANCE hInst;
 
 RECT wnbx;
 
-DLGPROC CALLBACK AboutDlgProc ( HWND hwndDlg,	// handle to dialog box
-                                UINT uMsg,	        // message
-                                WPARAM wParam,	    // first message parameter
-                                LPARAM lParam)	    // second message parameter
+DLGPROC CALLBACK
+AboutDlgProc ( HWND hwndDlg,	    // handle to dialog box
+               UINT uMsg,	        // message
+               WPARAM wParam,	    // first message parameter
+               LPARAM lParam)	    // second message parameter
 {
     switch (uMsg)
     {
@@ -167,16 +168,6 @@ menu_do_dis_sensitize (HWND hWnd)
 //
 //static const char *ui_description =
 //    "<ui>"
-//    "  <popup name='ListPopUp'>"
-//    "    <menuitem action='LstngSearch'/>"
-//    "    <separator/>"
-//    "    <menuitem action='LstngOpen'/>"
-//    "    <separator/>"
-//    "    <menuitem action='NameLabel'/>"
-//    "    <menuitem action='BndsDefine'/>"
-//    "    <menuitem action='AdrMode'/>"
-//    "    <separator/>"
-//    "  </popup>"
 //    "  <popup name='LabelPopUp'>"
 //    "    <menuitem action='LblSearch'/>"
 //    "    <separator/>"

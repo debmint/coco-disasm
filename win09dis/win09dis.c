@@ -10,13 +10,10 @@
 #define IDC_CMD_WIN  502
 #define IDC_LBL_WIN  503
 
-const char g_szClassName[] = "windisWindowClass";
+WNDPROC lpfnListViewWndProc;    // Original ListView Window proc
 
-//DLGPROC CALLBACK AboutDlgProc ( HWND, UINT,	WPARAM, LPARAM);
-//void load_listing (HWND, glbls *);
-//void load_cmdfile (HWND hwnd, glbls * hbuf);
-//void load_lblfile (HWND hwnd, glbls * hbuf);
-//void clear_text_buf (FILEINF *);
+HWND topwindow;
+const char g_szClassName[] = "windisWindowClass";
 
 /* *********************************************************************** *
  * buildsubwindow () - function to build the listing, cmdfile, & labelfile *
@@ -158,10 +155,72 @@ window_quit (HWND hWnd)
     return TRUE;
 }
 
+/* ******************************************************************** *
+ * SubListViewProc() - Subclass procedure for ListViews.                *
+ * PURPOSE:  Handle popup menu processes. The popup menus pass their    *
+ *      WM_COMMAND messages to the parent window, (the ListViews, in    *
+ *      this case.  ListViews pass the WM_COMMAND to their parent       *
+ *      windows, but it appears they pass only Edit commands.  We'll    *
+ *      process them in this callback.                                  *
+ * ******************************************************************** */
 
-/* ======================================================================= *
- * WndProc() - Callback for Main Menu actions                              *
- * ======================================================================= */
+static LRESULT CALLBACK
+SubListViewProc (HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
+{
+    switch (Message)
+    {
+        case WM_COMMAND:
+            switch (LOWORD(wParam))
+            {
+                // Listing popup
+                case ID_LSTP_SRCH:
+                    listing_srch (&(O9Dis.list_file));
+                    return 0;
+                case ID_LSTP_OPEN:
+                    load_listing (&(O9Dis.list_file));
+                    return 0;
+                case ID_LBLREN:
+                    rename_label (hWnd, &(O9Dis.list_file));
+                    return 0;
+                case ID_DEFBNDS:
+                    bnds_define_cb (hWnd, &(O9Dis.list_file));
+                    return 0;
+                case ID_SETAMODE:
+                    adr_mode_cb (hWnd, &(O9Dis.list_file));
+                    return 0;
+                    // Label window popup
+                case ID_LBLP_SRCH:
+                    labels_srch (&(O9Dis.lblfile));
+                    return 0;
+                case ID_LBLP_OPEN:
+                    load_lblfile (&(O9Dis.lblfile));
+                    return 0;
+                case ID_LBLP_SAVE:
+                    lbl_save (&(O9Dis.lblfile));
+                    return 0;
+                case ID_LBLP_SAVEAS:
+                    lbl_save_as (&(O9Dis.lblfile));
+                    return 0;
+                case ID_LBLP_INSRT:
+                    lbl_insert_line (&(O9Dis.lblfile));
+                    return 0;
+                case ID_LBLP_DEL:
+                    lbl_delete_line (O9Dis.lblfile.l_store);
+                    return 0;
+                case ID_LBLP_PROP:
+                    lbl_properties (O9Dis.lblfile.l_store);
+                    return 0;
+            }
+    }
+    
+    return CallWindowProc (lpfnListViewWndProc, hWnd, Message, wParam, lParam);
+}
+
+/* ==================================================================== *
+ * WndProc() - Callback for Main Menu actions                           *
+ *      This callback handles messages from the main window and all     *
+ *      messages from the Listing, command, and labels windows          *
+ * ==================================================================== */
 
 LRESULT CALLBACK
 WndProc ( HWND hwnd,
@@ -184,11 +243,18 @@ WndProc ( HWND hwnd,
             // Listing window in left half
 
             O9Dis.list_file.l_store = buildsubwindow (hwnd, WC_LISTVIEW,
-                                           LVS_REPORT,
-                                           0, 0, wHalf - 5, MAINWINHEIGHT,
-                                           (HMENU)IDC_LIST_WIN, "Listing");
+                               LVS_REPORT || LVS_SINGLESEL || LVS_SHOWSELALWAYS,
+                               0, 0, wHalf - 5, MAINWINHEIGHT,
+                               (HMENU)IDC_LIST_WIN, "Listing");
             listview_insert_cols (O9Dis.list_file.l_store,
                                   LST_NCOLS, list_ttls);
+
+            // Subclass listview to process popup window messages
+
+            lpfnListViewWndProc =
+                (WNDPROC)SetWindowLong (O9Dis.list_file.l_store,
+                                        GWL_WNDPROC,
+                                        (DWORD)SubListViewProc);
 
             // Cmdfile window - top right half
 
@@ -196,7 +262,7 @@ WndProc ( HWND hwnd,
                             wHalf, 0, wHalf - 5, hHalf - 5,
                             (HMENU)IDC_CMD_WIN, "CmdFile");
 
-            // Listing window bottom of right half
+            // Labels window bottom of right half
 
             O9Dis.lblfile.l_store = buildsubwindow (hwnd, WC_LISTVIEW,
                             LVS_REPORT,
@@ -204,6 +270,10 @@ WndProc ( HWND hwnd,
                             (HMENU)IDC_LBL_WIN, "LabelFile");
             listview_insert_cols (O9Dis.lblfile.l_store,
                                   LBL_NCOLS, lbl_ttls);
+            // SubClass labels window
+            SetWindowLong (O9Dis.lblfile.l_store,
+                                GWL_WNDPROC,
+                                (DWORD)SubListViewProc);
         }
         break;
 
@@ -238,13 +308,13 @@ WndProc ( HWND hwnd,
             switch (LOWORD (wParam))
             {
                 case ID_LSTNGNEW:
-                     list_store_empty (&(O9Dis.list_file));
+                    list_store_empty (&(O9Dis.list_file));
                     break;
                 case ID_CMDNEW:
                     clear_text_buf (&O9Dis.cmdfile);
                     break;
                 case ID_LBLNEW:
-                    not_implemented (hwnd);
+                    list_store_empty (&(O9Dis.lblfile));
                     break;
                 case ID_LSTNGOPEN:
                     load_listing (&(O9Dis.list_file));
@@ -271,8 +341,10 @@ WndProc ( HWND hwnd,
                     run_disassembler (hwnd, &O9Dis);
                     break;
                 case ID_DASMTOFILE:
+                    dasm_list_to_file_cb (hwnd, &O9Dis);
+                    break;
                 case ID_AMLISTEDIT:
-                    not_implemented (hwnd);
+                    amode_list_edit_cb (hwnd);
                     break;
                 case ID_DISOPTS:
                     set_dis_opts_cb (hwnd);
@@ -290,10 +362,21 @@ WndProc ( HWND hwnd,
                                    hwnd, (DLGPROC)AboutDlgProc);  
                     }
                     break;
-                case WM_NOTIFY:
-                    if (wParam == IDC_LBL_WIN)
-                    {
-                        switch (((LPNMHDR)lParam)->code)
+                case WM_QUIT:
+                    window_quit (hwnd);
+                    PostQuitMessage(0);
+                    return 0;
+            }
+
+            return 0;
+        case WM_NOTIFY:
+            {
+                NMHDR *pnmh = (NMHDR *)lParam;
+
+                switch (pnmh->idFrom)
+                {
+                    case IDC_LBL_WIN:
+                        switch (pnmh->code)
                         {
                             case LVN_ITEMCHANGED:
                                 if ( ! O9Dis.lblfile.altered)
@@ -304,15 +387,33 @@ WndProc ( HWND hwnd,
                             default:
                                 break;
                         }
-                    }
-                case WM_QUIT:
-                    window_quit (hwnd);
-                    PostQuitMessage(0);
-                    return 0;
+                        return 0;
+                }
             }
+            return DefWindowProc (hwnd, Message, wParam, lParam);
+        case WM_CONTEXTMENU:
+            switch (GetWindowLong ((HWND)wParam, GWL_ID))
+            {
+                case IDC_LBL_WIN:
+                    onLblRowRButtonPress (hwnd, (HWND)wParam,
+                                           LOWORD(lParam), HIWORD(lParam));
+                    return 0;
+                case IDC_LIST_WIN:
+                    onListRowRButtonPress (hwnd, (HWND)wParam,
+                                            LOWORD(lParam), HIWORD(lParam));
+                    return 0;
+                default:
+                    return DefWindowProc (hwnd, Message,
+                                            wParam, lParam);
+            }
+
             return 0;
         case WM_DESTROY:
             PostQuitMessage(0);
+            return 0;
+        case WM_CLOSE:
+            window_quit (hwnd);
+            PostQuitMessage (0);
             return 0;
         default:
             return DefWindowProc (hwnd, Message, wParam, lParam);
@@ -359,6 +460,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         CW_USEDEFAULT, CW_USEDEFAULT, MAINWINWIDTH, MAINWINHEIGHT,
         NULL, NULL, hInstance, NULL);
 
+    topwindow = hwnd;
     if (hwnd == NULL)
     {
         MessageBox (NULL, "Window Creation failed", "Error!",

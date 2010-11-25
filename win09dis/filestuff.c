@@ -39,8 +39,31 @@
 #define OPT_PGD "PGDPTH:"
 #define OPT_LST "LISTING:"
 
-static char *filefilters =
-                "Command files\0*.cmd\0Label files\0*.lbl\0All Files\0*.*\0";
+static char *ff_CMD =
+                "Command files\0*.cmd\0Label files\0*.lbl\0All Files\0*.*\0",
+            *ff_LBL =
+                "Label files\0*.lbl\0Command files\0*.cmd\0All Files\0*.*\0",
+            *ff_MISC =
+                "All Files\0*.*\0Command files\0*.cmd\0Label files\0*.lbl\0";
+HMENU ListWinPopup;
+HMENU LblWinPopup;
+
+void
+filestuff_cleanup (void)
+{
+    if (ListWinPopup)
+    {
+        DestroyMenu (ListWinPopup);
+        ListWinPopup = NULL;
+    }
+
+    if (LblWinPopup)
+    {
+        DestroyMenu (LblWinPopup);
+        LblWinPopup = NULL;
+    }
+}
+
 /* ******************************************* *
  * File selection stuff                        *
  * ******************************************* */
@@ -68,81 +91,222 @@ static char *filefilters =
 //    }
 //}
 
-///* Returns column number or -1 if not found or on error */
+/* ************************************************************ *
+ * menuInsertTxt () - Inserts a text menu item into a menu      *
+ * Passed : (1) mnu - the menu into which to insert the item    *
+ *          (2) minfo- the MENUITEMINFO structore to use        *
+ *          (3) pos - the position to insert the item           *
+ *          (4) mask - the fMask masks                          *
+ *          (5) id   - the ID of the item                       *
+ *          (6) itemdata - application-specific data            *
+ *          (7) txt  - the text to display                      *
+ * ************************************************************ */
 
-//gint
-//get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
-//{
-//    GList *cols;
-//    gint   num;
-//
-//    g_return_val_if_fail ( col != NULL, -1 );
-//    g_return_val_if_fail ( col->tree_view != NULL, -1 );
-//
-//    cols = gtk_tree_view_get_columns(GTK_TREE_VIEW(col->tree_view));
-//
-//    num = g_list_index(cols, (gpointer) col);
-//
-//    g_list_free(cols);
-//
-//    return num;
-//}
+BOOL
+menuInsertTxt (HMENU mnu, MENUITEMINFO *minfo, int pos,
+                int mask, int id, DWORD itemdata, char *txt)
+{
+    minfo->fMask = mask;
+    minfo->fType = MFT_STRING;
+    minfo->wID = id;
+    minfo->dwItemData = itemdata;
+    minfo->dwTypeData = txt;
+    
+    return InsertMenuItem (mnu, pos, TRUE, minfo);
+}
 
-///* Callback for click on a row in the Listing display */
+/* ******************************************************** *
+ * sepInsert() - Insert a separator into the menu           *
+ * Passed - (1) mnu - the menu into which to insert item    *
+ *          (2) minfo - the MENUITEMINFO structure          *
+ *          (3) pos - the position                          *
+ * ******************************************************** */
 
-//BOOL
-//onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
-//                      char *menu_name)
-//{
-//    GtkTreeSelection *selection;
-//
-//    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(treevue));
-//   
-//    /* single click with the right mouse button? */
-//    if (event->type == GDK_BUTTON_PRESS  &&  event->button == 3)
-//    {
-//        GtkWidget *popup;
-//        
-//        /* optional: select row if no row is selected or only
-//         * one other row is selected (will only do something
-//         * if you set a tree selection mode as described later
-//         * in the tutorial) */
-//
-//        /* Note: gtk_tree_selection_count_selected_rows() does not
-//         * exist in gtk+-2.0, only in gtk+ >= v2.2 ! */
-//        if (gtk_tree_selection_count_selected_rows(selection)  <= 1)
-//        {
-//            GtkTreePath *path;
-//
-//            /* Get tree path for row that was clicked */
-//            if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treevue),
-//                                              event->x, event->y,
-//                                              &path, NULL, NULL, NULL))
-//            {
-//                gtk_tree_selection_unselect_all(selection);
-//                gtk_tree_selection_select_path(selection, path);
-//                gtk_tree_path_free(path);
-//            }
-//        } /* end of optional bit */
-//
-//        /*if( ! gtk_tree_selection_get_selected (list_selection,
-//                                               NULL, NULL))
-//        {*/
-//            /* No row selected ... return */
-//           /* return FALSE;
-//        }*/
-//        
-//        /* do pop-up window */
-//        popup = gtk_ui_manager_get_widget (ui_manager, menu_name);
-//
-//        gtk_menu_popup (GTK_MENU(popup), NULL, NULL,NULL, NULL,
-//                        0, gdk_event_get_time((GdkEvent*)event));
-//        return TRUE;
-//    }
-//    
-//    /* we did nothing */
-//    return FALSE;
-//}
+BOOL
+sepInsert (HMENU mnu, MENUITEMINFO *minfo, int pos)
+{
+    minfo->fMask = MIIM_TYPE;
+    minfo->fType = MFT_SEPARATOR;
+    return InsertMenuItem (mnu, pos, TRUE, minfo);
+}
+
+/* **************************************************************** *
+ * lv_get_cursor_selection() - Returns the item when the cursor is  *
+ *      anywhere on the line.  I can't seem to be able to get the   *
+ *      item if the cursor is not positioned over the first column  *
+ *      so I use ListView_HitTest() with the x pos just a bit to    *
+ *      the right of the window.                                    *
+ * Returns: row or -1 on failure.                                   *
+ * **************************************************************** */
+
+int
+lv_get_cursor_selection (HWND listviewWnd)
+{
+    LV_HITTESTINFO ht;
+    RECT clrect;
+
+    GetWindowRect (listviewWnd, &clrect);
+
+    ht.flags = LVHT_ONITEM | LVHT_TORIGHT;
+    ht.iItem = 0;
+    GetCursorPos (&(ht.pt)); // Retrieve cursor position on the SCREEN
+    ht.pt.x = 5;        // Position x coordinate just a bit to the right
+    ht.pt.y -= clrect.top;  // Subtract y coordinate of window
+
+    return ListView_HitTest (listviewWnd, &ht);
+
+}
+
+static HMENU
+CreateListWinPopup (void)
+{
+    HMENU popmenu;
+    MENUITEMINFO mii;
+    int pos = 1;
+    UINT itmMask = MIIM_DATA | MIIM_ID | MIIM_STATE | MIIM_TYPE;
+
+    if ( ! (popmenu = CreatePopupMenu () ))
+    {
+        return NULL;
+    }
+
+    ZeroMemory ( &mii, sizeof (MENUITEMINFO));
+    mii.cbSize = sizeof (MENUITEMINFO);
+    mii.fState = MFS_ENABLED;
+
+    if ((menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                            ID_LSTP_SRCH, 0,
+                            "Search Listing")) &&
+            (sepInsert (popmenu, &mii, pos++)) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                         ID_LSTP_OPEN, 0,
+                         "Open Listing")) &&
+            (sepInsert (popmenu, &mii, pos++)) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                            ID_LBLREN, 0,
+                            "Rename Label")) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                            ID_DEFBNDS, 0,
+                            "Define Bounds")) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                         ID_SETAMODE, 0,
+                         "Set Addressing Mode")) &&
+            (sepInsert (popmenu, &mii, pos++))) 
+    {
+        return popmenu;
+    }
+    else
+    {
+        DestroyMenu (popmenu);
+        return NULL;
+    }
+}
+
+/* ******************************************************************** *
+ * onListRowRButtonPress() - Handles right-button click on a row in the *
+ *      Listing display                                                 *
+ * This function is called in response to the WM_CONTEXTMENU message    *
+ * ******************************************************************** */
+
+BOOL
+onListRowRButtonPress (HWND parent, HWND lvWnd, int xpos, int ypos)
+{
+    if ( ! ListWinPopup)
+    {
+        ListWinPopup = CreateListWinPopup ();
+
+        if ( ! ListWinPopup)
+        {
+            return FALSE;
+        }
+    }
+    
+    ListView_SetItemState (lvWnd, lv_get_cursor_selection (lvWnd),
+            LVIS_SELECTED, LVIS_SELECTED);
+
+    TrackPopupMenu (ListWinPopup, TPM_LEFTALIGN, xpos, ypos, 0, lvWnd, NULL);
+    return TRUE;
+}
+
+static HMENU
+CreateLblWinPopup (HWND parent)
+{
+    HMENU popmenu;
+    MENUITEMINFO mii;
+    int pos = 1;
+    UINT itmMask = MIIM_DATA | MIIM_ID | MIIM_STATE | MIIM_TYPE;
+
+    if ( ! (popmenu = CreatePopupMenu () ))
+    {
+        MessageBox (parent, "Failed to create Popup Menu", "Error!",
+                    MB_ICONERROR | MB_OK);
+        return NULL;
+    }
+
+    ZeroMemory ( &mii, sizeof (MENUITEMINFO));
+    mii.cbSize = sizeof (MENUITEMINFO);
+    mii.fState = MFS_ENABLED;
+
+    if ((menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                            ID_LBLP_SRCH, 0,
+                            "Search Labels")) &&
+            (sepInsert (popmenu, &mii, pos++)) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                         ID_LBLP_OPEN, 0,
+                         "Open Label File")) &&
+            (sepInsert (popmenu, &mii, pos++)) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                            ID_LBLP_SAVE, 0,
+                            "Save Lbl file")) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                            ID_LBLP_SAVEAS, 0,
+                            "Save Lbl file as...")) &&
+            (sepInsert (popmenu, &mii, pos++)) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                            ID_LBLP_INSRT, 0,
+                            "Insert new line after")) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                         ID_LBLP_DEL, 0,
+                         "Delete Line")) &&
+            (sepInsert (popmenu, &mii, pos++)) &&
+            (menuInsertTxt (popmenu, &mii, pos++, itmMask,
+                         ID_LBLP_PROP, 0,
+                         "Properties")))
+    {
+        return popmenu;
+    }
+    else
+    {
+        MessageBox (parent, "Failed to insert a popup menu subitem", "Error!",
+                MB_ICONERROR | MB_OK);
+        DestroyMenu (popmenu);
+        return NULL;
+    }
+}
+
+/* ******************************************************************** *
+ * onLblRowRButtonPress() - Handles right-button click on a row in the  *
+ *      Labels window display                                           *
+ * This function is called in response to the WM_CONTEXTMENU message    *
+ * ******************************************************************** */
+
+BOOL
+onLblRowRButtonPress (HWND parent, HWND lvWnd, int xpos, int ypos)
+{
+    if ( ! LblWinPopup)
+    {
+        if ( ! (LblWinPopup = CreateLblWinPopup (parent)))
+        {
+            return FALSE;
+        }
+    }
+    
+    ListView_SetItemState (lvWnd, lv_get_cursor_selection (lvWnd),
+            LVIS_SELECTED, LVIS_SELECTED);
+
+    TrackPopupMenu (LblWinPopup, TPM_LEFTALIGN, xpos, ypos, 0, lvWnd, NULL);
+    return TRUE;
+}
 
 /* ************************************************************ *
  * od_memset() - Convenience function for malloc():  allocates  *
@@ -178,13 +342,13 @@ free_reference (char **fname)
     }
 }
 
-/* ************************************************************ *
- * browse_for_directory() - Browse for a folder name.           *
- *      We use the shell extension browser, as I don't know     *
- *      how to do it any other way.  It seems complicated, but  *
- *      hopefully, we have it right.  And hopefully, we got all *
- *      the memory freed correctly...                           *
- * ************************************************************ */
+/* **************************************************************** *
+ * browse_for_directory() - Browse for a folder name.               *
+ *      We use the shell extension browser, as I don't know how to  *
+ *      do it any other way.  It seems complicated, but hopefully,  *
+ *      we have it right.  And hopefully, we got all the memory     *
+ *      freed correctly...                                          *
+ * **************************************************************** */
 
 char *
 browse_for_directory (HWND hWnd, FILEINF *fdat)
@@ -228,11 +392,28 @@ browse_for_directory (HWND hWnd, FILEINF *fdat)
     return (strlen (dispName)) ? dispName : NULL;
 }
 
+static char *
+filetypefilter (int fty)
+{
+    switch (fty)
+    {
+    case FFT_CMD:
+        return ff_CMD;
+    case FFT_LBL:
+        return ff_LBL;
+    case FFT_MISC:
+        return ff_MISC;
+    default:
+        return "All files\0*.*\0";
+    }
+}
+
 /* **************************************************************** *
  * selectfile_open() - Select a file to open                        *
  * Passed:  (1) - Handle of parent window                           *
  *          (2) - Type (string for prompt                           *
- *          (3) - Boolean TRUE if file, FALSE if dir                *
+ *          (3) - filtertype - the FFT_* type of file for extension *
+ *                          match.                                  *
  *                                                                  *
  * Returns: Ptr to chosen filepath, or NULL if no choice made       *
  * Runs GetOpenFilename() Dialog to obtain a file choice            *
@@ -243,7 +424,7 @@ browse_for_directory (HWND hWnd, FILEINF *fdat)
 char *
 selectfile_open ( HWND hwnd,
                   const char *type,
-                  BOOL IsFile)
+                  int filtertype)
 {
     char *filename = NULL;
     OPENFILENAME ofn;
@@ -256,9 +437,12 @@ selectfile_open ( HWND hwnd,
 
     ofn.lStructSize = sizeof (ofn);
     ofn.hwndOwner = hwnd;
-    ofn.lpstrFilter = filefilters;
+    
+    ofn.lpstrFilter = filetypefilter (filtertype);
+
     ofn.lpstrFile = szFileName;
-    ofn.nMaxFile = MAX_PATH;
+    ofn.nMaxFile = sizeof (szFileName) - 1;
+    ofn.lpstrTitle = type;
     ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
 
     if ( ! GetOpenFileName (&ofn))
@@ -283,7 +467,7 @@ selectfile_open ( HWND hwnd,
  * Passed : (1) parent - Window which will own dialog           *
  *          (2) dest   - pointer to char * which will reference *
  *                       the filename                           *
- *                       WARNING !!! Dest MUST BE NULL or this  *
+ *                       WARNING !!! Dest MUST BE NULL as this  *
  *                       function will attempt to free () the   *
  *                       memory !!!!!                           *
  * Returns: Pointer to new name on selection or                 *
@@ -297,7 +481,7 @@ selectfile_open ( HWND hwnd,
  * ************************************************************ */
 
 char *
-selectfile_save (HWND parent, char **dest)
+selectfile_save (HWND parent, char **dest, int filtertype)
 {
     OPENFILENAME ofn;
     char szFileName[MAX_PATH] = "";
@@ -309,7 +493,7 @@ selectfile_save (HWND parent, char **dest)
 
     ofn.lStructSize = sizeof (ofn);
     ofn.hwndOwner = parent;
-    ofn.lpstrFilter = filefilters;
+    ofn.lpstrFilter = filetypefilter (filtertype);
     ofn.lpstrFile = szFileName;
     ofn.nMaxFile = MAX_PATH;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT; 
@@ -343,34 +527,42 @@ selectfile_save (HWND parent, char **dest)
  * Text Buffer handling stuff     *
  * ****************************** */
 
-/* ****************************************************** *
- * strstrip () - strips leading whitespaces and trailing  *
- *             returns and newlines from string.          *
- *             Advances pointer to first non-white char   *
- * Returns: Possibly newly-advanced pointer to begin of   *
- *          string.                                       *
- * ****************************************************** */
+/* ************************************************************ *
+ * strstrip () - strips leading whitespaces and trailing        *
+ *               returns and newlines from string.              *
+ *               For leading whitespaces, the characters in the *
+ *               string are shifted back to the begin of string *
+ * Returns: The original pointer to the string begin            *
+ *          This is so that this function can be used inline    *
+ * ************************************************************ */
 
 char *
 strstrip (char *ptr)
 {
+    char *nxtchr;
+    
+    while ( (ptr[strlen (ptr) - 1] == '\r') ||
+            (ptr[strlen (ptr) - 1] == '\x0a') ||
+            (ptr[strlen (ptr) - 1] == ' '))
+    {
+        ptr[strlen (ptr) - 1] = '\0';
+    }
+    
     while ((*ptr == ' ') || (*ptr == '\r') || (*ptr == '\t'))
     {
-        ++ptr;
-    }
+        nxtchr = ptr;
 
-    if (strchr (ptr, '\r'))
-    {
-        *strchr (ptr, '\r') = '\0';
-    }
-
-    if (strchr (ptr, '\n'))
-    {
-        *strchr (ptr, '\n') = '\0';
+        do
+        {
+            *nxtchr = nxtchr[1];
+            ++nxtchr;
+        } while (*nxtchr);
     }
 
     return ptr;
 }
+
+static int savestatus;
 
 static BOOL CALLBACK
 SaveAllQueryDlgProc (HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
@@ -378,16 +570,21 @@ SaveAllQueryDlgProc (HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
     switch (Message)
     {
         case WM_INITDIALOG:
-            return FALSE;
-        case IDCANCEL:
-        case ID_SAVEALL:
-        case ID_SELECTEM:
-            return EndDialog (hWnd, Message);
-        default:
             return TRUE;
+        case WM_COMMAND:
+            switch (LOWORD(wParam))
+            {
+                case IDCANCEL:
+                case ID_SAVEALL:
+                case ID_SELECTEM:
+                    savestatus = LOWORD(wParam);
+                    EndDialog (hWnd, 0);
+                default:
+                    return FALSE;
+            }
     }
 
-    return TRUE;
+    return FALSE;
 }
 
 /* ************************************************************ *
@@ -398,8 +595,9 @@ SaveAllQueryDlgProc (HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
 int
 save_all_query (HWND hWnd)
 {
-    return DialogBox (GetModuleHandle (NULL), MAKEINTRESOURCE(IDD_WINDOWQUIT),
+    DialogBox (GetModuleHandle (NULL), MAKEINTRESOURCE(IDD_WINDOWQUIT),
                                             hWnd, SaveAllQueryDlgProc);
+    return savestatus;
 }
 
 /* ******************************************************** *
@@ -526,7 +724,7 @@ wrt_lbl_file (FILEINF *fdat, char **newfile)
         fclose (outfile);
     }
 
-    doc_set_modified(fdat, FALSE);
+    doc_set_modified (fdat, FALSE);
 }
 
     /* ************************************ *
@@ -1101,7 +1299,7 @@ do_lblfileload (FILEINF *fdat, char *newfile)
                     splits[0]= "*\\";
 
                     /* AMode def - add to AMode list */
-//                    amode_add_from_string (&buffer[sspos]);
+                    amode_add_from_string (&buffer[sspos]);
                 }
                 else
                 {
@@ -1356,7 +1554,7 @@ dasm_list_to_file_cb (HWND hWnd, glbls *hbuf)
 {
     int old_write = write_list;     // Temp save write_list
 
-    selectfile_save (hWnd, &(O9Dis.list_file.fname));
+    selectfile_save (hWnd, &(O9Dis.list_file.fname), FFT_MISC);
     //set_fname (hbuf, &O9Dis.list_file.fname);
     write_list = LIST_FILE;     // Substitute outpath to file
     run_disassembler (hWnd, hbuf);
@@ -1395,7 +1593,7 @@ load_listing (FILEINF *fdat)
     FILE *infile;
     char *tmpname;
 
-    tmpname = selectfile_open (fdat->l_store, "Prog Listing", TRUE);
+    tmpname = selectfile_open (fdat->l_store, "Prog Listing", FFT_MISC);
 
     if (tmpname == NULL)
     {
@@ -1408,7 +1606,6 @@ load_listing (FILEINF *fdat)
 
     list_store_empty (fdat);
 
-//    (hbuf->list_file).fname = strdup (hbuf->filename_to_return);
     /* Now open the file and read it */
     
     if ( ! (infile = fopen (tmpname, "rb")))
@@ -1437,7 +1634,7 @@ load_cmdfile (FILEINF *fdat)
 {
     char *tmpname;
 
-    tmpname = selectfile_open (fdat->l_store, "Command file", TRUE);
+    tmpname = selectfile_open (fdat->l_store, "Command file", FFT_CMD);
 
     if (tmpname != NULL)
     {
@@ -1452,7 +1649,7 @@ load_lblfile (FILEINF *fdat)
 {
     char *filetmp;
     
-    filetmp = selectfile_open (fdat->l_store, "Label File", TRUE);
+    filetmp = selectfile_open (fdat->l_store, "Label File", FFT_LBL);
 
     if (filetmp != NULL)
     {
@@ -1473,7 +1670,7 @@ cmd_save_as (FILEINF *fdat)
     
     if (GetWindowTextLength (fdat->l_store) > 2) // Only an MS-Dos EOL set
     {
-        tmpname = selectfile_save (fdat->l_store, &(fdat->fname));
+        tmpname = selectfile_save (fdat->l_store, &(fdat->fname), FFT_CMD);
 
         if (tmpname != NULL)
         {
@@ -1521,7 +1718,7 @@ lbl_save_as (FILEINF *fdat)
 {
     char *tmpname;
     
-    tmpname = selectfile_save (fdat->l_store, &(fdat->fname));
+    tmpname = selectfile_save (fdat->l_store, &(fdat->fname), FFT_LBL);
     
     if (tmpname != NULL)       /* Leak? */
     {
@@ -1621,7 +1818,7 @@ opts_save (HWND hWnd, glbls *hbuf)
     char *fname;
     char msg[100];
 
-    selectfile_save (hWnd, &fname);
+    selectfile_save (hWnd, &fname, FFT_MISC);
     sprintf (msg, "Could not open options file '%s'", fname);
     free (fname);
     
@@ -1669,7 +1866,7 @@ opts_load (HWND hwnd, glbls *hbuf)
     char buf[MAX_PATH];
     char *tmpfile;
     
-    if ( !(tmpfile = selectfile_open (hwnd, "n Options File", TRUE)))
+    if ( !(tmpfile = selectfile_open (hwnd, "n Options File", FFT_MISC)))
     {
         return;
     }

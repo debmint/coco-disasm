@@ -1,3 +1,16 @@
+search.c amode.c dasmedit.c
+  Added these, the final files to the archive
+
+various files
+  Added the remaining features contained in g09dis.  At this point, all the
+  features are included, except that no tooltips are included.  Many of the
+  functions may need to be improved, but they all seem to work, at least to
+  a point.
+
+--------  Everything below this line are carried over from the g09dis part --
+
+--dlb Thu, 25 Nov 2010 09:32:55 -0600
+
 rev 129
 menu.c search.c Makefile.am
   Added menu options to search through the Listing treeview and the Labels

@@ -48,7 +48,7 @@ odisopt_new_file (HWND parent, FILEINF *fdat, char *prompt)
 {
     char *filename;
 
-    if ((filename = selectfile_open (parent, prompt, TRUE)))
+    if ((filename = selectfile_open (parent, prompt, FFT_MISC)))
     {
         SetWindowText (fdat->o_entry, filename);
         // It seems that SetWindowText does not set MODIFIED to TRUE

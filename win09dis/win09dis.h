@@ -21,6 +21,7 @@
 
 #define MAINWINWIDTH  750
 #define MAINWINHEIGHT 540
+#define G_N_ELEMENTS(a) sizeof (a)/sizeof(a[0])
 
 /* Label file Treeview column defs */
 enum
@@ -59,11 +60,24 @@ enum
     SAVALL_SOME
 };
 
+enum
+{
+    FFT_CMD = 1,
+    FFT_LBL,
+    FFT_MISC
+};
+
 typedef struct
 {
 	HWND btn;
 	int set;
 } OPTSETTING;
+
+typedef struct glist_str {
+    void *data;
+    struct glist_str *next;
+    struct glist_str *prev;
+} GList;
 
 OPTSETTING PgWdth,
            PgDpth,

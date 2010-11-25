@@ -56,7 +56,8 @@ AC_SUBST(compile_g09dis)
 AC_CANONICAL_HOST
 case $host_os in
     *mingw32*)
-        winflags="-mwindows -mno-cygwin"
+        winflags=" -mms-bitfields -mwindows -mno-cygwin"
+        gwinflags=" -mms-bitfields -mno-cygwin"
     ;;
     *cygwin)
         winflags="-mwindows"
@@ -64,6 +65,7 @@ case $host_os in
 esac
 
 AC_SUBST(winflags)
+AC_SUBST(gwinflags)
 
 AC_CONFIG_FILES([Makefile
                  g09dis/Makefile
