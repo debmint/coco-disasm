@@ -16,6 +16,11 @@ static char *oldcol,
             *oldsrchtxt;
 static int oldexact;
 
+// Temporary fix...
+#ifndef HAVE_STRNCASECMP
+#  define strncasecmp strncmp
+#endif
+
 ///* struct srch_log: Keeps data for a treeview, for setting up a search. */
 //
 //struct srch_log

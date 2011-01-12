@@ -1060,39 +1060,56 @@ str_xdigit (char *str)
  * ****************************************************** */
 
 static void
-load_list_tree (FILEINF *fdat, FILE *infile)
+load_list_tree (FILEINF *fdat, HANDLE infile)
 {
-    char buffer[500];
+    char  buffer[500],
+         *bufpt;
     int itemcount;
+    DWORD rdCount;
 
     itemcount = 0;
-    
-    while (fgets (buffer, sizeof (buffer), infile))
+
+    bufpt = buffer;
+    while (ReadFile (infile, bufpt, 1, &rdCount, NULL))
     {
         // gcc complained about strpt being uninitialized, so
         // we initialize it...
-        char *strpt = "";
         LV_ITEM lv;
 
-        // Eliminate possible newline at end
-
-        if ((strpt = strchr(strpt, '\n')))
+        // ReadFile returns non-zero on EOF, so we need to check for this
+        if (rdCount == 0)
         {
-            *strpt = '\0';
+            break;
         }
+
+        // Ignore carriage returns
+        if ( *bufpt == '\x0d')
+        {
+            continue;
+        }
+
+        if ( *bufpt != '\x0a')
+        {
+            ++bufpt;
+            continue;
+        }
+
+        // We Are at the end of a line
+
+        *bufpt = '\0';
         
         // Skip past whitespaces
-        strpt = buffer;
         
-        strpt = strstrip (strpt);
+        bufpt = strstrip (buffer);
 
         if (strlen (buffer))
         {
             char *splits[LST_NCOLS];
             int   fldnum;
-            int place;
+            unsigned int place;
             BOOL illeg;
             
+            //MessageBox (NULL, buffer, "Info", MB_ICONERROR|MB_OK);
             /* Assure that there are enough fields */
 
             strcat (buffer,"\t\t\t\t\t\t\t");
@@ -1103,10 +1120,10 @@ load_list_tree (FILEINF *fdat, FILE *infile)
             {
                 // Substitute NULL for next tab (end of this field
 
-                splits[fldnum] = strpt;
-                strpt = strchr (strpt, '\t');
+                splits[fldnum] = bufpt;
+                bufpt = strchr (bufpt, '\t');
 
-                *(strpt++) = '\0';
+                *(bufpt++) = '\0';
             }
 
             // If Line # is not all digits, or Address is not a real hex #,
@@ -1125,6 +1142,7 @@ load_list_tree (FILEINF *fdat, FILE *infile)
 
             if (illeg)
             {
+                bufpt = buffer;     // Non-printable line, so reset
                 continue;
             }
                 
@@ -1166,6 +1184,8 @@ load_list_tree (FILEINF *fdat, FILE *infile)
                             fldnum, splits[fldnum]); 
             }   // for (fldnum...
         }
+
+        bufpt = buffer;     // Set up to get next line
     }       // while (fgets...
 
     doc_set_modified (fdat, (BOOL)FALSE);
@@ -1204,9 +1224,9 @@ do_lblfileload (FILEINF *fdat, char *newfile)
     char buffer[500];
     char *bufend;
     int itemcount = 0;
+    LV_ITEM lv;
 
     bufend = &buffer[sizeof(buffer)];
-    LV_ITEM lv;
     ZeroMemory (&lv, sizeof (lv));
     lv.mask = LVIF_TEXT;
 
@@ -1529,18 +1549,71 @@ run_disassembler (HWND hWnd, glbls *hbuf)
     }
     else        /* else we're piping to the GUI */
     {
-        FILE *infile;
+//        FILE *infile;
+        HANDLE pRead,
+               pWrite;
+        PROCESS_INFORMATION pinf;
+        SECURITY_ATTRIBUTES sa;
+        
+        sa.nLength = sizeof (sa);
+        sa.lpSecurityDescriptor = NULL;
+        sa.bInheritHandle = TRUE;
         
         /* Now open the file and read it */
-        if ( !(infile = popen (cmdline, "r")))
+        if ( ! CreatePipe (&pRead, &pWrite, &sa, 1024))
         {
             MessageBox (hWnd, cmdline, "Read Error on Command...",
                               MB_ICONERROR | MB_OK);
+            return;
         }
-        else {
+        else
+        {
+            STARTUPINFO odis_si;
+            ZeroMemory (&odis_si, sizeof (odis_si));
+            odis_si.cb = sizeof (odis_si);
+            odis_si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+            odis_si.hStdOutput = pWrite;
+            odis_si.wShowWindow = SW_HIDE;
+            //Need hstdInput & hStdError??
+
+            ZeroMemory (&pinf, sizeof (pinf));
+            
+            if ( ! CreateProcess (NULL, // lpApplicationName - let cmdline
+                        cmdline,  // lpCommandLine
+                        NULL,     // lpProcessAttributes - Security
+                        NULL,     // lpThreadAttributes
+                        TRUE,     // Inherit all inheritable HANDLEs
+                        0,        // dwCreationFlags
+                        NULL,     // lpEnvironment - Use "my" environment
+                        NULL,     // lpDirectory - use this one
+                        &odis_si,    // lpStartupInfo - appearance
+                        &pinf))
+            {
+                MessageBox (hWnd, "Could not create 'os9disasm' process",
+                        "Error!", MB_ICONERROR | MB_OK);
+                return;
+            }
+
+//            hTmpFile = CreateFile ("hout.txt", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+//            if (hTmpFile == INVALID_HANDLE_VALUE)
+//            {
+//                MessageBox (hWnd, "Cannot Create temp file", "Error",
+//                        MB_ICONERROR | MB_OK);
+//                // Any cleanup???
+
+//                return;
+//            }
+            
+            CloseHandle (pWrite);
+            
             list_store_empty (&(hbuf->list_file));
-            load_list_tree (&hbuf->list_file, infile);
-            pclose (infile);
+            load_list_tree (&hbuf->list_file, pRead);
+//            pclose (infile);
+            CloseHandle (pinf.hProcess);
+            CloseHandle (pinf.hThread);
+//            CloseHandle (hTmpFile);
+            CloseHandle (pRead);
         }
     }
 
@@ -1590,8 +1663,8 @@ dasm_list_to_file_cb (HWND hWnd, glbls *hbuf)
 void
 load_listing (FILEINF *fdat)
 {
-    FILE *infile;
     char *tmpname;
+    HANDLE hTmpFile;
 
     tmpname = selectfile_open (fdat->l_store, "Prog Listing", FFT_MISC);
 
@@ -1607,22 +1680,38 @@ load_listing (FILEINF *fdat)
     list_store_empty (fdat);
 
     /* Now open the file and read it */
-    
-    if ( ! (infile = fopen (tmpname, "rb")))
-    {
-        int lasterr;
-        char errstr[200];
+    hTmpFile = CreateFile (tmpname,
+                           GENERIC_READ, FILE_SHARE_READ,
+                           0, OPEN_EXISTING,
+                           FILE_FLAG_SEQUENTIAL_SCAN | FILE_ATTRIBUTE_NORMAL, 
+                           NULL);
 
-        lasterr = GetLastError ();
-        sprintf (errstr, "Error #%d encountered opening file \"%s\"",
-                         lasterr, fdat->fname);
+    if (hTmpFile == INVALID_HANDLE_VALUE)
+    {
+        char ttl[50];
+        PVOID errmsg;
+        DWORD ernum;
+
+        ernum = GetLastError();
+        sprintf (ttl, "Cannot Open Listing File - Error #%ld", ernum);
+        FormatMessage (
+                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                NULL,
+                ernum,
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                (LPSTR) &errmsg,
+                0, NULL);
+        MessageBox (fdat->l_store, errmsg, ttl, MB_ICONERROR | MB_OK);
+        LocalFree (errmsg);
+
         return;
     }
-
+    
     fname_replace (fdat, tmpname);
 
-    load_list_tree (fdat, infile);
-    fclose (infile);
+    load_list_tree (fdat, hTmpFile);
+    CloseHandle (hTmpFile);
+    //fclose (infile);
 }
 
 /* **************************************************************** *

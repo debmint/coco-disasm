@@ -9,11 +9,15 @@
 #define IDC_LIST_WIN 501
 #define IDC_CMD_WIN  502
 #define IDC_LBL_WIN  503
+#define IDC_WE_BAR  504
+#define IDC_NS_BAR  505
 
 WNDPROC lpfnListViewWndProc;    // Original ListView Window proc
 
 HWND topwindow;
 const char g_szClassName[] = "windisWindowClass";
+const char SizeWEClassName[] = "SizeBarWE";
+const char SizeNSClassName[] = "SizeBarNS";
 
 /* *********************************************************************** *
  * buildsubwindow () - function to build the listing, cmdfile, & labelfile *
@@ -31,7 +35,7 @@ HWND buildsubwindow (HWND hwnd, LPCSTR class_name, DWORD style_add,
 {
     HWND childwin;
     childwin = CreateWindowEx (WS_EX_CLIENTEDGE, class_name, "",
-            WS_CHILD | WS_BORDER | WS_VISIBLE | WS_VSCROLL
+            WS_CHILD | WS_VISIBLE | WS_VSCROLL
             | WS_HSCROLL  | style_add, 
             left, top, right, bottom,
             hwnd, winID, GetModuleHandle (NULL), NULL);
@@ -40,7 +44,7 @@ HWND buildsubwindow (HWND hwnd, LPCSTR class_name, DWORD style_add,
     {
         char emsg[100];
 
-        sprintf (emsg, "Could not create %s window", wintype);
+        sprintf_s (emsg, sizeof (emsg), "Could not create %s window", wintype);
         MessageBox (hwnd, emsg, "Error", MB_OK | MB_ICONERROR);
     }
 
@@ -76,7 +80,7 @@ listview_insert_cols (HWND listview, int totcols, char **titles)
                                cpos + 1, &colinfo) == -1)
         {
             char msg[80];
-            sprintf (msg, "%s%d\r\n", 
+            sprintf_s (msg, sizeof (msg), "%s%d\r\n", 
                      "Failed to insert column #", cpos + 1);
             MessageBox (listview, msg, "Error!",
                     MB_ICONERROR | MB_OK);
@@ -216,6 +220,110 @@ SubListViewProc (HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
     return CallWindowProc (lpfnListViewWndProc, hWnd, Message, wParam, lParam);
 }
 
+#define SBX_VERT 9001
+#define SBX_HORZ 9002
+
+LRESULT CALLBACK
+ResizeProc (HWND hWnd,
+          UINT Message,
+          WPARAM wParam,
+          LPARAM lParam)
+{
+    static BOOL BtnDown;
+    static RECT mainRect,
+                myRect;
+    static POINT curLast;
+    static LONG myID;
+    
+    switch (Message)
+    {
+        case WM_CREATE:
+            return 0;
+        case WM_LBUTTONDOWN:
+            GetCursorPos (&curLast);
+            GetWindowRect (hWnd, &myRect);
+            GetClientRect (GetParent (hWnd), &mainRect);
+            myID = GetWindowLong (hWnd, GWL_ID);
+            BtnDown = TRUE;
+            break;
+        case WM_LBUTTONUP:
+            BtnDown = FALSE;
+            break;
+        case WM_MOUSEMOVE:
+            if (BtnDown)
+            {
+                POINT newCurPos;
+                RECT otherBarRect;
+                    
+                GetCursorPos (&newCurPos);
+                ScreenToClient (GetParent (hWnd), &newCurPos);
+
+                if (myID == IDC_WE_BAR)
+                {
+                    if ((newCurPos.x > (50)) &&
+                        (newCurPos.x < (mainRect.right - mainRect.left - 50)))
+                    {
+                        POINT nsBarOrig;
+                        HWND nsBar = GetDlgItem (GetParent (hWnd), IDC_NS_BAR);
+                        
+                        GetWindowRect (nsBar, &otherBarRect);
+                        nsBarOrig.x = otherBarRect.left;
+                        nsBarOrig.y = otherBarRect.top;
+                        ScreenToClient (GetParent (nsBar), &nsBarOrig);
+
+                        MoveWindow (O9Dis.list_file.l_store,
+                                0, 0, newCurPos.x - 3, mainRect.bottom, TRUE);
+                        MoveWindow (hWnd,
+                                newCurPos.x - 2, 0,
+                                5, mainRect.bottom - mainRect.top, TRUE);
+                        MoveWindow (O9Dis.cmdfile.l_store,
+                            newCurPos.x + 3, 0,
+                            mainRect.right - mainRect.left - newCurPos.x - 4,
+                            nsBarOrig.y, TRUE);
+                        MoveWindow (nsBar, newCurPos.x + 3, nsBarOrig.y,
+                            mainRect.right - mainRect.left - newCurPos.x - 4,
+                            5, TRUE);
+                        MoveWindow (O9Dis.lblfile.l_store,
+                            newCurPos.x + 3, nsBarOrig.y + 5,
+                            mainRect.right - mainRect.left - newCurPos.x - 4,
+                            mainRect.bottom - nsBarOrig.y - 5, TRUE);
+                    }
+                }
+                else    // myID == IDC_NS_BAR
+                {
+                    if ((newCurPos.y > (50)) &&
+                        (newCurPos.y < (mainRect.bottom - mainRect.top - 50)))
+                    {
+                        POINT weBarOrig;
+                        HWND weBar = GetDlgItem (GetParent (hWnd), IDC_WE_BAR);
+                        
+                        GetWindowRect (weBar, &otherBarRect);
+                        weBarOrig.x = otherBarRect.left;
+                        weBarOrig.y = otherBarRect.top;
+                        ScreenToClient (GetParent (weBar), &weBarOrig);
+
+                        MoveWindow (O9Dis.cmdfile.l_store,
+                            weBarOrig.x + 3, 0,
+                            mainRect.right - mainRect.left - weBarOrig.x - 5,
+                            newCurPos.y - 2,
+                            TRUE);
+                        MoveWindow (hWnd, weBarOrig.x + 5, newCurPos.y - 2,
+                            mainRect.right - mainRect.left - weBarOrig.x - 5,
+                            5, TRUE);
+                        MoveWindow (O9Dis.lblfile.l_store,
+                            weBarOrig.x + 5, newCurPos.y + 3,
+                            mainRect.right - mainRect.left - weBarOrig.x - 5,
+                            mainRect.bottom - mainRect.top - newCurPos.y - 3,
+                            TRUE);
+                    }
+                }
+            }
+            break;
+        default:
+            return DefWindowProc (hWnd, Message, wParam, lParam);
+    }
+}
+
 /* ==================================================================== *
  * WndProc() - Callback for Main Menu actions                           *
  *      This callback handles messages from the main window and all     *
@@ -228,10 +336,16 @@ WndProc ( HWND hwnd,
           WPARAM wParam,
           LPARAM lParam)
 {
+    int m_width,
+        m_height;
+    HWND bxwin;
+    
     switch (Message)
     {
         case WM_CREATE:
         {
+            RECT wrect;
+
             int wHalf, hHalf;
             char *list_ttls[7] =
                 {"Line", "Addr", "OPC", "Pbytes", "Label", "Mnem", "Oper"};
@@ -240,33 +354,99 @@ WndProc ( HWND hwnd,
             wHalf = MAINWINWIDTH/2;
             hHalf = MAINWINHEIGHT/2;
 
+            GetWindowRect (hwnd, &wrect);
+            m_width = (int)(wrect.right - wrect.left);
+            m_height = (int)(wrect.bottom - wrect.top);
+            
             // Listing window in left half
 
             O9Dis.list_file.l_store = buildsubwindow (hwnd, WC_LISTVIEW,
-                               LVS_REPORT || LVS_SINGLESEL || LVS_SHOWSELALWAYS,
-                               0, 0, wHalf - 5, MAINWINHEIGHT,
+                               LVS_REPORT || LVS_SINGLESEL ||
+                               LVS_SHOWSELALWAYS,
+                               0, 0, m_width/2 - 5, m_height,
                                (HMENU)IDC_LIST_WIN, "Listing");
+
             listview_insert_cols (O9Dis.list_file.l_store,
                                   LST_NCOLS, list_ttls);
 
-            // Subclass listview to process popup window messages
+           // Subclass listview to process popup window messages
 
-            lpfnListViewWndProc =
+           lpfnListViewWndProc =
                 (WNDPROC)SetWindowLong (O9Dis.list_file.l_store,
                                         GWL_WNDPROC,
                                         (DWORD)SubListViewProc);
 
-            // Cmdfile window - top right half
+           // Horizontal Resize bar to right of listing window
+
+           if ( ! (bxwin = CreateWindowEx (0, SizeWEClassName, NULL,
+                                       WS_CHILD | WS_VISIBLE,
+                                       m_width/2 - 5, 0, 5, m_height,
+                                       hwnd, (HMENU)IDC_WE_BAR,
+                                       GetModuleHandle (NULL), NULL)))
+           {
+               LPVOID lpMsgBuf;
+               DWORD errnum;
+               char ttl[50];
+
+               errnum = GetLastError();
+               FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                                        FORMAT_MESSAGE_FROM_SYSTEM,
+                               NULL,
+                               errnum,
+                               MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                               (LPSTR) &lpMsgBuf,
+                               0, NULL);
+               sprintf_s (ttl, sizeof (ttl), "Error #%ld Creating VertBox",
+                                             errnum);
+               MessageBox (hwnd, lpMsgBuf, ttl, MB_ICONERROR | MB_OK);
+               LocalFree (lpMsgBuf);
+           }
+           else
+           {
+               ShowWindow (bxwin, SW_SHOW);
+           }
+
+           // Cmdfile window - top right half
 
             O9Dis.cmdfile.l_store = buildsubwindow (hwnd, "EDIT", ES_MULTILINE,
-                            wHalf, 0, wHalf - 5, hHalf - 5,
+                            m_width/2, 0, m_width/2 - 5, m_height/2 - 5,
                             (HMENU)IDC_CMD_WIN, "CmdFile");
+
+           // Vertical Resize bar below commandfile window
+
+           if ( ! (bxwin = CreateWindowEx (0, SizeNSClassName, NULL,
+                                       WS_CHILD | WS_VISIBLE,
+                                       m_width/2, m_height/2 - 5, m_width/2, 5,
+                                       hwnd, (HMENU)IDC_NS_BAR,
+                                       GetModuleHandle (NULL), NULL)))
+           {
+               LPVOID lpMsgBuf;
+               DWORD errnum;
+               char ttl[50];
+
+               errnum = GetLastError();
+               FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                                        FORMAT_MESSAGE_FROM_SYSTEM,
+                               NULL,
+                               errnum,
+                               MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                               (LPSTR) &lpMsgBuf,
+                               0, NULL);
+               sprintf_s (ttl, sizeof (ttl),
+                                "Error #%ld Creating N/S resizebar", errnum);
+               MessageBox (hwnd, lpMsgBuf, ttl, MB_ICONERROR | MB_OK);
+               LocalFree (lpMsgBuf);
+           }
+           else
+           {
+               ShowWindow (bxwin, SW_SHOW);
+           }
 
             // Labels window bottom of right half
 
             O9Dis.lblfile.l_store = buildsubwindow (hwnd, WC_LISTVIEW,
                             LVS_REPORT,
-                            wHalf, hHalf, wHalf - 5, hHalf - 5,
+                            m_width/2, m_height/2, m_width/2, m_height,
                             (HMENU)IDC_LBL_WIN, "LabelFile");
             listview_insert_cols (O9Dis.lblfile.l_store,
                                   LBL_NCOLS, lbl_ttls);
@@ -292,14 +472,26 @@ WndProc ( HWND hwnd,
                           0, 0, hwid - 5, box.bottom,
                           SWP_NOZORDER);
 
+            // Do the two sizebars together
+            hSubWin = GetDlgItem (hwnd, IDC_WE_BAR);
+            SetWindowPos (hSubWin, NULL,
+                          hwid - 5, 0, 5, box.bottom,
+                          SWP_NOZORDER);
+
+            // Do the two sizebars together
+            hSubWin = GetDlgItem (hwnd, IDC_NS_BAR);
+            SetWindowPos (hSubWin, NULL,
+                          hwid - 5, hhi - 5, hwid, 5,
+                          SWP_NOZORDER);
+
             hSubWin = GetDlgItem (hwnd, IDC_CMD_WIN);
             SetWindowPos (hSubWin, NULL,
-                          hwid, 0, hwid - 5, hhi - 5,
+                          hwid, 0, hwid, hhi - 5,
                           SWP_NOZORDER);
 
             hSubWin = GetDlgItem (hwnd, IDC_LBL_WIN);
             SetWindowPos (hSubWin, NULL,
-                          hwid, hhi, hwid - 5, hhi - 5,
+                          hwid, hhi, hwid, hhi,
                           SWP_NOZORDER);
         }
         break;
@@ -426,7 +618,8 @@ WndProc ( HWND hwnd,
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, int nCmdShow)
 {
-    WNDCLASSEX wc;
+    WNDCLASSEX wc,
+               resizeclass;
     HWND hwnd;
     MSG Msg;
 
@@ -447,9 +640,34 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     
     if ( ! RegisterClassEx (&wc))
     {
-        MessageBox(NULL, "Window Registration Failed!", "Error!",
+        MessageBox (NULL, "Window Registration Failed!", "Error!",
             MB_ICONEXCLAMATION | MB_OK);
         return 0;
+    }
+
+    ZeroMemory (&resizeclass, sizeof (resizeclass));
+    resizeclass.cbSize        = sizeof (WNDCLASSEX);
+    resizeclass.lpfnWndProc   = ResizeProc;
+    resizeclass.hInstance     = hInstance;
+    resizeclass.hCursor       = LoadCursor (NULL, IDC_SIZEWE);
+    resizeclass.hbrBackground = (HBRUSH)(COLOR_BTNFACE+1);
+    resizeclass.lpszClassName = SizeWEClassName;
+    
+    if ( ! RegisterClassEx (&resizeclass))
+    {
+        MessageBox (NULL, "Failed to Register E/W resize bar", "Error!",
+                MB_ICONERROR | MB_OK);
+    }
+
+    // Now reuse resizeclass for North-South resize bar
+
+    resizeclass.hCursor       = LoadCursor (NULL, IDC_SIZENS);
+    resizeclass.lpszClassName = SizeNSClassName;
+
+    if ( ! RegisterClassEx (&resizeclass))
+    {
+        MessageBox (NULL, "Failed to Register N/S resize bar", "Error!",
+                MB_ICONERROR | MB_OK);
     }
 
     hwnd = CreateWindowEx(
@@ -461,6 +679,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         NULL, NULL, hInstance, NULL);
 
     topwindow = hwnd;
+
     if (hwnd == NULL)
     {
         MessageBox (NULL, "Window Creation failed", "Error!",
@@ -476,7 +695,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
 
-    while(GetMessage(&Msg, NULL, 0, 0) > 0)
+    while (GetMessage(&Msg, NULL, 0, 0) > 0)
     {
         TranslateMessage(&Msg);
         DispatchMessage(&Msg);

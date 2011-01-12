@@ -82,7 +82,8 @@ menu_do_dis_sensitize (HWND hWnd)
 
     if ((menuMain = GetMenu (hWnd)))
     {
-        if ((optsMenu = GetSubMenu (menuMain, 2)))
+        //Temporary... If we add "View" menu, change this to 2
+        if ((optsMenu = GetSubMenu (menuMain, 1)))
         {
             EnableMenuItem (optsMenu, 0, MF_BYPOSITION | enableFlag);
             EnableMenuItem (optsMenu, 1, MF_BYPOSITION | enableFlag);

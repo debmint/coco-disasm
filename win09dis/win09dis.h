@@ -14,6 +14,10 @@
 #  define GLOBAL extern
 #endif
 
+#ifndef PACKAGE_VERSION
+#  define PACKAGE_VERSION "0.11.1"
+#endif
+
 #include <windows.h>
 #include "resource.h" 
 
@@ -132,44 +136,7 @@ typedef struct
 } glbls;
 
 GLOBAL glbls O9Dis;
-
-//typedef struct ofile_widgets
-//{
-//    HWND o_entry;  //GtkWidget *o_entry;
-//    HWND browse_button; //GtkWidget *browse_button;
-//    BOOL is_dir;
-//    const char *dialog_ttl;
-//    char *fname;
-//    BOOL is_read;       /* For file_chooser - if TRUE, search for read, */
-//                            /* else search for saving                       */
-//} FILE_WIDGET;
-//
-//GLOBAL FILE_WIDGET prog_prof
-//#ifdef MAIN
-//= {NULL, NULL, FALSE, "File to Disassemble", NULL, TRUE}
-//#endif
-//;
-//
-//GLOBAL FILE_WIDGET cmd_prof
-//#ifdef MAIN
-//= {NULL, NULL, FALSE, "Command File", NULL, TRUE}
-//#endif
-//;
-//GLOBAL FILE_WIDGET asmout_prof
-//#ifdef MAIN
-//= {NULL, NULL, FALSE, "Asm Src File", NULL, FALSE}
-//#endif
-//;
-//GLOBAL FILE_WIDGET listing_prof
-//#ifdef MAIN
-//= {NULL, NULL, FALSE, "Listing Output", NULL, FALSE}
-//#endif
-//;
-//GLOBAL FILE_WIDGET defs_prof
-//#ifdef MAIN
-//= {NULL, NULL, FALSE, "Defs Path", NULL, TRUE}
-//#endif
-//;
+GLOBAL HWND ToolTipControl;
 
 
 /* include proto.h here so that all structures can be defined */

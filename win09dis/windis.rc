@@ -65,9 +65,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Quit", WM_QUIT
     END
-    POPUP "&View"
-    BEGIN
-    END
+//    POPUP "&View"
+//    BEGIN
+//    END
     POPUP "&Tools"
     BEGIN
         MENUITEM "Disassemble to GUI", ID_DASMPROG, GRAYED

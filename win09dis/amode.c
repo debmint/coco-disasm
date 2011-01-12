@@ -12,6 +12,11 @@
 /*#define GOT_DTBL    */            /*  We loaded the data in dasmedit.c */
 #include "../os9disasm/dtble.h"
 
+// Temporary fix
+#ifndef HAVE_STRCASECMP
+#  define strcasecmp strcmp
+#endif
+
 GList *
 g_list_find (GList *gl, void *str, int len)
 {
