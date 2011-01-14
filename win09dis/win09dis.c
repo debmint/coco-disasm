@@ -14,7 +14,12 @@
 
 WNDPROC lpfnListViewWndProc;    // Original ListView Window proc
 
-HWND topwindow;
+HWND TopWindow;
+static BOOL PaneResizing;
+static RECT mainRect,
+            myRect;
+static LONG myID;
+    
 const char g_szClassName[] = "windisWindowClass";
 const char SizeWEClassName[] = "SizeBarWE";
 const char SizeNSClassName[] = "SizeBarNS";
@@ -220,104 +225,37 @@ SubListViewProc (HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
     return CallWindowProc (lpfnListViewWndProc, hWnd, Message, wParam, lParam);
 }
 
-#define SBX_VERT 9001
-#define SBX_HORZ 9002
+/* **************************************************************** *
+ * EnableAllWindows() - Enable or disable all child windows.        *
+ *          This is to do a Pane resize                             *
+ * **************************************************************** */
 
-LRESULT CALLBACK
+static void
+EnableAllWindows (BOOL bEnable)
+{
+    EnableWindow (O9Dis.list_file.l_store, bEnable);
+    EnableWindow (O9Dis.cmdfile.l_store, bEnable);
+    EnableWindow (O9Dis.lblfile.l_store, bEnable);
+    EnableWindow (GetDlgItem (TopWindow, IDC_NS_BAR), bEnable);
+    EnableWindow (GetDlgItem (TopWindow, IDC_WE_BAR), bEnable);
+}
+
+static LRESULT CALLBACK
 ResizeProc (HWND hWnd,
           UINT Message,
           WPARAM wParam,
           LPARAM lParam)
 {
-    static BOOL BtnDown;
-    static RECT mainRect,
-                myRect;
-    static POINT curLast;
-    static LONG myID;
-    
     switch (Message)
     {
         case WM_CREATE:
             return 0;
         case WM_LBUTTONDOWN:
-            GetCursorPos (&curLast);
+            EnableAllWindows (FALSE);
             GetWindowRect (hWnd, &myRect);
-            GetClientRect (GetParent (hWnd), &mainRect);
+            GetClientRect (TopWindow, &mainRect);
             myID = GetWindowLong (hWnd, GWL_ID);
-            BtnDown = TRUE;
-            break;
-        case WM_LBUTTONUP:
-            BtnDown = FALSE;
-            break;
-        case WM_MOUSEMOVE:
-            if (BtnDown)
-            {
-                POINT newCurPos;
-                RECT otherBarRect;
-                    
-                GetCursorPos (&newCurPos);
-                ScreenToClient (GetParent (hWnd), &newCurPos);
-
-                if (myID == IDC_WE_BAR)
-                {
-                    if ((newCurPos.x > (50)) &&
-                        (newCurPos.x < (mainRect.right - mainRect.left - 50)))
-                    {
-                        POINT nsBarOrig;
-                        HWND nsBar = GetDlgItem (GetParent (hWnd), IDC_NS_BAR);
-                        
-                        GetWindowRect (nsBar, &otherBarRect);
-                        nsBarOrig.x = otherBarRect.left;
-                        nsBarOrig.y = otherBarRect.top;
-                        ScreenToClient (GetParent (nsBar), &nsBarOrig);
-
-                        MoveWindow (O9Dis.list_file.l_store,
-                                0, 0, newCurPos.x - 3, mainRect.bottom, TRUE);
-                        MoveWindow (hWnd,
-                                newCurPos.x - 2, 0,
-                                5, mainRect.bottom - mainRect.top, TRUE);
-                        MoveWindow (O9Dis.cmdfile.l_store,
-                            newCurPos.x + 3, 0,
-                            mainRect.right - mainRect.left - newCurPos.x - 4,
-                            nsBarOrig.y, TRUE);
-                        MoveWindow (nsBar, newCurPos.x + 3, nsBarOrig.y,
-                            mainRect.right - mainRect.left - newCurPos.x - 4,
-                            5, TRUE);
-                        MoveWindow (O9Dis.lblfile.l_store,
-                            newCurPos.x + 3, nsBarOrig.y + 5,
-                            mainRect.right - mainRect.left - newCurPos.x - 4,
-                            mainRect.bottom - nsBarOrig.y - 5, TRUE);
-                    }
-                }
-                else    // myID == IDC_NS_BAR
-                {
-                    if ((newCurPos.y > (50)) &&
-                        (newCurPos.y < (mainRect.bottom - mainRect.top - 50)))
-                    {
-                        POINT weBarOrig;
-                        HWND weBar = GetDlgItem (GetParent (hWnd), IDC_WE_BAR);
-                        
-                        GetWindowRect (weBar, &otherBarRect);
-                        weBarOrig.x = otherBarRect.left;
-                        weBarOrig.y = otherBarRect.top;
-                        ScreenToClient (GetParent (weBar), &weBarOrig);
-
-                        MoveWindow (O9Dis.cmdfile.l_store,
-                            weBarOrig.x + 3, 0,
-                            mainRect.right - mainRect.left - weBarOrig.x - 5,
-                            newCurPos.y - 2,
-                            TRUE);
-                        MoveWindow (hWnd, weBarOrig.x + 5, newCurPos.y - 2,
-                            mainRect.right - mainRect.left - weBarOrig.x - 5,
-                            5, TRUE);
-                        MoveWindow (O9Dis.lblfile.l_store,
-                            weBarOrig.x + 5, newCurPos.y + 3,
-                            mainRect.right - mainRect.left - weBarOrig.x - 5,
-                            mainRect.bottom - mainRect.top - newCurPos.y - 3,
-                            TRUE);
-                    }
-                }
-            }
+            PaneResizing = TRUE;
             break;
         default:
             return DefWindowProc (hWnd, Message, wParam, lParam);
@@ -330,8 +268,8 @@ ResizeProc (HWND hWnd,
  *      messages from the Listing, command, and labels windows          *
  * ==================================================================== */
 
-LRESULT CALLBACK
-WndProc ( HWND hwnd,
+static LRESULT CALLBACK
+WndProc ( HWND hWnd,
           UINT Message,
           WPARAM wParam,
           LPARAM lParam)
@@ -354,13 +292,13 @@ WndProc ( HWND hwnd,
             wHalf = MAINWINWIDTH/2;
             hHalf = MAINWINHEIGHT/2;
 
-            GetWindowRect (hwnd, &wrect);
+            GetWindowRect (hWnd, &wrect);
             m_width = (int)(wrect.right - wrect.left);
             m_height = (int)(wrect.bottom - wrect.top);
             
             // Listing window in left half
 
-            O9Dis.list_file.l_store = buildsubwindow (hwnd, WC_LISTVIEW,
+            O9Dis.list_file.l_store = buildsubwindow (hWnd, WC_LISTVIEW,
                                LVS_REPORT || LVS_SINGLESEL ||
                                LVS_SHOWSELALWAYS,
                                0, 0, m_width/2 - 5, m_height,
@@ -381,7 +319,7 @@ WndProc ( HWND hwnd,
            if ( ! (bxwin = CreateWindowEx (0, SizeWEClassName, NULL,
                                        WS_CHILD | WS_VISIBLE,
                                        m_width/2 - 5, 0, 5, m_height,
-                                       hwnd, (HMENU)IDC_WE_BAR,
+                                       hWnd, (HMENU)IDC_WE_BAR,
                                        GetModuleHandle (NULL), NULL)))
            {
                LPVOID lpMsgBuf;
@@ -398,7 +336,7 @@ WndProc ( HWND hwnd,
                                0, NULL);
                sprintf_s (ttl, sizeof (ttl), "Error #%ld Creating VertBox",
                                              errnum);
-               MessageBox (hwnd, lpMsgBuf, ttl, MB_ICONERROR | MB_OK);
+               MessageBox (hWnd, lpMsgBuf, ttl, MB_ICONERROR | MB_OK);
                LocalFree (lpMsgBuf);
            }
            else
@@ -408,7 +346,7 @@ WndProc ( HWND hwnd,
 
            // Cmdfile window - top right half
 
-            O9Dis.cmdfile.l_store = buildsubwindow (hwnd, "EDIT", ES_MULTILINE,
+            O9Dis.cmdfile.l_store = buildsubwindow (hWnd, "EDIT", ES_MULTILINE,
                             m_width/2, 0, m_width/2 - 5, m_height/2 - 5,
                             (HMENU)IDC_CMD_WIN, "CmdFile");
 
@@ -417,7 +355,7 @@ WndProc ( HWND hwnd,
            if ( ! (bxwin = CreateWindowEx (0, SizeNSClassName, NULL,
                                        WS_CHILD | WS_VISIBLE,
                                        m_width/2, m_height/2 - 5, m_width/2, 5,
-                                       hwnd, (HMENU)IDC_NS_BAR,
+                                       hWnd, (HMENU)IDC_NS_BAR,
                                        GetModuleHandle (NULL), NULL)))
            {
                LPVOID lpMsgBuf;
@@ -434,7 +372,7 @@ WndProc ( HWND hwnd,
                                0, NULL);
                sprintf_s (ttl, sizeof (ttl),
                                 "Error #%ld Creating N/S resizebar", errnum);
-               MessageBox (hwnd, lpMsgBuf, ttl, MB_ICONERROR | MB_OK);
+               MessageBox (hWnd, lpMsgBuf, ttl, MB_ICONERROR | MB_OK);
                LocalFree (lpMsgBuf);
            }
            else
@@ -444,7 +382,7 @@ WndProc ( HWND hwnd,
 
             // Labels window bottom of right half
 
-            O9Dis.lblfile.l_store = buildsubwindow (hwnd, WC_LISTVIEW,
+            O9Dis.lblfile.l_store = buildsubwindow (hWnd, WC_LISTVIEW,
                             LVS_REPORT,
                             m_width/2, m_height/2, m_width/2, m_height,
                             (HMENU)IDC_LBL_WIN, "LabelFile");
@@ -457,39 +395,117 @@ WndProc ( HWND hwnd,
         }
         break;
 
+        case WM_LBUTTONUP:  // Only if we're resizing panes
+            if (PaneResizing)
+            {
+                EnableAllWindows (TRUE);
+                PaneResizing = FALSE;
+            }
+            break;
+        case WM_MOUSEMOVE:
+            if (PaneResizing)
+            {
+                POINT newCurPos;
+                RECT otherBarRect;
+                    
+                GetCursorPos (&newCurPos);
+                ScreenToClient (hWnd, &newCurPos);
+
+                if (myID == IDC_WE_BAR)
+                {
+                    if ((newCurPos.x > (50)) &&
+                        (newCurPos.x < (mainRect.right - mainRect.left - 50)))
+                    {
+                        POINT nsBarOrig;
+                        HWND nsBar = GetDlgItem (hWnd, IDC_NS_BAR);
+                        
+                        GetWindowRect (nsBar, &otherBarRect);
+                        nsBarOrig.x = otherBarRect.left;
+                        nsBarOrig.y = otherBarRect.top;
+                        ScreenToClient (GetParent (nsBar), &nsBarOrig);
+
+                        MoveWindow (O9Dis.list_file.l_store,
+                                0, 0, newCurPos.x - 3, mainRect.bottom, TRUE);
+                        MoveWindow (GetDlgItem (hWnd, myID),
+                                newCurPos.x - 2, 0,
+                                5, mainRect.bottom - mainRect.top, TRUE);
+                        MoveWindow (O9Dis.cmdfile.l_store,
+                            newCurPos.x + 3, 0,
+                            mainRect.right - mainRect.left - newCurPos.x - 4,
+                            nsBarOrig.y, TRUE);
+                        MoveWindow (nsBar, newCurPos.x + 3, nsBarOrig.y,
+                            mainRect.right - mainRect.left - newCurPos.x - 4,
+                            5, TRUE);
+                        MoveWindow (O9Dis.lblfile.l_store,
+                            newCurPos.x + 3, nsBarOrig.y + 5,
+                            mainRect.right - mainRect.left - newCurPos.x - 4,
+                            mainRect.bottom - nsBarOrig.y - 5, TRUE);
+                    }
+                }
+                else    // myID == IDC_NS_BAR
+                {
+                    if ((newCurPos.y > (50)) &&
+                        (newCurPos.y < (mainRect.bottom - mainRect.top - 50)))
+                    {
+                        POINT weBarOrig;
+                        HWND weBar = GetDlgItem (hWnd, IDC_WE_BAR);
+                        
+                        GetWindowRect (weBar, &otherBarRect);
+                        weBarOrig.x = otherBarRect.left;
+                        weBarOrig.y = otherBarRect.top;
+                        ScreenToClient (GetParent (weBar), &weBarOrig);
+
+                        MoveWindow (O9Dis.cmdfile.l_store,
+                            weBarOrig.x + 3, 0,
+                            mainRect.right - mainRect.left - weBarOrig.x - 5,
+                            newCurPos.y - 2,
+                            TRUE);
+                        MoveWindow (GetDlgItem (hWnd, IDC_NS_BAR),
+                            weBarOrig.x + 5, newCurPos.y - 2,
+                            mainRect.right - mainRect.left - weBarOrig.x - 5,
+                            5, TRUE);
+                        MoveWindow (O9Dis.lblfile.l_store,
+                            weBarOrig.x + 5, newCurPos.y + 3,
+                            mainRect.right - mainRect.left - weBarOrig.x - 5,
+                            mainRect.bottom - mainRect.top - newCurPos.y - 3,
+                            TRUE);
+                    }
+                }
+            }
+            break;
         case WM_SIZE:
         {
             HWND hSubWin;
             RECT box;
             int hwid,hhi;
 
-            GetClientRect (hwnd, &box);
+            GetClientRect (hWnd, &box);
             hwid = (box.right)/2;
             hhi  = (box.bottom)/2;
 
-            hSubWin = GetDlgItem (hwnd, IDC_LIST_WIN);
+            hSubWin = GetDlgItem (hWnd, IDC_LIST_WIN);
             SetWindowPos (hSubWin, NULL,
                           0, 0, hwid - 5, box.bottom,
                           SWP_NOZORDER);
 
             // Do the two sizebars together
-            hSubWin = GetDlgItem (hwnd, IDC_WE_BAR);
+            hSubWin = GetDlgItem (hWnd, IDC_WE_BAR);
             SetWindowPos (hSubWin, NULL,
                           hwid - 5, 0, 5, box.bottom,
                           SWP_NOZORDER);
 
             // Do the two sizebars together
-            hSubWin = GetDlgItem (hwnd, IDC_NS_BAR);
+            hSubWin = GetDlgItem (hWnd, IDC_NS_BAR);
             SetWindowPos (hSubWin, NULL,
                           hwid - 5, hhi - 5, hwid, 5,
                           SWP_NOZORDER);
 
-            hSubWin = GetDlgItem (hwnd, IDC_CMD_WIN);
+            hSubWin = GetDlgItem (hWnd, IDC_CMD_WIN);
             SetWindowPos (hSubWin, NULL,
                           hwid, 0, hwid, hhi - 5,
                           SWP_NOZORDER);
 
-            hSubWin = GetDlgItem (hwnd, IDC_LBL_WIN);
+            hSubWin = GetDlgItem (hWnd, IDC_LBL_WIN);
             SetWindowPos (hSubWin, NULL,
                           hwid, hhi, hwid, hhi,
                           SWP_NOZORDER);
@@ -530,32 +546,32 @@ WndProc ( HWND hwnd,
                     lbl_save_as (&(O9Dis.lblfile));
                     break;
                 case ID_DASMPROG:
-                    run_disassembler (hwnd, &O9Dis);
+                    run_disassembler (hWnd, &O9Dis);
                     break;
                 case ID_DASMTOFILE:
-                    dasm_list_to_file_cb (hwnd, &O9Dis);
+                    dasm_list_to_file_cb (hWnd, &O9Dis);
                     break;
                 case ID_AMLISTEDIT:
-                    amode_list_edit_cb (hwnd);
+                    amode_list_edit_cb (hWnd);
                     break;
                 case ID_DISOPTS:
-                    set_dis_opts_cb (hwnd);
+                    set_dis_opts_cb (hWnd);
                     break;
                 case ID_OPTSLOAD:
-                    opts_load (hwnd, &(O9Dis));
+                    opts_load (hWnd, &(O9Dis));
                     break;
                 case ID_OPTSSAVE:
-                    opts_save (hwnd, &(O9Dis));
+                    opts_save (hWnd, &(O9Dis));
                     break;
                 case ID_HLPABOUT:
                     {
                         DialogBox (GetModuleHandle (NULL),
                                    MAKEINTRESOURCE(IDD_ABOUT),
-                                   hwnd, (DLGPROC)AboutDlgProc);  
+                                   hWnd, (DLGPROC)AboutDlgProc);  
                     }
                     break;
                 case WM_QUIT:
-                    window_quit (hwnd);
+                    window_quit (hWnd);
                     PostQuitMessage(0);
                     return 0;
             }
@@ -582,20 +598,20 @@ WndProc ( HWND hwnd,
                         return 0;
                 }
             }
-            return DefWindowProc (hwnd, Message, wParam, lParam);
+            return DefWindowProc (hWnd, Message, wParam, lParam);
         case WM_CONTEXTMENU:
             switch (GetWindowLong ((HWND)wParam, GWL_ID))
             {
                 case IDC_LBL_WIN:
-                    onLblRowRButtonPress (hwnd, (HWND)wParam,
+                    onLblRowRButtonPress (hWnd, (HWND)wParam,
                                            LOWORD(lParam), HIWORD(lParam));
                     return 0;
                 case IDC_LIST_WIN:
-                    onListRowRButtonPress (hwnd, (HWND)wParam,
+                    onListRowRButtonPress (hWnd, (HWND)wParam,
                                             LOWORD(lParam), HIWORD(lParam));
                     return 0;
                 default:
-                    return DefWindowProc (hwnd, Message,
+                    return DefWindowProc (hWnd, Message,
                                             wParam, lParam);
             }
 
@@ -604,11 +620,11 @@ WndProc ( HWND hwnd,
             PostQuitMessage(0);
             return 0;
         case WM_CLOSE:
-            window_quit (hwnd);
+            window_quit (hWnd);
             PostQuitMessage (0);
             return 0;
         default:
-            return DefWindowProc (hwnd, Message, wParam, lParam);
+            return DefWindowProc (hWnd, Message, wParam, lParam);
     }
 
     return 0;
@@ -678,7 +694,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         CW_USEDEFAULT, CW_USEDEFAULT, MAINWINWIDTH, MAINWINHEIGHT,
         NULL, NULL, hInstance, NULL);
 
-    topwindow = hwnd;
+    TopWindow = hwnd;
 
     if (hwnd == NULL)
     {
