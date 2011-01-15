@@ -49,7 +49,11 @@ HWND buildsubwindow (HWND hwnd, LPCSTR class_name, DWORD style_add,
     {
         char emsg[100];
 
+#ifdef MINGW32
+        sprintf (emsg, "Could not create %s window", wintype);
+#else
         sprintf_s (emsg, sizeof (emsg), "Could not create %s window", wintype);
+#endif
         MessageBox (hwnd, emsg, "Error", MB_OK | MB_ICONERROR);
     }
 
@@ -85,8 +89,12 @@ listview_insert_cols (HWND listview, int totcols, char **titles)
                                cpos + 1, &colinfo) == -1)
         {
             char msg[80];
+#ifdef MINGW32
+            sprintf (msg, "%s%d\r\n", "Failed to insert column #", cpos + 1);
+#else
             sprintf_s (msg, sizeof (msg), "%s%d\r\n", 
                      "Failed to insert column #", cpos + 1);
+#endif
             MessageBox (listview, msg, "Error!",
                     MB_ICONERROR | MB_OK);
         }
@@ -334,8 +342,13 @@ WndProc ( HWND hWnd,
                                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                                (LPSTR) &lpMsgBuf,
                                0, NULL);
+#ifdef MINGW32
+               sprintf (ttl, "Error #%ld Creating VertBox",
+                                             errnum);
+#else
                sprintf_s (ttl, sizeof (ttl), "Error #%ld Creating VertBox",
                                              errnum);
+#endif
                MessageBox (hWnd, lpMsgBuf, ttl, MB_ICONERROR | MB_OK);
                LocalFree (lpMsgBuf);
            }
@@ -370,8 +383,13 @@ WndProc ( HWND hWnd,
                                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                                (LPSTR) &lpMsgBuf,
                                0, NULL);
+#ifdef MINGW32
+               sprintf (ttl,
+                                "Error #%ld Creating N/S resizebar", errnum);
+#else
                sprintf_s (ttl, sizeof (ttl),
                                 "Error #%ld Creating N/S resizebar", errnum);
+#endif
                MessageBox (hWnd, lpMsgBuf, ttl, MB_ICONERROR | MB_OK);
                LocalFree (lpMsgBuf);
            }

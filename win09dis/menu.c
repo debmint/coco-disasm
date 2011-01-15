@@ -38,14 +38,22 @@ AboutDlgProc ( HWND hwndDlg,	    // handle to dialog box
                                NULL};
             char msg[250],
                 **msgptr;
+            int msgcount;
 
             msg[0] = '\0';
             msgptr = msgary;
             sprintf (vrsion, "%s --\r\n\r\n", PACKAGE_VERSION);
 
+            msgcount = sizeof (msg) - 1;
+            
             while (*msgptr)
             {
-                strcat (msg, *(msgptr++));
+                strncat (msg, *(msgptr++), (msgcount--));
+
+                if (msgcount == 0)
+                {
+                    break;
+                }
             }
 
             SetWindowText (GetDlgItem (hwndDlg,IDC_ABTTXT), msg);

@@ -56,7 +56,7 @@ AC_SUBST(compile_g09dis)
 AC_CANONICAL_HOST
 case $host_os in
     *mingw32*)
-        winflags=" -mms-bitfields -mwindows -mno-cygwin"
+        winflags=" -mms-bitfields -mwindows -mno-cygwin -DMINGW32"
         gwinflags=" -mms-bitfields -mno-cygwin"
     ;;
     *cygwin)

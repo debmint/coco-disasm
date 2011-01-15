@@ -3,6 +3,10 @@
  * $Id::                                                                $
  * ******************************************************************** */
 
+// Disable Security warnings in Microsoft SDK
+#ifndef MINGW32
+# define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <stdio.h>
 #include "win09dis.h"
@@ -370,11 +374,7 @@ browse_for_directory (HWND hWnd, FILEINF *fdat)
 
         if (pidlBrowse)
         {
-            if (SHGetPathFromIDList (pidlBrowse, dispName))
-            {
-                strdup (dispName);
-            }
-            else
+            if ( ! SHGetPathFromIDList (pidlBrowse, dispName))
             {
                 dispName[0] = '\0';
             }
@@ -450,7 +450,7 @@ selectfile_open ( HWND hwnd,
         return NULL;
     }
 
-    if ( ! (filename = strdup (ofn.lpstrFile)))
+    if ( ! (filename = _strdup (ofn.lpstrFile)))
     {
         MessageBox (hwnd, "Memory allocation failure", "Error!",
                 MB_ICONERROR | MB_OK);
@@ -648,7 +648,11 @@ save_warn_OW (HWND hWnd, char *filename, char *type, BOOL can_cancel)
         return 0;
     }
     
+#ifdef MINGW32
     sprintf (warnmsg, fmt, type, fn);
+#else
+    sprintf_s (warnmsg, sizeof (warnmsg), fmt, type, fn);
+#endif
 
     retval = MessageBox (hWnd, warnmsg, "Warning!",
                                MB_ICONWARNING | MB_BUTTONSET);
@@ -686,7 +690,11 @@ wrt_lbl_file (FILEINF *fdat, char **newfile)
                 return;
             }
 
+#ifdef MINGW32
             sprintf (msg, fmt, *newfile);
+#else
+            sprintf_s (msg, sizeof (msg), fmt, *newfile);
+#endif
             MessageBox (fdat->l_store, msg, "Error!", MB_ICONERROR | MB_OK);
             free (msg);
             return;
@@ -1173,8 +1181,14 @@ load_list_tree (FILEINF *fdat, HANDLE infile)
                 {
                     char mesg[50];
 
+#ifdef MINGW32
                     sprintf (mesg, "Failed to insert item - %d,%d",
                                   itemcount - 1, fldnum);
+#else
+                    sprintf_s (mesg, sizeof (mesg),
+                                    "Failed to insert item - %d,%d",
+                                    itemcount - 1, fldnum);
+#endif
                     MessageBox (fdat->l_store, mesg, "Error!",
                                MB_ICONERROR | MB_OK);
                 }
@@ -1245,7 +1259,11 @@ do_lblfileload (FILEINF *fdat, char *newfile)
             return;
         }
 
+#ifdef MINGW32
         sprintf (emsg, fmt, fdat->fname);
+#else
+        sprintf_s (emsg, sizeof (emsg), fmt, fdat->fname);
+#endif
         MessageBox (fdat->l_store, emsg, "Error!",
                 MB_ICONERROR | MB_OK);
         return;
@@ -1352,8 +1370,13 @@ do_lblfileload (FILEINF *fdat, char *newfile)
                 static int failcount;
                 char mesg[50];
 
+#ifdef MINGW32
                 sprintf (mesg, "Failed to insert item - %d,%d",
                               itemcount, fldnum);
+#else
+                sprintf_s (mesg, sizeof (mesg), "Failed to insert item - %d,%d",
+                              itemcount, fldnum);
+#endif
                 MessageBox (fdat->l_store, mesg, "Error!",
                            MB_ICONERROR | MB_OK);
                 if (++failcount > 5)
@@ -1454,13 +1477,21 @@ run_disassembler (HWND hWnd, glbls *hbuf)
 
     if (O9Dis.cmdfile.fname)
     {
+#ifdef MINGW32
         sprintf (tmpstr, " -c=%s", O9Dis.cmdfile.fname);
+#else
+        sprintf_s (tmpstr, sizeof (tmpstr), " -c=%s", O9Dis.cmdfile.fname);
+#endif
         strcat (cmdline, tmpstr);
     }
 
     if ((O9Dis.defsfile.fname) && (strlen(O9Dis.defsfile.fname)))
     {
+#ifdef MINGW32
         sprintf (tmpstr, " -d=%s", O9Dis.defsfile.fname);
+#else
+        sprintf_s (tmpstr, sizeof (tmpstr), " -d=%s", O9Dis.defsfile.fname);
+#endif
         strcat (cmdline, tmpstr);
     }
    
@@ -1475,7 +1506,12 @@ run_disassembler (HWND hWnd, glbls *hbuf)
         {
             if (strlen(O9Dis.asmout.fname))
             {
+#ifdef MINGW32
                 sprintf (tmpstr, " -o=%s", O9Dis.asmout.fname);
+#else
+                sprintf_s (tmpstr, sizeof (tmpstr),
+                                " -o=%s", O9Dis.asmout.fname);
+#endif
                 strcat (cmdline, tmpstr);
             }
         }
@@ -1498,13 +1534,21 @@ run_disassembler (HWND hWnd, glbls *hbuf)
 
     if (PgWdth.set)
     {
+#ifdef MINGW32
         sprintf (tmpstr, " -pw=%d", PgWdth.set);
+#else
+        sprintf_s (tmpstr, sizeof (tmpstr), " -pw=%d", PgWdth.set);
+#endif
         strcat (cmdline, tmpstr);
     }
 
     if (PgDpth.set)
     {
+#ifdef MINGW32
         sprintf (tmpstr, " -pd=%d", PgDpth.set);
+#else
+        sprintf_s (tmpstr, sizeof (tmpstr), " -pd=%d", PgDpth.set);
+#endif
         strcat (cmdline, tmpstr);
     }
 
@@ -1515,7 +1559,12 @@ run_disassembler (HWND hWnd, glbls *hbuf)
             {
                 if (strlen (O9Dis.list_file.fname))
                 {
+#ifdef MINGW32
                     sprintf (tmpstr, " > %s", O9Dis.list_file.fname);
+#else
+                    sprintf_s (tmpstr, sizeof (tmpstr), " > %s",
+                                O9Dis.list_file.fname);
+#endif
                     strcat (cmdline, tmpstr);
                 }
             }
@@ -1693,7 +1742,12 @@ load_listing (FILEINF *fdat)
         DWORD ernum;
 
         ernum = GetLastError();
+#ifdef MINGW32
         sprintf (ttl, "Cannot Open Listing File - Error #%ld", ernum);
+#else
+        sprintf_s (ttl, sizeof (ttl), "Cannot Open Listing File - Error #%ld",
+                        ernum);
+#endif
         FormatMessage (
                 FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                 NULL,
@@ -1873,7 +1927,7 @@ fix_opt_path (char **pthptr,    // something->fname..
 
     strstrip (start);
     free_reference (pthptr);
-    *pthptr = strdup (start);
+    *pthptr = _strdup (start);
 }
 
 /* **************************************************************** *
@@ -1908,7 +1962,11 @@ opts_save (HWND hWnd, glbls *hbuf)
     char msg[100];
 
     selectfile_save (hWnd, &fname, FFT_MISC);
+#ifdef MINGW32
     sprintf (msg, "Could not open options file '%s'", fname);
+#else
+    sprintf_s (msg, sizeof (msg), "Could not open options file '%s'", fname);
+#endif
     free (fname);
     
     if (!(optfile = fopen (fname, "w")))
@@ -1960,8 +2018,13 @@ opts_load (HWND hwnd, glbls *hbuf)
         return;
     }
     
+#ifdef MINGW32
     optfile = fopen (tmpfile, "rb");
     sprintf (buf, "Could not open options file %s", buf);
+#else
+    fopen_s ( &optfile, tmpfile, "rb");
+    sprintf_s (buf, sizeof (buf), "Could not open options file %s", buf);
+#endif
     free (buf);
     
     if ( ! optfile)
@@ -2038,7 +2101,11 @@ opts_load (HWND hwnd, glbls *hbuf)
 
             if (splits[0])
             {
+#ifdef MINGW32
                 sscanf (splits[0], "%d", &write_list);
+#else
+                sscanf_s (splits[0], "%d", &write_list);
+#endif
             }
 
             if (write_list == LIST_FILE)
@@ -2052,7 +2119,7 @@ opts_load (HWND hwnd, glbls *hbuf)
 
                     if (strlen (nambegin))
                     {
-                        O9Dis.list_file.fname = strdup (nambegin);
+                        O9Dis.list_file.fname = _strdup (nambegin);
                     }
                 }
             }

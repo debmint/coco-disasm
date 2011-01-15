@@ -4,6 +4,11 @@
  * $Id::                                                            $
  * **************************************************************** */
 
+// Disable Security warnings in Microsoft SDK
+#ifndef MINGW32
+# define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
