@@ -648,11 +648,11 @@ save_warn_OW (HWND hWnd, char *filename, char *type, BOOL can_cancel)
         return 0;
     }
     
-#ifdef MINGW32
+//#ifdef MINGW32
     sprintf (warnmsg, fmt, type, fn);
-#else
+/*#else
     sprintf_s (warnmsg, sizeof (warnmsg), fmt, type, fn);
-#endif
+#endif*/
 
     retval = MessageBox (hWnd, warnmsg, "Warning!",
                                MB_ICONWARNING | MB_BUTTONSET);
@@ -682,21 +682,21 @@ wrt_lbl_file (FILEINF *fdat, char **newfile)
         if ( ! (outfile = fopen (*newfile, "wb")))
         {
             const char *fmt = "Cannot open file %s for write!";
-            char *msg;
+            char *mesg;
+            int memreq = strlen (fmt) + strlen (*newfile) + 1;
 
-            if ( ! (msg = od_memset (fdat->l_store,
-                                    strlen (fmt) + strlen (*newfile) + 10)))
+            if ( ! (mesg = od_memset (fdat->l_store, memreq)))
             {
                 return;
             }
 
 #ifdef MINGW32
-            sprintf (msg, fmt, *newfile);
+            sprintf (mesg, fmt, *newfile);
 #else
-            sprintf_s (msg, sizeof (msg), fmt, *newfile);
+            sprintf_s (mesg, memreq, fmt, *newfile);
 #endif
-            MessageBox (fdat->l_store, msg, "Error!", MB_ICONERROR | MB_OK);
-            free (msg);
+            MessageBox (fdat->l_store, mesg, "Error!", MB_ICONERROR | MB_OK);
+            free (mesg);
             return;
         }
 
@@ -879,7 +879,7 @@ load_text (FILEINF *fdat, char *newfile)
 
     clear_text_buf (fdat);
 
-    if (newfile)
+    if (newfile && fdat)
     {
         free_reference ( &(fdat->fname));
         fdat->fname = newfile;
@@ -1244,8 +1244,6 @@ do_lblfileload (FILEINF *fdat, char *newfile)
     ZeroMemory (&lv, sizeof (lv));
     lv.mask = LVIF_TEXT;
 
-    list_store_empty (fdat);
-
     /* Now open the file and read it */
 
     if ( ! (infile = fopen (newfile, "rb")))
@@ -1254,23 +1252,20 @@ do_lblfileload (FILEINF *fdat, char *newfile)
         const char *fmt = "Cannot open file %s for read!";
 
         if ( !(emsg = od_memset (fdat->l_store,
-                        strlen (fdat->fname) + strlen (fmt))))
+                        strlen (newfile) + strlen (fmt) + 10)))
         {
             return;
         }
 
-#ifdef MINGW32
-        sprintf (emsg, fmt, fdat->fname);
-#else
-        sprintf_s (emsg, sizeof (emsg), fmt, fdat->fname);
-#endif
-        MessageBox (fdat->l_store, emsg, "Error!",
-                MB_ICONERROR | MB_OK);
+        sprintf (emsg, fmt, newfile);
+        MessageBox (NULL, emsg, "Error!", MB_ICONERROR | MB_OK);
+        free (emsg);
         return;
     }
 
-    free_reference (&fdat->fname);
-    fdat->fname = newfile;
+    list_store_empty (fdat);
+    free_reference (&(fdat->fname));
+    fdat->fname = strstrip (newfile);
 
     while (fgets (buffer, 160, infile))
     {
@@ -1926,8 +1921,12 @@ fix_opt_path (char **pthptr,    // something->fname..
     }
 
     strstrip (start);
-    free_reference (pthptr);
-    *pthptr = _strdup (start);
+
+    if (pthptr)
+    {
+        free_reference (pthptr);
+        *pthptr = _strdup (start);
+    }
 }
 
 /* **************************************************************** *
@@ -1967,18 +1966,29 @@ opts_save (HWND hWnd, glbls *hbuf)
 #else
     sprintf_s (msg, sizeof (msg), "Could not open options file '%s'", fname);
 #endif
-    free (fname);
     
     if (!(optfile = fopen (fname, "w")))
     {
+        char *msg;
+        int errnum = GetLastError();
+
+        FormatMessage (
+                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                NULL, errnum,
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPSTR)&msg, 0,
+                NULL);
         MessageBox (hWnd, msg, "File Open Failed!", MB_ICONERROR | MB_OK);
+        LocalFree (msg);
+        free (fname);
         return;
     }
-    
+
+    free (fname);
 
     opt_put (&O9Dis.binfile, OPT_BIN, optfile);
     opt_put (&O9Dis.cmdfile, OPT_CMD, optfile);
-    opt_put (&O9Dis.list_file, OPT_LBL, optfile);
+    opt_put (&O9Dis.lblfile, OPT_LBL, optfile);
     opt_put (&O9Dis.defsfile, OPT_DEF, optfile);
     opt_put (&O9Dis.asmout, OPT_OBJ, optfile);
     fprintf (optfile, "%s%d\n", OPT_RS, RsDos.set);
@@ -2010,7 +2020,7 @@ void
 opts_load (HWND hwnd, glbls *hbuf)
 {
     FILE *optfile;
-    char buf[MAX_PATH];
+    char buf[MAX_PATH + 200];
     char *tmpfile;
     
     if ( !(tmpfile = selectfile_open (hwnd, "n Options File", FFT_MISC)))
@@ -2025,7 +2035,7 @@ opts_load (HWND hwnd, glbls *hbuf)
     fopen_s ( &optfile, tmpfile, "rb");
     sprintf_s (buf, sizeof (buf), "Could not open options file %s", buf);
 #endif
-    free (buf);
+//    free (buf);
     
     if ( ! optfile)
     {
@@ -2035,6 +2045,8 @@ opts_load (HWND hwnd, glbls *hbuf)
 
     while (fgets (buf, sizeof (buf), optfile))
     {
+        
+    MessageBox (NULL, O9Dis.lblfile.fname ? O9Dis.lblfile.fname : "---", buf, MB_ICONINFORMATION|MB_OK);
         if ( ! strncmp (OPT_BIN, buf, strlen(OPT_BIN)))
         {
             fix_opt_path (&(O9Dis.binfile.fname), buf, NULL, OPT_BIN);
@@ -2044,17 +2056,19 @@ opts_load (HWND hwnd, glbls *hbuf)
 
         if ( ! strncmp (OPT_CMD, buf, strlen (OPT_CMD)))
         {
-            fix_opt_path (&(O9Dis.cmdfile.fname), buf, NULL, OPT_CMD);
+            fix_opt_path (NULL, buf, NULL, OPT_CMD);
 //            hbuf->filename_to_return = strdup (O9Dis.cmdfile.fname);
-//            do_cmdfileload (hbuf);        // NEED TO CHANGE PARAMETER
+            load_text (&(hbuf->cmdfile), _strdup (&buf[strlen (OPT_CMD)]));
             continue;
         }
 
         if ( ! strncmp (OPT_LBL, buf, strlen (OPT_LBL)))
         {
-            fix_opt_path (&(hbuf->lblfile.fname), buf, NULL, OPT_LBL);
+            fix_opt_path (NULL, buf, NULL, OPT_LBL);
 //            hbuf->filename_to_return = strdup (hbuf->lblfile.fname);
-//            do_lblfileload (hbuf);
+            do_lblfileload (&(hbuf->lblfile),
+                            _strdup (&buf[strlen (OPT_LBL)]));
+    MessageBox (NULL, "do_lblfileload() returned", O9Dis.lblfile.fname, MB_ICONINFORMATION|MB_OK);
             continue;
         }
 

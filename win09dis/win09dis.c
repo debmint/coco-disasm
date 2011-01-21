@@ -244,8 +244,8 @@ EnableAllWindows (BOOL bEnable)
     EnableWindow (O9Dis.list_file.l_store, bEnable);
     EnableWindow (O9Dis.cmdfile.l_store, bEnable);
     EnableWindow (O9Dis.lblfile.l_store, bEnable);
-    EnableWindow (GetDlgItem (TopWindow, IDC_NS_BAR), bEnable);
-    EnableWindow (GetDlgItem (TopWindow, IDC_WE_BAR), bEnable);
+//    EnableWindow (GetDlgItem (TopWindow, IDC_NS_BAR), bEnable);
+//    EnableWindow (GetDlgItem (TopWindow, IDC_WE_BAR), bEnable);
 }
 
 static LRESULT CALLBACK
@@ -264,6 +264,9 @@ ResizeProc (HWND hWnd,
             GetClientRect (TopWindow, &mainRect);
             myID = GetWindowLong (hWnd, GWL_ID);
             PaneResizing = TRUE;
+            break;
+        case WM_LBUTTONUP:
+            SendMessage (GetParent(hWnd), Message, wParam, lParam);
             break;
         default:
             return DefWindowProc (hWnd, Message, wParam, lParam);
@@ -442,22 +445,49 @@ WndProc ( HWND hWnd,
                         nsBarOrig.y = otherBarRect.top;
                         ScreenToClient (GetParent (nsBar), &nsBarOrig);
 
-                        MoveWindow (O9Dis.list_file.l_store,
-                                0, 0, newCurPos.x - 3, mainRect.bottom, TRUE);
-                        MoveWindow (GetDlgItem (hWnd, myID),
+//                        MoveWindow (O9Dis.list_file.l_store,
+//                                0, 0, newCurPos.x - 3, mainRect.bottom, TRUE);
+                        SetWindowPos (O9Dis.list_file.l_store, 0,
+                                0, 0, newCurPos.x - 3, mainRect.bottom,
+                                SWP_NOMOVE | SWP_DRAWFRAME | SWP_NOACTIVATE |
+                                SWP_NOOWNERZORDER | SWP_NOZORDER |
+                                SWP_NOSENDCHANGING);
+//                        MoveWindow (GetDlgItem (hWnd, myID),
+//                                newCurPos.x - 2, 0,
+//                                5, mainRect.bottom - mainRect.top, TRUE);
+                        SetWindowPos (GetDlgItem (hWnd, myID), 0,
                                 newCurPos.x - 2, 0,
-                                5, mainRect.bottom - mainRect.top, TRUE);
-                        MoveWindow (O9Dis.cmdfile.l_store,
+                                5, mainRect.bottom - mainRect.top,
+                            SWP_DRAWFRAME | SWP_NOACTIVATE |
+                            SWP_NOOWNERZORDER | SWP_NOZORDER |
+                            SWP_NOSENDCHANGING);
+//                        MoveWindow (O9Dis.cmdfile.l_store,
+//                            newCurPos.x + 3, 0,
+//                            mainRect.right - mainRect.left - newCurPos.x - 4,
+//                            nsBarOrig.y, TRUE);
+                        SetWindowPos (O9Dis.cmdfile.l_store, 0,
                             newCurPos.x + 3, 0,
                             mainRect.right - mainRect.left - newCurPos.x - 4,
-                            nsBarOrig.y, TRUE);
-                        MoveWindow (nsBar, newCurPos.x + 3, nsBarOrig.y,
+                            nsBarOrig.y,
+                            SWP_DRAWFRAME | SWP_NOACTIVATE |
+                            SWP_NOOWNERZORDER | SWP_NOZORDER |
+                            SWP_NOSENDCHANGING);
+//                        MoveWindow (nsBar, newCurPos.x + 3, nsBarOrig.y,
+//                            mainRect.right - mainRect.left - newCurPos.x - 4,
+//                            5, TRUE);
+                        SetWindowPos (nsBar, 0, newCurPos.x + 3, nsBarOrig.y,
                             mainRect.right - mainRect.left - newCurPos.x - 4,
-                            5, TRUE);
-                        MoveWindow (O9Dis.lblfile.l_store,
+                            5,
+                            SWP_DRAWFRAME | SWP_NOACTIVATE |
+                            SWP_NOOWNERZORDER | SWP_NOZORDER |
+                            SWP_NOSENDCHANGING);
+                        SetWindowPos (O9Dis.lblfile.l_store, 0,
                             newCurPos.x + 3, nsBarOrig.y + 5,
                             mainRect.right - mainRect.left - newCurPos.x - 4,
-                            mainRect.bottom - nsBarOrig.y - 5, TRUE);
+                            mainRect.bottom - nsBarOrig.y - 5,
+                            SWP_DRAWFRAME | SWP_NOACTIVATE |
+                            SWP_NOOWNERZORDER | SWP_NOZORDER |
+                            SWP_NOSENDCHANGING);
                     }
                 }
                 else    // myID == IDC_NS_BAR
