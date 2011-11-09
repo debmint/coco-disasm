@@ -310,7 +310,7 @@ WndProc ( HWND hWnd,
             // Listing window in left half
 
             O9Dis.list_file.l_store = buildsubwindow (hWnd, WC_LISTVIEW,
-                               LVS_REPORT || LVS_SINGLESEL ||
+                               LVS_REPORT | LVS_SINGLESEL |
                                LVS_SHOWSELALWAYS,
                                0, 0, m_width/2 - 5, m_height,
                                (HMENU)IDC_LIST_WIN, "Listing");

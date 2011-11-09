@@ -2020,7 +2020,7 @@ void
 opts_load (HWND hwnd, glbls *hbuf)
 {
     FILE *optfile;
-    char buf[MAX_PATH + 200];
+    char buf[MAX_PATH];
     char *tmpfile;
     
     if ( !(tmpfile = selectfile_open (hwnd, "n Options File", FFT_MISC)))
@@ -2035,7 +2035,6 @@ opts_load (HWND hwnd, glbls *hbuf)
     fopen_s ( &optfile, tmpfile, "rb");
     sprintf_s (buf, sizeof (buf), "Could not open options file %s", buf);
 #endif
-//    free (buf);
     
     if ( ! optfile)
     {
@@ -2046,7 +2045,6 @@ opts_load (HWND hwnd, glbls *hbuf)
     while (fgets (buf, sizeof (buf), optfile))
     {
         
-    MessageBox (NULL, O9Dis.lblfile.fname ? O9Dis.lblfile.fname : "---", buf, MB_ICONINFORMATION|MB_OK);
         if ( ! strncmp (OPT_BIN, buf, strlen(OPT_BIN)))
         {
             fix_opt_path (&(O9Dis.binfile.fname), buf, NULL, OPT_BIN);
@@ -2068,7 +2066,6 @@ opts_load (HWND hwnd, glbls *hbuf)
 //            hbuf->filename_to_return = strdup (hbuf->lblfile.fname);
             do_lblfileload (&(hbuf->lblfile),
                             _strdup (&buf[strlen (OPT_LBL)]));
-    MessageBox (NULL, "do_lblfileload() returned", O9Dis.lblfile.fname, MB_ICONINFORMATION|MB_OK);
             continue;
         }
 

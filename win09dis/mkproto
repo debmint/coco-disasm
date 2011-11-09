@@ -1,3 +1,9 @@
 #! /bin/sh
 
+# Create the file proto.h...
+# We have to run this routine to create the file in order to make the
+# prototypes compatible with the MinGW headers.  The prototypes in the
+# source files are compliant with the Microware SDK headers, and these
+# differ from those in the MinGW system.
+
 cproto -I. -I.. $(grep '^GCSRC' Makefile.am | sed 's/GCSRC *= *//') | grep -v WinMain | sed 's/\(AboutDlgProc\|WndProc\|OptDlgProc\|RenameLblProc\)/CALLBACK &/' | sed 's/\(OnOptDlgInit\)/WINAPI &/'
