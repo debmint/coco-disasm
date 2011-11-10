@@ -174,8 +174,8 @@ BuildFilesTab (HWND dlgWnd)
          txtEntry;
     
     GetClientRect (dlgWnd, &tabRect);
-    tabWid = tabRect.right - (130);
-    tabHigh = tabRect.bottom - (170);
+    tabWid = tabRect.right - (12);
+    tabHigh = tabRect.bottom - (60);
 
     subWin[0] = CreateWindowEx (0, "PageFiller", "",
                     WS_CHILD | WS_VISIBLE,
@@ -183,7 +183,7 @@ BuildFilesTab (HWND dlgWnd)
                     dlgWnd, NULL, GetModuleHandle (NULL), NULL);
 
     GetClientRect (subWin[0], &tabRect);    // Dimensions of tab itself
-    grpHi = (tabRect.bottom * 3)/10;
+    grpHi = (tabRect.bottom / 3) - 2;
 
             /* ************************************************* *
              * Now build the components that fit into the window *
@@ -480,12 +480,12 @@ BuildAppearTab (HWND dlgWnd)
          scrollBx;
 
     GetClientRect (dlgWnd, &tabRect);
-    tabWid = tabRect.right - (130);
-    tabHigh = tabRect.bottom - (170);
+    tabWid = tabRect.right - (12);
+    tabHigh = tabRect.bottom - (60);
 
     subWin[1] = CreateWindowEx (0, "PageFiller", "",
                     WS_CHILD,
-                    curTop, 30, tabWid, tabHigh,
+                    6, 30, tabWid, tabHigh,
                     dlgWnd, NULL, GetModuleHandle (NULL), NULL);
     
     GetClientRect (subWin[1], &tabRect);    // Dimensions of tab itself
@@ -575,11 +575,11 @@ void WINAPI OnOptDlgInit (HWND hwnDlg)
 
     // Create the tab control
 
-    GetWindowRect (hwnDlg, &rcTab);
-    rcTab.bottom -= 25;  // Allow space for buttons
+    GetClientRect (hwnDlg, &rcTab);
+    rcTab.bottom -= 50;  // Allow space for buttons
     optsTabCtl = CreateWindow (WC_TABCONTROL, "",
                 WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-                0, 0, rcTab.right, rcTab.bottom,
+                3, 3, rcTab.right - 6, rcTab.bottom,
                 hwnDlg, NULL, GetModuleHandle (NULL), NULL);
 
     if (optsTabCtl == NULL)
