@@ -104,39 +104,22 @@ pass_eq (char *pr)
 static char *
 build_path (char *fname)
 {
-    char *abslut[] = { "/", "./", "../", "" };
-    char **pt;
     char *realname = NULL;
 
     /* If it's accessible in its raw state, then return that name */
 
     if ( ! (access (fname, R_OK)))    /* Try in current directory */
     {
-        return strdup(fname);
-    }
-    /* is it an absolute pathame ? */
-    /* Hmmm... is this needed?  Didn't the above not take care of this? */
-
-    pt = &abslut[0];
-
-    while (**pt)
-    {
-        if ( ! strncmp (*pt, fname, strlen (*pt)))
-        {
-            realname = fname;
-            break;
-        }
-
-        ++pt;
+        return strdup(fname);   /* So we can free() it */
     }
 
     /* Try for "~/" */
 
-    if ( ! strncmp (fname, "~/", 2))
+    if ((fname[0] == '~') && (fname[1] == '/'))
     {
         if ( ! (realname = malloc (strlen(myhome) + strlen(fname) + 1)))
         {
-            fprintf (stderr, "Cannot allocate memory for %s\n", fname);
+            fprintf (stderr, "Cannot allocate memory for \"%s\"\n", fname);
             return 0;
         }
         
@@ -162,10 +145,7 @@ build_path (char *fname)
             return 0;
         }
 
-        strcpy (realname, cmdf);
-        free (cmdf);
-        strcat (realname, "/");
-        strcat (realname, fname);
+        sprintf (realname, "%s/%s", cmdf, fname);
 
         if ( ! access (realname, R_OK))
         {
@@ -192,14 +172,13 @@ build_path (char *fname)
 
         if ( ! (realname = malloc (lngth)))
         {
-            fprintf (stderr, "Cannot allocate memory for %s\n", fname);
+            fprintf (stderr, "Cannot allocate memory for \"%s\"\n", fname);
             return 0;
         }
 
         if (istilde)
         {
-            strcpy (realname, myhome);
-            strcat (realname, &(DefDir[1]));
+            sprintf (realname, "%s%s", myhome, &(DefDir[1]));
         }
         else
         {
