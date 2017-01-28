@@ -1,39 +1,44 @@
+WHAT IS os9disasm?
+-----------
+
+os9disasm is a disassembler for the Tandy Color Computer, primarily targeting
+the Microware OS9 operating system, but also capable of disassembling Coco
+Basic programs.  This program can be built on other systems (Linux, Windows,
+and originally was designed to target OS9-68000 systems, but this has mostly
+been abandoned).
+
+The disassembler was inspired by a program called Dynamite+ written for the
+OS9-68xx systems.  However, disassembly of a major program requires repeated
+disassembly, adding commands, and re-disassembling.  The speed offered by
+systems running faster processors makes the process much less tedious.
+
 PACKAGE REQUIREMENTS
 -----------
 
 This package comes in two sections.  Os9disasm is the disassembler itself,
 and is all that is really required.  With this, you have a command-line
-disassembler.  For those who desire a GUI interface, the g09dis package
-is provided.  This is simply a front-end for os9disasm, and is not required,
-but can no doubt help bypass the learning curve a bit, as there are several
-things with which one must be familiar to get well-formatted disassembly
-output.  The default configuration is to compile WITHOUT G09DIS.  To get
+disassembler.
+
+For those who desire a GUI interface, the g09dis package is provided.  This
+is simply a front-end for os9disasm, and is not required, but can no doubt
+help bypass the learning curve a bit, as there are several command-line
+options and such with which one must be familiar to get well-formatted
+disassembly output.
+
+The default configuration is to compile WITHOUT G09DIS.  To get
 G09DIS to build, see below under "CONFIGURE OPTIONS".
 
 To compile these sources, especially g09dis, specific packages must be
-present.
+present. The Gtk2 package is a primary requirement.  GLib is also needed.
+To build, the dev packages are needed, and to run, the runtime packages
+are required.
 
-If you use the precompiled binary for g09dis, you will need several runtime
-packages for GTK.  For Linux distributions, these should be available in their
-packages.  For Windows several alternatives are available.  There are at least
-two install executables available for a MinGW install.
+To build in Windows, the current preferred method is to build under mingw
+(msys2 includes it all).  The needed packages under this system correspond
+to those for Linux.
 
-In addition to these,
-zip files are available from Tor Lillqvist's page.  The various packages from
-here are installed separately and as needed.  These pages can be accessed
-by following the links for GTK or Gimp for Windows from either
-http://www.gimp.org, or http://www.gtk.org.
-
-These packages, to my understanding, work under MinGW, but not Cygwin.  But
-I also understand that there are GTK packages available for Cygwin, also.
-
-To compile g09dis, the corresponding -dev packages must also be installed.
-I believe this would apply to Linux as well as Windows.  For Windows, the
-install binaries come either as run-time only or a combination of run-time
-and development packages.
-
-To compile, package, untar the package file and cd into the top
-directory.  Run ./configure to build your Makefiles.
+To compile, package, untar the package file and cd into the top directory.
+Run ./configure to build your Makefiles.
 
 Both programs can be compiled simultaneously from the top Makefile, or you can
 issue the command "make os9disasm" or "make g09dis" (if enabled) from the top
@@ -45,7 +50,7 @@ CONFIGURE OPTIONS
 
 Issuing the command ./configure --help shows a brief summary of all options
 available to configure.  Most of the options are standard configure options,
-however, some extra options specific to this package:
+however, there are some extra options specific to this package:
 
   --with-g09dis[=OPTION]           where OPTION is either "yes" or "no".
           
