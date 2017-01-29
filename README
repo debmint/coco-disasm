@@ -19,14 +19,17 @@ This package comes in two sections.  Os9disasm is the disassembler itself,
 and is all that is really required.  With this, you have a command-line
 disassembler.
 
-For those who desire a GUI interface, the g09dis package is provided.  This
-is simply a front-end for os9disasm, and is not required, but can no doubt
+For those who desire a GUI interface, the g09dis/win09dis package is provided.
+These are simply front-ends for os9disasm, and are not required, but can
 help bypass the learning curve a bit, as there are several command-line
 options and such with which one must be familiar to get well-formatted
-disassembly output.
+disassembly output.  The "g09dis" portion is a gtk front-end, that can
+be run on any system that has gtk installed on it.  the "win09dis" part
+builds a front-end that runs with the native Windows interface, not requiring
+gtk to be present.
 
-The default configuration is to compile WITHOUT G09DIS.  To get
-G09DIS to build, see below under "CONFIGURE OPTIONS".
+The default configuration is to compile WITHOUT G09DIS or WIN09DIS.  To get
+either (or both) to build, see below under "CONFIGURE OPTIONS".
 
 To compile these sources, especially g09dis, specific packages must be
 present. The Gtk2 package is a primary requirement.  GLib is also needed.
@@ -56,15 +59,25 @@ however, there are some extra options specific to this package:
           
 	  The default is "no"  --with-g09dis by itelf is the same as including
 	  the "yes" option.  --with-g09dis=no or the equivalent
-	  --without-g09dis would simply be the default.  Note that if
-	  --with-g09dis is specified, the package "pkg-config" must be
-	  installed for configure to succeed.  This package should be available
-	  with most linux distributions and for win32 apps under MinGW/msys, at
-	  least, can be downloaded from Tor Lillqvist's download page.  (Go to
-	  www.gimp.org or www.gtk.org and follow the links under "... for
-	  Windows").
+	  --without-g09dis would simply be the default.
+
+        Note that if this option is specified, the package "pkg-config"
+        must be installed for configure to succeed.  This package should
+        be available with most linux distributions and for win32 apps
+        under MinGW/msys, is available in the msys2 package.
 
                             -------
+The other option is:
+
+  --with-win09dis[=OPTION]    where OPTION is either "yes" or "no".
+
+        This works the same as with "--with-g09dis", except that this option
+        controls whether to build the native Windows GUI.
+
+        These options are not mutually exclusive, that is, both can be built
+        in the same pass, if both are desired.
+
+                            ---------
 
 BUILDING and INSTALLING DOCUMENTATION
 --------
