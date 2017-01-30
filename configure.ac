@@ -5,7 +5,7 @@ AC_PREREQ(2.59)
 AC_INIT(cocodis, 0.11.1)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([g09dis/dasmedit.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CC
@@ -25,7 +25,8 @@ AC_STRUCT_TM
 AC_FUNC_MALLOC
 AC_FUNC_STAT
 
-AC_CHECK_FUNCS([memset strcasecmp strchr strdup stpcpy strncasecmp strstr isblank dirname])
+AC_CHECK_FUNCS([strcasecmp strchr strdup stpcpy strncasecmp strstr strrchar \
+                isblank memset dirname])
 
 AC_ARG_WITH([win09dis],
                [AS_HELP_STRING([--with-win09dis],
