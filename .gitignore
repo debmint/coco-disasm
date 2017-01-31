@@ -12,12 +12,13 @@ depcomp
 missing
 compile
 install-sh
-./Makefile
+Makefile
+!/os9disasm/doc/Makefile
 os9disasm/Makefile
 g09dis/Makefile
 Win09dis/Makefile
 Makefile.in
-*.o
+*.[oa]
 *.txt
 os9disasm/os9disasm
 win09dis

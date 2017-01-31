@@ -65,32 +65,48 @@
          re-extract it from the original tarfile.
        </para>
      </note>
-     <section>
-       <title>Options passed to <computeroutput>configure</computeroutput></title>
-       <para>You can review the options accepted by <command>configure</command>
-         by issuing the command <command>./configure --help</command>.  Most
-         are the standard options that all <command>configure</command> scripts
-         accept, but there are a few specific to this build.
-       </para>
-       <variablelist>
-         <varlistentry>
-           <term><command>--with-g09dis</command></term>
-           <listitem>
-             <para>&g09dis; by default is not compiled with
-               &odis;.  The reason for this is that &g09dis; requires the &gtk;
-               package to build and run.  In order to compile &g09dis;,
-               <command>pkg-config</command> must be installed on the system.
-               Since some systems might not have this, the configure process
-               does not include <command>g09dis</command> in the compilation.
-               If this option is not included, the Makefile for &g09dis; will
-               be made, but will not be correct, and the
-               <command>g09dis</command> directory will not be processed when
-               the <command>make</command> command is issued.
-             </para>
-           </listitem>
-         </varlistentry>
-       </variablelist>
-     </section>
+   </section>
+   <section>
+     <title>Options passed to <computeroutput>configure</computeroutput></title>
+     <para>You can review the options accepted by <command>configure</command>
+       by issuing the command <command>./configure --help</command>.  Most
+       are the standard options that all <command>configure</command> scripts
+       accept, but there are a few specific to this build.
+     </para>
+     <variablelist>
+       <varlistentry>
+         <term><command>--with-g09dis</command></term>
+         <listitem>
+           <para>&g09dis; by default is not compiled with
+             &odis;.  The reason for this is that &g09dis; requires the &gtk;
+             package to build and run.  In order to compile &g09dis;,
+             <command>pkg-config</command> must be installed on the system.
+             Since some systems might not have this, the configure process
+             does not include <command>g09dis</command> in the compilation.
+             If this option is not included, the Makefile for &g09dis; will
+             be made, but will not be correct, and the
+             <command>g09dis</command> directory will not be processed when
+             the <command>make</command> command is issued.
+           </para>
+         </listitem>
+       </varlistentry>
+       <varlistentry>
+         <term><command>--with-windis</command></term>
+         <listitem>
+           <para>&windis;, as the above, by default, is not compiled with
+             &odis;. If building on a Linux system, the necessary libraries
+             are likely not installed and would produce errors if attempting
+             to build.
+           </para>
+           <para>
+             If this option is not included, the Makefile for &windis; will
+             be made, but will not be correct, and the
+             <command>windis</command> directory will not be processed when
+             the <command>make</command> command is issued.
+           </para>
+         </listitem>
+       </varlistentry>
+     </variablelist>
    </section>
    <section id="buildprogs"><title>Building the program(s)</title>
      <para>After running <command>configure</command> you are now ready to
@@ -151,11 +167,16 @@
    <section><title>Building and/or running on Windows</title>
      <para>These packages can be built and run on Windows systems.  The
        first requirement, and this applies to both &odis; and &gtk;,
-       is the linux interface by which you can compile the programs.  I
-       recommend MinGW, available from sourceforge.net.  There is another
-       interface, called Cygwin, but it must be present to run the
-       programs, but, as I understand it, programs compiled under MinGW
-       can be run on a Windows system where MinGW is not installed.
+       is the linux interface by which you can compile the programs.
+       The easiest setup for building under Windows is to have the
+       <command>msys2</command> installed.  All the packages needed to
+       build are available and it should be pretty straightforward to
+       do a successful build.
+     </para>
+     <para>
+       it should be possible to build under <command>CygWin</command>, but
+       the configuration files for this package would probably need to be
+       altered.
      </para>
      <para>The &gtk; interface is available for Windows, and &odis;, of
        course, can be run from the command line without &gtk; if you do
