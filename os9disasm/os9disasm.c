@@ -608,7 +608,7 @@ InitDefaults ()
 
     /* Initialize all SymLst tree bases to NULL */
 
-    for (x = 1; x <= sizeof (SymLst) / sizeof (SymLst[1]); x++)
+    for (x = 1; x < sizeof (SymLst) / sizeof (SymLst[1]); x++)
     {
         SymLst[x] = 0;
     }

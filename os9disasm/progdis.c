@@ -199,7 +199,7 @@ MovASC (int nb, char class)
 {
     char oper_tmp[30];
 
-    memset (pbuf, 0, sizeof (pbuf));
+    memset (pbuf, 0, sizeof (struct printbuf));
     strcpy (pbuf->mnem, "fcc");         /* Default mnemonic to "fcc" */
     CmdEnt = Pc;
 

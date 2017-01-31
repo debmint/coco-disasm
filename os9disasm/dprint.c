@@ -710,7 +710,7 @@ ROFDataPrint ()
 
     dattyp[4] = '\0';
 
-    for (vs = 0; vs < 5; vs++)
+    for (vs = 0; vs < 4; vs++)
     {
         dattyp[vs] = rof_class (reftyp[vs]);
     }
