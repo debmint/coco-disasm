@@ -9,17 +9,14 @@
 #include <string.h>
 //#include <gtk/gtk.h>
 //#include "g09dis.h"
+void listing_srch(FILEINF *fdat);
+void labels_srch(FILEINF *fdat);
 
 static int numRadios;
 static char *dlgTtl;
 static char *oldcol,
             *oldsrchtxt;
 static int oldexact;
-
-// Temporary fix...
-#ifndef HAVE_STRNCASECMP
-#  define strncasecmp strncmp
-#endif
 
 ///* struct srch_log: Keeps data for a treeview, for setting up a search. */
 //

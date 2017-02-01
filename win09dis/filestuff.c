@@ -31,6 +31,42 @@
 //#define DIRCHR '/'
 //#endif
 
+void filestuff_cleanup(void);
+BOOL menuInsertTxt(HMENU mnu, MENUITEMINFO *minfo, int pos, int mask, int id, DWORD itemdata, char *txt);
+BOOL sepInsert(HMENU mnu, MENUITEMINFO *minfo, int pos);
+int lv_get_cursor_selection(HWND listviewWnd);
+BOOL onListRowRButtonPress(HWND parent, HWND lvWnd, int xpos, int ypos);
+BOOL onLblRowRButtonPress(HWND parent, HWND lvWnd, int xpos, int ypos);
+void *od_memset(HWND hWnd, int memsize);
+void free_reference(char **fname);
+char *browse_for_directory(HWND hWnd, FILEINF *fdat);
+char *selectfile_open(HWND hwnd, const char *type, int filtertype);
+char *selectfile_save(HWND parent, char **dest, int filtertype);
+char *strstrip(char *ptr);
+int save_all_query(HWND hWnd);
+void doc_set_modified(FILEINF *doc, BOOL value);
+int save_warn_OW(HWND hWnd, char *filename, char *type, BOOL can_cancel);
+void list_store_empty(FILEINF *fdat);
+BOOL clear_text_buf(FILEINF *fdat);
+BOOL load_text(FILEINF *fdat, char *newfile);
+BOOL mswin_load_text(FILEINF *fdat, char *newfile);
+BOOL str_digit(char *str);
+BOOL str_xdigit(char *str);
+void fname_replace(FILEINF *fdat, char *newname);
+void do_lblfileload(FILEINF *fdat, char *newfile);
+void sysfailed(HWND hWnd, char *msg);
+void run_disassembler(HWND hWnd, glbls *hbuf);
+void dasm_list_to_file_cb(HWND hWnd, glbls *hbuf);
+void load_listing(FILEINF *fdat);
+void load_cmdfile(FILEINF *fdat);
+void load_lblfile(FILEINF *fdat);
+void cmd_save_as(FILEINF *fdat);
+void cmd_save(FILEINF *fdat);
+void lbl_save_as(FILEINF *fdat);
+void lbl_save(FILEINF *fdat);
+void opts_save(HWND hWnd, glbls *hbuf);
+void opts_load(HWND hwnd, glbls *hbuf);
+
 #define OPT_BIN "BIN-FILE:"
 #define OPT_CMD "CMD-FILE:"
 #define OPT_LBL "LBL-FILE:"

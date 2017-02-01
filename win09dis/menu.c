@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include "win09dis.h"
 
+DLGPROC CALLBACK AboutDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 HINSTANCE hInst;
 
 RECT wnbx;

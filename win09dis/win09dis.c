@@ -6,11 +6,25 @@
 #include "win09dis.h"
 #include <commctrl.h>
 
+HWND buildsubwindow(HWND hwnd, LPCSTR class_name, DWORD style_add, int left, int top, int right, int bottom, HMENU winID, char *wintype);
+void not_implemented(HWND hwindow);
+void listview_insert_cols(HWND listview, int totcols, char **titles);
+BOOL window_quit(HWND hWnd);
+DLGPROC CALLBACK AboutDlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 #define IDC_LIST_WIN 501
 #define IDC_CMD_WIN  502
 #define IDC_LBL_WIN  503
 #define IDC_WE_BAR  504
 #define IDC_NS_BAR  505
+
+#ifdef _WIN64
+#  define GWLID GWLP_ID
+#  define GWLWNDPROC GWLP_WNDPROC
+#else
+#  define GWLID GWL_ID
+#  define GWLWNDPROC GWL_WNDPROC
+#endif
 
 WNDPROC lpfnListViewWndProc;    // Original ListView Window proc
 
@@ -262,7 +276,7 @@ ResizeProc (HWND hWnd,
             EnableAllWindows (FALSE);
             GetWindowRect (hWnd, &myRect);
             GetClientRect (TopWindow, &mainRect);
-            myID = GetWindowLong (hWnd, GWL_ID);
+            myID = GetWindowLong (hWnd, GWLID);
             PaneResizing = TRUE;
             break;
         case WM_LBUTTONUP:
@@ -322,7 +336,7 @@ WndProc ( HWND hWnd,
 
            lpfnListViewWndProc =
                 (WNDPROC)SetWindowLong (O9Dis.list_file.l_store,
-                                        GWL_WNDPROC,
+                                        GWLWNDPROC,
                                         (DWORD)SubListViewProc);
 
            // Horizontal Resize bar to right of listing window
@@ -411,7 +425,7 @@ WndProc ( HWND hWnd,
                                   LBL_NCOLS, lbl_ttls);
             // SubClass labels window
             SetWindowLong (O9Dis.lblfile.l_store,
-                                GWL_WNDPROC,
+                                GWLWNDPROC,
                                 (DWORD)SubListViewProc);
         }
         break;
@@ -648,7 +662,7 @@ WndProc ( HWND hWnd,
             }
             return DefWindowProc (hWnd, Message, wParam, lParam);
         case WM_CONTEXTMENU:
-            switch (GetWindowLong ((HWND)wParam, GWL_ID))
+            switch (GetWindowLong ((HWND)wParam, GWLID))
             {
                 case IDC_LBL_WIN:
                     onLblRowRButtonPress (hWnd, (HWND)wParam,

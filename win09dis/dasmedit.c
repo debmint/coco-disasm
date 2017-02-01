@@ -15,6 +15,15 @@
 #include <string.h>
 #include <stdio.h>
 
+void build_label_selector(HWND combo, char **modept);
+void txtbuf_insert_line(HWND t_buf, char *line);
+int GetListingSelRow(HWND lv);
+void bnds_define_cb(HWND hWnd, FILEINF *fdat);
+void rename_label(HWND parent, FILEINF *fdat);
+void lbl_insert_line(FILEINF *fdat);
+void lbl_delete_line(HWND lblview);
+void lbl_properties(HWND lblView);
+
 GList *amode_list = NULL;
 char *lblEdVals[3];
 

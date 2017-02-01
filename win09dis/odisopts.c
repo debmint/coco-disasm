@@ -13,6 +13,11 @@
 #include "win09dis.h"
 #include "commctrl.h"
 
+BOOL initPageFillClass(HINSTANCE hinst);
+void WINAPI OnOptDlgInit(HWND hwnDlg);
+BOOL CALLBACK OptDlgProc(HWND hwnDlg, UINT Message, WPARAM wParam, LPARAM lParam);
+void set_dis_opts_cb(HWND hWnd);
+
 // Widget ID's
 #define DLG_FILES 201
 #define DLG_APPEAR 202

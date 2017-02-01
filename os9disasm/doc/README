@@ -9,3 +9,7 @@ If you prefer some other format, or prefer html produced with a different
 stylesheet, you may use any docbook tools you have and compile them to your
 preferrred format.  Any tools that will process xml or xsl language should
 work.
+
+NOTE: It will probably be necessary to manually edit the Makefile in this
+directory pointing to the desired stylesheet, as systems differ so greatly
+in the layout.  This is the "STYLSHEET" variable.

@@ -17,10 +17,16 @@
 /*#define GOT_DTBL    */            /*  We loaded the data in dasmedit.c */
 #include "../os9disasm/dtble.h"
 
-// Temporary fix
-#ifndef HAVE_STRCASECMP
-#  define strcasecmp strcmp
-#endif
+GList *g_list_find(GList *gl, void *str, int len);
+GList *g_list_alloc(GList *prev, void *data);
+GList *g_list_append(GList *lbegin, void *data);
+GList *g_list_del(GList *begin, GList *deleteme);
+GList *amode_init(void);
+void amode_add_from_string(char *ptr);
+void amode_list_edit_cb(HWND topwin);
+char *get_addressing_mode(HWND hWnd, char *opcode, char *mnemonic, char *oprand);
+char *guess_addr_mode(char *mnem);
+void adr_mode_cb(HWND dlgWnd, FILEINF *fdat);
 
 GList *
 g_list_find (GList *gl, void *str, int len)

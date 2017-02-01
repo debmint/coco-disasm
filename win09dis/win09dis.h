@@ -19,6 +19,7 @@
 #endif
 
 #include <windows.h>
+#include <winuser.h>
 #include "resource.h" 
 
 // Initial dimensions of the main window
@@ -137,11 +138,6 @@ typedef struct
 
 GLOBAL glbls O9Dis;
 GLOBAL HWND ToolTipControl;
-
-
-/* include proto.h here so that all structures can be defined */
-
-#include "proto.h"
 
 /* structure to pass to "response" callbacks for dialogs *
  * in dasmedit.c and amode.c                             */
