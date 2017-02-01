@@ -9,7 +9,8 @@ AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CC
-
+AC_CHECK_PROG([have_xsltproc],[xsltproc],[yes],[no])
+AM_CONDITIONAL(BUILD_DOCS, test x$have_xsltproc = xyes)
 # Checks for libraries.
 
 # Checks for header files.
@@ -70,6 +71,6 @@ AC_SUBST(gwinflags)
 
 AC_CONFIG_FILES([Makefile
                  g09dis/Makefile
-		 win09dis/Makefile
+                 win09dis/Makefile
                  os9disasm/Makefile])
 AC_OUTPUT

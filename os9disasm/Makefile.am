@@ -1,8 +1,12 @@
 # Makefile for os9disasm
 
 #include ../Makefile.rules
+SUBDIRS=
 
-SUBDIRS	= doc
+if BUILD_DOCS
+SUBDIRS += doc
+endif
+
 ##EXTRA_DIST = doc/html/*.html doc/README doc/*.xml doc/Makefile doc/html/images/*
 
 AM_LDFLAGS	=-L../lib

@@ -7,9 +7,9 @@
 bin_PROGRAMS = win09dis
 
 GCSRC = win09dis.c filestuff.c menu.c odisopts.c amode.c dasmedit.c search.c
-#GHDR = win09dis.h proto.h
+GHDR = win09dis.h resource.h
 
-win09dis_SOURCES = ${GCSRC} windis.rc
+win09dis_SOURCES = ${GCSRC} ${GHDR} windis.rc
 
 win09dis_LDADD  = -lcomctl32
 AM_CFLAGS	=@winflags@ -Wall
