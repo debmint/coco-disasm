@@ -1,4 +1,15 @@
 <!-- vi set expandtab -->
+<!--
+ * This file is part of the coco-disasm project.
+ *
+ * Copyright (c) 2017 by David Breeding
+ *
+ * This project is licensed under the Gnu GPL v3 license. 
+ * You should have received a copy of the licence for this program
+ * in the file "COPYING".  If not, the license is available at
+ *       https://www.gnu.org/licenses/gpl-3.0.en.html
+-->
+
 <section id="ssetup"><title>Installation</title>
  <section><title>Tarfile extraction</title>
   <para>If the package was downloaded as a tarfile, it should have

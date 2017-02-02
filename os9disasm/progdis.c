@@ -1,3 +1,15 @@
+/*
+ * This file is part of the coco-disasm project.
+ *
+ * Copyright (c) 2017 by David Breeding
+ *
+ * This project is licensed under the Gnu GPL v3 license. 
+ * You should have received a copy of the licence for this program
+ * in the file "COPYING".  If not, the license is available at
+ *       https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 /* ************************************************************************ *
  *                                                                          $
  *  os9disasm - OS9-6809 CROSS DISASSEMBLER                                 $
