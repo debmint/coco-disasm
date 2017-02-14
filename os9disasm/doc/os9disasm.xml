@@ -1,3 +1,6 @@
+<?xml version="1.0"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+
 <!--
  * This file is part of the coco-disasm project.
  *
@@ -9,8 +12,6 @@
  *       https://www.gnu.org/licenses/gpl-3.0.en.html
 -->
 
-<?xml version="1.0"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
 <!ENTITY odis "<command>OS9Disasm</command>">
 <!ENTITY gtk "<command>GTK</command>">
 <!ENTITY windis "<command>WinDis</command>">
