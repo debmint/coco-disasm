@@ -82,7 +82,8 @@ usage ()
              "    -z  -  Print zero register offset. (Default is \"no\"\n");
     fprintf (stderr, "\n   PAGE SPECS\n");
     fprintf (stderr, "    -pw[=]<page width>     default=80\n");
-    fprintf (stderr, "    -pd[=]<pagd depth>     default=66\n");
+    fprintf (stderr,
+            "    -pd[=]<page depth>     default=66    0=disable pagination\n");
     fprintf (stderr, "\n   TARGET CPU\n");
     fprintf (stderr, "\n    -x[=]<type> - Target OS\n");
     fprintf (stderr, "                C=Coco (default = OS9)\n");

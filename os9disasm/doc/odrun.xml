@@ -167,7 +167,10 @@
               <row>
                 <entry><command>pd[=]&lt;pagedepth&gt;</command>
                 </entry>
-                <entry>Set page depth for listing output (Default=66)</entry>
+                <entry>Set page depth for listing output (Default=66).
+                  A value of <command>0</command> disables
+                  pagination.
+                </entry>
               </row>
             </tbody>
           </tgroup>

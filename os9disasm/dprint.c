@@ -136,9 +136,12 @@ PrintCleanup (struct printbuf *pb)
 static void
 BlankLine ()                    /* Prints a blank line */
 {
-    if ( ! PgLin || PgLin > (PgDepth - 6))
+    if (PgDepth)
     {
-        StartPage ();
+        if ( ! PgLin || PgLin > (PgDepth - 6))
+        {
+            StartPage ();
+        }
     }
 
     printf ("%5d\n", LinNum++);
@@ -299,8 +302,13 @@ PrintFormatted (char *pfmt, struct printbuf *pb)
 {
     int _linlen;
 
-    if ( ! PgLin || PgLin > (PgDepth - 6))
-        StartPage ();
+    if (PgDepth)
+    {
+        if ( ! PgLin || PgLin > (PgDepth - 6))
+        {
+            StartPage ();
+        }
+    }
 
     if (UpCase)
     {
@@ -346,38 +354,41 @@ StartPage ()
     time_t now;
     struct tm *tm;
 
-    if (PgLin)
+    if (PgDepth)
     {
-        while (PgLin++ < PgDepth)
+        if (PgLin)
         {
-            printf ("\n");
-        }
-    }
-
-    ++PgNum;
-    PgLin = 0;
-    /*.. */
-
-    now = time (0);
-    tm = localtime (&now);
-
-    printf
-        ("OS9 Cross Disassembler - Ver. %s    %02d/%02d/%02d %02d:%02d:%02d      Page %03d\n\n", VERSION,
-         tm->tm_mon + 1, tm->tm_mday, tm->tm_year + 1900, tm->tm_hour,
-         tm->tm_min, tm->tm_sec, PgNum);
-    PgLin = 2;
-
-    if (PgNum == 1)
-    {                           /* print disassembler info on first page */
-        LinNum = 1;
-        printf ("%5d%20s %s %s\n", LinNum++, "", bywhom, modfile);
-
-        if (WrtSrc)
-        {
-            fprintf (outpath, "%s %s\n", bywhom, modfile);
+            while (PgLin++ < PgDepth)
+            {
+                printf ("\n");
+            }
         }
 
-        BlankLine ();
+        ++PgNum;
+        PgLin = 0;
+        /*.. */
+
+        now = time (0);
+        tm = localtime (&now);
+
+        printf
+            ("OS9 Cross Disassembler - Ver. %s    %02d/%02d/%02d %02d:%02d:%02d      Page %03d\n\n", VERSION,
+             tm->tm_mon + 1, tm->tm_mday, tm->tm_year + 1900, tm->tm_hour,
+             tm->tm_min, tm->tm_sec, PgNum);
+        PgLin = 2;
+
+        if (PgNum == 1)
+        {                           /* print disassembler info on first page */
+            LinNum = 1;
+            printf ("%5d%20s %s %s\n", LinNum++, "", bywhom, modfile);
+
+            if (WrtSrc)
+            {
+                fprintf (outpath, "%s %s\n", bywhom, modfile);
+            }
+
+            BlankLine ();
+        }
     }
 }
 
