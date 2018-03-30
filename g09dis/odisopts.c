@@ -264,7 +264,6 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
               *aprbx,
               *hbx, *vbx, *frame, *lbl;       /* Generic temporary widgets */
     /*GtkWidget *hsep1;*/
-    GSList * list_radio_group = NULL;
     gint result;
     int files_page, misc_page;  /* Save page numbers */
 
@@ -398,8 +397,6 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     gtk_widget_set_size_request(vbx,300,-1);
     list_radio_file = gtk_radio_button_new_with_label (NULL,
                                                        "Output to file/stdout");
-    list_radio_group = gtk_radio_button_get_group (
-                         GTK_RADIO_BUTTON(list_radio_file));
     g_signal_connect (G_OBJECT (list_radio_file), "toggled",
                       G_CALLBACK (on_ofile_tgle), listing_wdg);
 

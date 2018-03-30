@@ -609,7 +609,6 @@ load_text (FILEINF * fdat, GtkWidget * my_win, gchar ** newfile)
 {
     register FILE *infile;
     gchar buffer[500];
-    gchar *strpt;
 
     clear_text_buf(fdat);
 

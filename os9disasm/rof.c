@@ -74,7 +74,7 @@ extern char realcmd[];
 extern struct printbuf *pbuf;
 
 /* DEBUGGING function */
-static void
+void
 reflst (struct asc_data *cl)
 {
 

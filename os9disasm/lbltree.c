@@ -103,7 +103,7 @@ ListRoot (char symbol)
  *      for Data Boundary tree                                      *
  * **************************************************************** */
 
-static struct databndaries *
+struct databndaries *
 bGoBegin (struct databndaries *pt)
 {
     while (pt->DLeft || pt->DRight)
@@ -178,8 +178,7 @@ int
 LblCalc (char *dst, int adr, int amod)
 {
     int raw = adr /*& 0xffff */ ;   /* Raw offset (postbyte) - was unsigned */
-    char mainclass,                 /* Class for this location */
-         oclass = 0;                /* Class for offset (if present) */
+    char mainclass;                 /* Class for this location */
 
     struct databndaries *kls = 0;
     struct nlist *mylabel = 0;
@@ -199,8 +198,6 @@ LblCalc (char *dst, int adr, int amod)
 
             if (kls->dofst)     /* Offset ? */
             {
-                oclass = (char) (kls->dofst->oclas_maj);
-
                 if (kls->dofst->add_to)
                 {
                     raw -= kls->dofst->of_maj;
@@ -234,8 +231,6 @@ LblCalc (char *dst, int adr, int amod)
 
             if (kls->dofst)
             {
-                oclass = kls->dofst->oclas_maj;
-
                 if (kls->dofst->add_to)
                 {
                     raw -= kls->dofst->of_maj;

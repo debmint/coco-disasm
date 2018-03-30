@@ -615,9 +615,7 @@ cmdamode (char *pt)
 void
 getrange (char *pt, int *lo, int *hi, int usize, int allowopen)
 {
-    char tmpdat[50], *dpt, c;
-
-    dpt = tmpdat;               /* just to be sure */
+    char tmpdat[50], c;
 
     /* see if it's just a single byte/word */
 

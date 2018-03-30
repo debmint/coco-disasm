@@ -68,8 +68,7 @@ usage ()
     printf ("\n Options:\n");
     printf ("   PATHS\n");
     printf ("    -c[=]<command file>\n");
-    printf (stderr,
-             "    -d  -  deine path to defs files  (default=$HOME/coco/defs)\n");
+    printf ("    -d  -  deine path to defs files  (default=$HOME/coco/defs)\n");
     printf ("    -s[=]<label file> - up to %d allowed\n", MAX_LBFIL);
     printf ("    -o[=]<source (.asm) filename\n");
     printf ("\n   OUTPUT OPTIONS\n");
@@ -78,8 +77,7 @@ usage ()
     printf ("\n    -u  -  fold to uppercase\n");
     printf ("    -a    Specify all 8-bit indexes with \"<\"\n");
     printf ("    -g  -  Output listing in tabbed format suitable for g09dis to interpret\n");
-    printf (stderr,
-             "    -z  -  Print zero register ofset. (Default is \"no\"\n");
+    printf ("    -z  -  Print zero register ofset. (Default is \"no\"\n");
     printf ("\n   PAGE SPECS\n");
     printf ("    -pw[=]<page width>     default=80\n");
     printf ("    -pd[=]<pagd depth>     default=66\n");

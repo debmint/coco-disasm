@@ -604,8 +604,6 @@ static int
 TxIdx ()
 {
     int postbyte;
-    struct databndaries *kls;   /* Class for this address */
-    char myclass;
     char oper1[25],
          oper2[5],
          tmp[20];
@@ -717,16 +715,6 @@ TxIdx ()
         }
         else        /* then it's 8- or 16-bit offset */
         {
-            if ((kls = ClasHere (LAdds[AMode], Pc)))
-            {
-                myclass = kls->b_typ;
-                /* set up offset if present */
-            }
-            else
-            {
-                myclass = DEFAULTCLASS;
-            }
-
             PBytSiz = (postbyte & 1) + 1;
 
             switch (postbyte & 0x0f)
@@ -773,7 +761,6 @@ TxIdx ()
                 case 0x0d:                      /* nn,PC (16 bit) */
                     AMode = AM_REL;
                     /* below is a temporary fix */
-                    myclass = DEFAULTCLASS;
                     regput (postbyte, oper1, 1);
 
                     sprintf (oper1, "%s,%s", oper1, "pcr");

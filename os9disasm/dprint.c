@@ -567,10 +567,8 @@ OS9Modline ()
 {
     struct nlist *LL = SymLst[strpos (lblorder, 'L')];
     struct printbuf PBf, *prtbf = &PBf;
-    char hbf[10];
     long progstart = ftell (progpath);
 
-    hbf[0] = '\0';
     InProg = 0;
     memset (prtbf, 0, sizeof (struct printbuf));
     CmdEnt = o9_fgetword (progpath);
