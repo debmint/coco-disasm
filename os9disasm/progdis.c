@@ -1269,9 +1269,9 @@ DoPrt (struct nlist *nl)
 
     printf (prfmt, nl->sname, nl->myaddr);
 
-    if (nl->RNext)
+    if (nl->LNext)
     {
-        DoPrt (nl->RNext);
+        DoPrt (nl->LNext);
     }
 }
 

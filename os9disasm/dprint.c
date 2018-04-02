@@ -831,7 +831,7 @@ ROFDataPrint ()
 void
 OS9DataPrint ()
 {
-    struct nlist *dta, *srch;
+    struct nlist *dta;
     char *what = "* OS9 data area definitions";
 
     InProg = 0;    /* Stop looking for Inline program labels to substitute */
@@ -851,19 +851,19 @@ OS9DataPrint ()
         BlankLine ();
 
         /*first, if first entry is not D000, rmb bytes up to first */
-        srch = dta;
+        //srch = dta;
 
-        while (srch->LNext)
-        {
-            srch = srch->LNext;
-        }
+        //while (srch->LNext)
+        //{
+            //srch = srch->LNext;
+        //}
 
-        if ((srch->myaddr))
+        if ((dta->myaddr))
         {                       /* i.e., if not D000 */
             strcpy (pbuf->mnem, "rmb");
-            sprintf (pbuf->operand, "%d", srch->myaddr);
+            sprintf (pbuf->operand, "%d", dta->myaddr);
             CmdEnt = PrevEnt = 0;
-            PrintLine (realcmd, pbuf, 'D', 0, srch->myaddr);
+            PrintLine (realcmd, pbuf, 'D', 0, dta->myaddr);
         }
 
         ListData (dta, ModData, 'D');
@@ -890,85 +890,71 @@ void
 ListData (struct nlist *me, int upadr, char class)
 {
     struct printbuf PB, *pbf = &PB;
-    register struct nlist *srch;
-    register int datasize;
+    register int datasize = upadr - me->myaddr;
 
     memset (pbf, 0, sizeof (struct printbuf));
 
-    /* Process lower entries first */
-
-    if (me->LNext)
-    {
-        ListData (me->LNext, me->myaddr, class);
-    }
-
     /* Don't print non-data elements here */
 
-    if (me->myaddr > ModData)
+    while ((me) && (me->myaddr <= upadr))
     {
-        return;
-    }
-
-    /* Now we've come back, print this entry */
-
-    strcpy (pbf->lbnm, me->sname);
-
-    if (IsROF && me->global)
-    {
-        strcat (pbf->lbnm, ":");
-    }
-
-    if (me->RNext)
-    {
-        srch = me->RNext;       /* Find smallest entry in that list */
-
-        while (srch->LNext)
+        if (me->myaddr > upadr)
         {
-            srch = srch->LNext;
+            return;
         }
 
-        datasize = (srch->myaddr) - (me->myaddr);
-    }
-    else
-    {
-        datasize = (upadr) - (me->myaddr);
-    }
+        /* Now we've come back, print this entry */
 
-    /* Don't print any class 'D' variables which are not in Data area */
-    /* Note, Don't think we'll get this far, we have a return up above,
-     * but keep this one till we know it works
+        strcpy (pbf->lbnm, me->sname);
 
-    if ((OSType == OS_9) && (me->myaddr > ModData))
-    {
-        return;
-    }*/
-
-    if (me->myaddr != ModData)
-    {
-        strcpy (pbf->mnem, "rmb");
-        sprintf (pbf->operand, "%d", datasize);
-    }
-    else
-    {
-        if (IsROF)
+        if (IsROF && me->global)
         {
+            strcat (pbf->lbnm, ":");
+        }
+
+        /* Don't print any class 'D' variables which are not in Data area */
+        /* Note, Don't think we'll get this far, we have a return up above,
+         * but keep this one till we know it works
+
+        if ((OSType == OS_9) && (me->myaddr > ModData))
+        {
+            return;
+        }*/
+
+        if (me->myaddr != upadr)
+        {
+            unsigned int bsiz;
+
+            if (me->LNext)
+            {
+                bsiz = me->LNext->myaddr - me->myaddr;
+            }
+            else
+            {
+                bsiz = upadr - me->myaddr;
+            }
+
             strcpy (pbf->mnem, "rmb");
-            sprintf (pbf->operand, "%d", datasize);
+            sprintf (pbf->operand, "%d", bsiz);
         }
         else
         {
-            strcpy (pbf->mnem, "equ");
-            strcpy (pbf->operand, ".");
+            if (IsROF)
+            {
+                strcpy (pbf->mnem, "rmb");
+                sprintf (pbf->operand, "%d", datasize);
+            }
+            else
+            {
+                strcpy (pbf->mnem, "equ");
+                strcpy (pbf->operand, ".");
+            }
         }
-    }
 
-    CmdEnt = me->myaddr;
-    PrevEnt = CmdEnt;
-    PrintLine (realcmd, pbf, class, me->myaddr, (me->myaddr + datasize));
-
-    if (me->RNext && (me->myaddr < ModData))
-    {
-        ListData (me->RNext, upadr, class);
+        CmdEnt = me->myaddr;
+        PrevEnt = CmdEnt;
+        PrintLine (realcmd, pbf, class, me->myaddr, (me->myaddr + datasize));
+        me = me->LNext;
     }
 }
 
@@ -1105,52 +1091,46 @@ TellLabels (struct nlist *me, int flg, char class, int minval)
 
     memset (pb, 0, sizeof (struct printbuf));
 
-    if (me->LNext)
+    while (me)
     {
-        TellLabels (me->LNext, flg, class, minval);
-    }
-
-    if ((flg < 0) || (flg == me->stdnam))
-    {
-        /* Don't print real OS9 Data variables here */
-
-        if (me->myaddr >= minval)
-/*        if (!((OSType == OS_9) && (class == 'D') && (me->myaddr <= ModData)))*/
+        if ((flg < 0) || (flg == me->stdnam))
         {
-            if ( ! HadWrote)
-            {
-                BlankLine ();
-                printf (ClsHd, LinNum++, "", NowClass);
-                ++PgLin;
+            /* Don't print real OS9 Data variables here */
 
-                if (outpath)
+            if (me->myaddr >= minval)
+            {
+                if ( ! HadWrote)
                 {
-                    fprintf (outpath, SrcHd, NowClass);
+                    BlankLine ();
+                    printf (ClsHd, LinNum++, "", NowClass);
+                    ++PgLin;
+
+                    if (outpath)
+                    {
+                        fprintf (outpath, SrcHd, NowClass);
+                    }
+
+                    HadWrote = 1;
+                    BlankLine ();
                 }
 
-                HadWrote = 1;
-                BlankLine ();
-            }
+                strcpy (pb->lbnm, me->sname);
+                strcpy (pb->mnem, "equ");
 
-            strcpy (pb->lbnm, me->sname);
-            strcpy (pb->mnem, "equ");
+                if (strchr ("!^", class))
+                {
+                    sprintf (pb->operand, "$%02x", me->myaddr);
+                }
+                else
+                {
+                    sprintf (pb->operand, "$%04x", me->myaddr);
+                }
 
-            if (strchr ("!^", class))
-            {
-                sprintf (pb->operand, "$%02x", me->myaddr);
+                CmdEnt = PrevEnt = me->myaddr;
+                PrintLine (realcmd, pb, class, me->myaddr, me->myaddr + 1);
             }
-            else
-            {
-                sprintf (pb->operand, "$%04x", me->myaddr);
-            }
-
-            CmdEnt = PrevEnt = me->myaddr;
-            PrintLine (realcmd, pb, class, me->myaddr, me->myaddr + 1);
         }
-    }
 
-    if (me->RNext)
-    {
-        TellLabels (me->RNext, flg, class, minval);
+        me = me->LNext;
     }
 }
