@@ -55,7 +55,11 @@ char RegOrdr[] = "xyus";
 /*extern struct lkuptbl *Pre10, *Pre11, *Byte1;*/
 
 extern char pseudcmd[], realcmd[];
+extern int          code_begin;
+extern unsigned int dpSiz,
+                    eText;
 
+unsigned int bssEnd;
 char CmdBuf[10];                /* buffer to hold bytes of cmd code */
 
 struct databndaries *curbnd;
@@ -1338,13 +1342,44 @@ os9hdr (void)
         PBytSiz = 2;        /* Kludge??? */
         addlbl (ModData, 'D');
         HdrLen = 13;
+
+        /* NOTE:  This method may fail if some non_standard
+         * cstart might be used
+         */
+
+        if (CSrc)
+        {
+            fseek(progpath, ModNam, SEEK_SET);
+
+            /* Seek to end of name.  This will put us at
+             * the first byte of the cstart code */
+            while (! (fgetc(progpath) & 0x80));
+            ModEdit = (unsigned char)fgetc(progpath);    /* Bypass Edition */
+            code_begin = (unsigned int)ftell(progpath) & 0xffff;
+            /* We're now at the begin of cstart code.
+             * If cstart has not changed up to this point...
+             */
+            fseek(progpath, 0x20, SEEK_CUR);
+            eText = (unsigned int)o9_fgetword(progpath) +
+                        (unsigned int)ftell(progpath);
+            fseek(progpath, code_begin + 0x2c, SEEK_SET);
+            dpSiz = (unsigned int)o9_fgetword(progpath);
+        }
     }
     else
     {
         ModData = -1;       /* Flag as not used */
         HdrLen = 9;
     }
-    CodEnd = ModSiz - 3;
+
+    if (CSrc)
+    {
+        CodEnd = eText;
+    }
+    else
+    {
+        CodEnd = ModSiz - 3;
+    }
 
     /* EndAdr: Ptr to end of code (less OS9 CRC bytes
      * .. actually, next byte past last executable code
@@ -1386,7 +1421,14 @@ progdis ()
             }
             else
             {
-                OS9Modline ();
+                if (CSrc)
+                {
+                    OS9Psect ();
+                }
+                else
+                {
+                    OS9Modline ();
+                }
             }
         }
 
@@ -1401,7 +1443,16 @@ progdis ()
             }
             else
             {
-                OS9DataPrint ();
+                if (CSrc)
+                {
+                    getIRefs();
+                    fseek(progpath, eText, SEEK_SET);
+                    VsectPrint();
+                }
+                else
+                {
+                    OS9DataPrint ();
+                }
             }
         }
     }
@@ -1426,7 +1477,15 @@ progdis ()
             }
             else
             {
-                Pc = HdrLen;       /* Entry point for executable code */
+                if (CSrc)
+                {
+                    Pc = code_begin;
+                    fseek(progpath,code_begin, SEEK_SET);
+                }
+                else
+                {
+                    Pc = HdrLen;       /* Entry point for executable code */
+                }
             }
     }
 
@@ -1541,7 +1600,7 @@ progdis ()
                 RsEnd ();
                 break;
             default:
-                if (IsROF)
+                if (IsROF || CSrc)
                 {
                     WrtEnds ();
                 }

@@ -122,12 +122,13 @@ GLOBAL unsigned int ModLoad;    /* Load address for RS-Dos module */
 
 	/* Module info from OS9 module header */
 GLOBAL unsigned int ModSiz,
-		    ModNam,
-		    ModExe,
-		    ModTyp,     /* only one byte, but probably saves processing */
-		    ModData,
-            ModRev,
-		    HdrLen;	    /* (probably useful for other OS's, too) */
+                ModNam,
+                ModExe,
+                ModTyp,     /* only one byte, but probably saves processing */
+                ModData,
+                ModRev,
+                ModEdit,
+                HdrLen;	    /* (probably useful for other OS's, too) */
 
 /* The following are variables used by the disassembly process */
 
@@ -147,6 +148,15 @@ GLOBAL int	NowAmode,
 		NowOfst,
 		PBytSiz;	        /* # bytes in operand	*/
 
+GLOBAL int CSrc;
+GLOBAL unsigned int M_ID,
+                    M_SIZE,
+                    M_NAME,
+                    M_TYPE,
+                    M_REVS,
+                    M_PARITY,
+                    M_EXEC,
+                    M_MEM;
 
 		/* printer/output specific stuff */
 GLOBAL int HavUnknown;

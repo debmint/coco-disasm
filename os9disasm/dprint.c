@@ -40,8 +40,13 @@ static void StartPage ();
 static void TellLabels (struct nlist *me, int flg, char class, int minval);
 
 extern char *CmdBuf;
+extern int code_begin;
 extern struct printbuf *pbuf;
 extern struct rof_hdr *rofptr;
+unsigned int dpSiz,
+             eText;
+static unsigned int InitDP,
+                    InitBSS;
 
 char pseudcmd[80] = "%5d  %04X %-14s %-10s %-6s %-10s %s\n";
 char realcmd[80] =  "%5d  %04X %-04s %-9s %-10s %-6s %-10s %s\n";
@@ -55,6 +60,14 @@ static char ClsHd[100];         /* header string for label equates */
 static char FmtBuf[200];        /* Buffer to store formatted string */
 int HadWrote;                   /* flag that header has been written */
 char *SrcHd;                    /* ptr for header for source file */
+
+struct ireflist {
+    struct ireflist *Prev;
+    struct ireflist *Next;
+       unsigned int  dAddr;
+       struct nlist *lbl;
+               char  Typ;
+} *IRefs;
 
 /* *************************************************************** *
  * adjpscmd () - Adjusts pseudcmd/realcmd label length to          *
@@ -554,6 +567,57 @@ ROFPsect (struct rof_hdr *rptr)
     PrintLine (pseudcmd, pbuf, CNULL, 0, 0); 
 }
 
+/* Prints a psect line */
+
+void
+OS9Psect ()
+{
+    char modnam[20];
+    char execloc[20];
+    char progend[20];
+    char *tmppt = modnam;
+    unsigned char ch;
+    struct nlist *LL = SymLst[strpos (lblorder, 'L')];
+    struct printbuf PBf, *prtbf = &PBf;
+    struct nlist *ldf;
+
+    memset(prtbf, 0, sizeof(struct printbuf));
+    fseek(progpath, ModNam, SEEK_SET);
+
+    while ( !(ch=(fgetc(progpath) & 0x7f)))
+    {
+        *(tmppt++) = ch;
+    }
+
+    *(tmppt++) = ch & 0x7f;
+    *tmppt = '\0';
+    strcat(modnam, "_a");
+
+    if ((ldf = FindLbl(LL, ModExe)))
+    {
+        strcpy(execloc, ldf->sname);
+    }
+    else
+    {
+        sprintf(execloc, "$%04x", ModExe);
+    }
+
+    if ((ldf = FindLbl(LL, eText)))
+    {
+        strcpy(progend, ldf->sname);
+    }
+    else
+    {
+        sprintf(execloc, "$%04x", ModExe);
+    }
+
+    sprintf(prtbf->operand, "%s,$%02x,$%02x,%02x,0,%s",
+            modnam, ModTyp, ModRev, ModEdit, execloc);
+    strcpy(prtbf->mnem, "psect");
+    InProg = 0;
+    PrintLine (pseudcmd, prtbf, CNULL, 0, 0);
+    InProg = 1;
+}
 
 /* ********************************************* *
  * OS9Modline()  - print out OS9 mod line        *
@@ -795,7 +859,7 @@ ROFDataPrint ()
                          */
 
                         ModData = thissz[isinit];
-                        ListData (dta, thissz[isinit], dattyp[isinit]);
+                        ListData (dta, 0, thissz[isinit], dattyp[isinit]);
                     }           /* end "if (dta)" */
                     else        /* else no labels.. check to see */
                     {           /* if any "hidden" variables */
@@ -824,6 +888,249 @@ ROFDataPrint ()
     InProg = 1;
 }
 
+void
+getIRefs ()
+{
+    char *klaslist = "LD";
+    char *klas = klaslist;
+    struct ireflist *myref;
+    unsigned char *dpData,
+                  *ndpDat;
+
+    fseek(progpath, eText, SEEK_SET);
+    InitDP = o9_fgetword(progpath);
+    dpData = malloc(InitDP);
+    fread(dpData, InitDP, 1, progpath);
+    InitBSS = o9_fgetword(progpath);
+    ndpDat = malloc(InitBSS);
+    fread(ndpDat, InitBSS, 1, progpath);
+
+    while (*klas)
+    {
+        unsigned int count = (unsigned int)o9_fgetword(progpath) & 0xffff;
+        unsigned myloc;
+
+        while ((count-- > 0))
+        {
+            unsigned int dst;
+
+            myloc = o9_fgetword(progpath);
+            myref = malloc(sizeof(struct ireflist));
+            memset(myref, 0, sizeof(struct ireflist));
+            myref->dAddr = myloc;
+            myref->Typ = *klas;
+            addlbl(myloc, 'D');
+
+            /* Now set up label for the destination */
+
+            if (dst >= dpSiz)
+            {
+                dst = (ndpDat[myloc-dpSiz] << 8) | (ndpDat[myloc-dpSiz + 1]);
+            }
+            else
+            {
+                dst = (dpData[myloc] << 8) | (dpData[myloc + 1]);
+            }
+            addlbl(dst, myref->Typ);
+
+            /* Now put new iref in order in IRefs list */
+            if (IRefs)
+            {
+                register struct ireflist *ipt = IRefs;
+
+                if (myref->dAddr < ipt->dAddr)
+                {
+                    myref->Next = ipt;
+                    ipt->Prev = myref;
+                    IRefs = myref;
+                }
+                else
+                {
+                    register struct ireflist *prevref = ipt;
+
+                    while ((ipt) && (myloc > ipt->dAddr))
+                    {
+                        prevref = ipt;
+                        ipt = ipt->Next;
+                    }
+
+                    myref->Prev = prevref;
+
+                    if (ipt)
+                    {
+                        if (ipt->Next)
+                        {
+                            myref->Next = ipt->Next;
+                            (myref->Next)->Prev = myref;
+                        }
+
+                        //ipt->Next = myref;
+                    }
+
+                    prevref->Next = myref;
+//                    else
+//                    {
+//                        prevref->Next = myref;
+//                    }
+                }
+            }
+            else
+            {
+                IRefs = myref;
+            }
+        }
+
+        ++klas;
+    }
+
+    free(dpData);
+    free(ndpDat);
+//    {
+//        int count;
+//        struct ireflist *ir = IRefs;
+//
+//        for (count = 0; count < 0x20; count++)
+//        {
+//            
+//            fprintf (stderr,"%10s --- 0x%04x - '%c' (0x%x)\n", FindLbl(ListRoot(ir->Typ),ir->dAddr)->sname, ir->dAddr,ir->Typ, (ir->Prev ? ir->Prev->dAddr : 0));
+//            if (ir && (ir->dAddr > ir->Next->dAddr))
+//                fprintf(stderr, "????????????????????????????\n");
+//            ir=ir->Next;
+//        }
+//    }
+}
+
+static void
+writesect (char *mnem, char *oper)
+{
+    memset (pbuf, 0, sizeof (struct printbuf));
+    strcpy(pbuf->mnem, mnem);
+
+    if (oper)
+    {
+        strcpy(pbuf->operand, oper);
+    }
+
+    PrintLine(realcmd, pbuf, 'D', 0, 0);
+}
+
+/* Print a range of reserve bytes
+ * This is primarily used to fill a range up to
+ * a Reference
+ */
+
+static void
+InitRmb (unsigned int rangeEnd)
+{
+    while (CmdEnt < rangeEnd)
+    {
+        unsigned int lblend = LblPos(ListRoot('D'),CmdEnt)->myaddr;
+        unsigned int addr = CmdEnt;
+
+        while (addr < lblend)
+        {
+            pbuf->operand[0] = '\0';
+
+            while ((addr < lblend) && (strlen(pbuf->operand) < 24))
+            {
+                char tmpop[8];
+                
+                sprintf(tmpop, "%02d", (unsigned int)fgetc(progpath));
+
+                if (strlen(pbuf->operand))
+                {
+                    strcat(pbuf->operand, ",");
+                }
+
+                strcat(pbuf->operand, tmpop);
+                ++addr;
+            }
+
+            strcpy(pbuf->mnem, "fcb");
+
+            if (FindLbl(ListRoot('D'), CmdEnt))
+            {
+                strcpy(pbuf->lbnm, FindLbl(ListRoot('D'), CmdEnt)->sname);
+            }
+
+            PrintLine(realcmd, pbuf, 'D', CmdEnt, addr);
+            CmdEnt = addr;
+        }
+
+        if (strlen(pbuf->operand))
+        {
+            if (FindLbl(ListRoot('D'), addr))
+            {
+                strcpy(pbuf->lbnm, FindLbl(ListRoot('D'), addr)->sname);
+            }
+
+            PrintLine(realcmd, pbuf, 'D', CmdEnt, addr);
+            CmdEnt = addr;
+        }
+    }
+}
+
+void
+VsectPrint ()
+{
+    struct nlist *dta;
+    unsigned int initCount;
+
+    InProg = 0;
+    CmdEnt = 0;
+
+    strcpy(pbuf->mnem, "vsect");
+
+    if ((dta=ListRoot('D')))
+    {
+        /* Init Dp */
+        fseek(progpath, eText, SEEK_SET);
+        initCount = o9_fgetword(progpath);
+
+        if (initCount)
+        {
+            BlankLine();
+            writesect("vsect", "dp");
+            ListInitData(0, initCount);
+            writesect("ends", NULL);
+        }
+    }
+    else
+    {
+        return;
+    }
+
+    BlankLine();
+
+        /* Uninit dp */
+    if (dpSiz > CmdEnt)
+    {
+        writesect("vsect","dp");
+        struct nlist *nl = LblPos(ListRoot('D'), CmdEnt);
+
+        ListData((nl ? nl : LblPos(ListRoot('D'), CmdEnt)),
+                initCount, dpSiz, 'D');
+        writesect("ends", NULL);
+        BlankLine();
+    }
+
+    if ((initCount = o9_fgetword(progpath)))
+    {
+        writesect("vsect", NULL);
+        ListInitData(CmdEnt, initCount);
+    }
+
+    if (CmdEnt < ModData)
+    {
+        register struct nlist *n = FindLbl(ListRoot('D'), CmdEnt);
+
+        writesect("vsect", NULL);
+        ListData(n ? n : LblPos(ListRoot('D'), CmdEnt),
+                initCount, ModData, 'D');
+        writesect("ends", NULL);
+    }
+}
+
 /* *************************************************** *
  * OS9DataPrint()	Mainline routine to list data defs *
  * *************************************************** */
@@ -850,23 +1157,16 @@ OS9DataPrint ()
 
         BlankLine ();
 
-        /*first, if first entry is not D000, rmb bytes up to first */
-        //srch = dta;
-
-        //while (srch->LNext)
-        //{
-            //srch = srch->LNext;
-        //}
-
         if ((dta->myaddr))
         {                       /* i.e., if not D000 */
             strcpy (pbuf->mnem, "rmb");
             sprintf (pbuf->operand, "%d", dta->myaddr);
             CmdEnt = PrevEnt = 0;
             PrintLine (realcmd, pbuf, 'D', 0, dta->myaddr);
+            ++CmdEnt;
         }
 
-        ListData (dta, ModData, 'D');
+        ListData (dta, 1, ModData, 'D');
     }
     else
     {
@@ -878,6 +1178,72 @@ OS9DataPrint ()
     InProg = 1;
 }
 
+/* **************************************************************** *
+ * List Initialized data for the given area                         *
+ * Passed:  1) uint addrbegin - The starting address for the area   *
+ *          2) long filepos - The file position to begin            *
+ * **************************************************************** */
+
+void
+ListInitData (unsigned int addrbegin, unsigned int ttlbytes)
+{
+    unsigned int count = 0;
+    unsigned int addr = addrbegin;
+    unsigned int endaddr = CmdEnt + ttlbytes;
+
+    while (CmdEnt < endaddr)
+    {
+        if(IRefs)
+        {
+            struct nlist *nlp;
+
+            if (IRefs->dAddr > addr)
+            {
+                InitRmb(IRefs->dAddr);
+                addr = CmdEnt;
+            }
+            else
+            {
+                register struct ireflist *previref;
+                register unsigned int dst;
+                struct nlist *dstname;
+               
+                dst = o9_fgetword(progpath);
+                memset(pbuf, 0, sizeof(struct printbuf));
+                strcpy(pbuf->mnem, "fdb");
+                dstname = FindLbl(ListRoot(IRefs->Typ), dst);
+
+                if (dstname)
+                {
+                    strcpy(pbuf->operand, dstname->sname);
+                }
+                else
+                {
+                    sprintf(pbuf->operand, "%c%04x", IRefs->Typ, dst);
+                }
+
+                if ((nlp = FindLbl(ListRoot('D'), addr)))
+                {
+                    strcpy(pbuf->lbnm, nlp->sname);
+                }
+
+                PrintLine(realcmd, pbuf, 'D', IRefs->dAddr, IRefs->dAddr + 2);
+                CmdEnt += 2;
+                addr += 2;
+                count += 2;
+                previref = IRefs;
+                IRefs = IRefs->Next;
+                free(previref);
+            }
+        }
+        else
+        {
+            InitRmb(endaddr);
+            WrtEnds();
+        }
+    }
+}
+
 /* ******************************************************** *
  * ListData() - recursive routine to print rmb's for Data   *
  *              definitions                                 *
@@ -887,7 +1253,7 @@ OS9DataPrint ()
  * ******************************************************** */
 
 void
-ListData (struct nlist *me, int upadr, char class)
+ListData (struct nlist *me, unsigned int startaddr, int upadr, char class)
 {
     struct printbuf PB, *pbf = &PB;
     register int datasize = upadr - me->myaddr;
@@ -898,7 +1264,14 @@ ListData (struct nlist *me, int upadr, char class)
 
     while ((me) && (me->myaddr <= upadr))
     {
+        unsigned int bsiz = 1;
+
         if (me->myaddr > upadr)
+        {
+            return;
+        }
+
+        if ((CSrc) && (me->myaddr == upadr))
         {
             return;
         }
@@ -923,8 +1296,6 @@ ListData (struct nlist *me, int upadr, char class)
 
         if (me->myaddr != upadr)
         {
-            unsigned int bsiz;
-
             if (me->LNext)
             {
                 bsiz = me->LNext->myaddr - me->myaddr;
@@ -951,9 +1322,9 @@ ListData (struct nlist *me, int upadr, char class)
             }
         }
 
-        CmdEnt = me->myaddr;
-        PrevEnt = CmdEnt;
         PrintLine (realcmd, pbf, class, me->myaddr, (me->myaddr + datasize));
+        CmdEnt += bsiz;
+        PrevEnt = CmdEnt;
         me = me->LNext;
     }
 }

@@ -87,6 +87,7 @@ usage ()
     printf ("           -3  -  target CPU is 6309 (accept 6309 opcodes)\n");
     printf ("\n   SOURCE FILE TYPE\n");
     printf ("      -r  File is ROF\n");
+    printf ("      -w  Module built with rma/rlink\n");
     return;
 }
 
@@ -338,6 +339,9 @@ do_opt (char *c)
         }
 
         break;
+    case 'w':
+        CSrc = 1;
+        break;
     case 'd':
         if ( ! doingcmds)
         {
@@ -386,41 +390,40 @@ pass1 ()
 
     switch (OSType)
     {
-        int firstword;
-
         case OS_Coco:
             rsdoshdr ();
             break;
         default:   /* default is OS_9 */
             UseFCC = 1;
 
-            firstword = o9_fgetword (progpath);
+            M_ID = o9_fgetword (progpath);
 
-            if (firstword == 0x62cd)    /* First half or ROF sync bytes? */
+            if (M_ID == 0x62cd)    /* First half or ROF sync bytes? */
             {
                 /* If so, get second 16 bytes */
 
-                firstword = firstword << 16 | o9_fgetword (progpath);
+                M_ID = M_ID << 16 | o9_fgetword (progpath);
 
-                if ( firstword == 0x62cd2387)
+                if ( M_ID == 0x62cd2387)
                 {
                     IsROF = 1;
                 }
                 else
                 {
                     fprintf (stderr, "Not an ROF Header - starts with %08x\n",
-                                     firstword);
+                                     M_ID);
                     exit (1);
                 }
             }
             else
             {
-                if (firstword != 0x87cd)
+                if (M_ID != 0x87cd)
                 {
                     fprintf (stderr, "Not a valid header - starts with %04x\n",
-                                     firstword);
+                                     M_ID);
                     exit (1);
                 }
+
             }
 
             rewind (progpath);

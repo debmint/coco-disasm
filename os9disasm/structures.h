@@ -22,16 +22,16 @@
  * OS9 Module header defs                                          *
  * *************************************************************** */
 
-struct modhead {
-	unsigned char M_ID[2],	    /* Sync bytes ($87CD)	*/
-	     M_Size[2],	            /* Module Size		*/
-	     M_Name[2];	            /* Ptr to Module Name	*/
-	unsigned char M_Type,	    /* Type / Language	*/
-	     M_Revs,	            /* Attributes/Rev Level	*/
-	     M_Parity,	            /* Header Parity	*/
-	     M_Exec[2],	            /*Execution Entry Offset*/
-	     M_Mem[2];	            /*Stack Requirement	*/
-};
+//struct modhead {
+//	unsigned char M_ID[2],	    /* Sync bytes ($87CD)	*/
+//	     M_Size[2],	            /* Module Size		*/
+//	     M_Name[2];	            /* Ptr to Module Name	*/
+//	unsigned char M_Type,	    /* Type / Language	*/
+//	     M_Revs,	            /* Attributes/Rev Level	*/
+//	     M_Parity,	            /* Header Parity	*/
+//	     M_Exec[2],	            /*Execution Entry Offset*/
+//	     M_Mem[2];	            /*Stack Requirement	*/
+//};
 
 /* This structure dflts contains the list of defaults/options
  * under which the program is running	*/

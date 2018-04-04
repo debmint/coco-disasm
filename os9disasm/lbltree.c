@@ -598,3 +598,23 @@ FindLbl (struct nlist *nl, int loc)
 
     return NULL;
 }
+
+/* **************************************************************** *
+ * find the nlist * of the specified address, the address just past`*
+ * it, (0 if it's greater than the last                             *
+ * **************************************************************** */
+
+struct nlist *
+LblPos (struct nlist *nl, unsigned int loc)
+{
+    register struct nlist *me = nl;
+    register struct nlist *nprev;
+
+    while ((me) && (loc >= me->myaddr))
+    {
+        nprev = me;
+        me = me->LNext;
+    }
+
+    return me;
+}
