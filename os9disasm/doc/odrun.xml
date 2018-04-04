@@ -112,11 +112,6 @@
         <informaltable frame="none">
           <tgroup cols="2"><colspec colwidth='1.0in'/>
             <tbody valign="top">
-              <!--<row>
-                <entry><command>r</command></entry>
-                <entry>Disassemble a <computeroutput>ROF</computeroutput> file.
-                </entry>
-              </row>-->
               <row>
                 <entry><command>ls</command></entry>
                 <entry>Generate short (6-char) labels (Default is 8 chars)
@@ -194,6 +189,36 @@
               <row>
                <entry><command>?</command></entry>
                <entry>Print a brief help screen.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+      <section id="srcspec"><title>Source File Specification</title>
+        <informaltable frame="none">
+          <tgroup cols="2"><colspec colwidth='1.0in'/>
+            <tbody valign="top">
+              <row>
+                <entry><command>m</command></entry>
+                <entry>
+                  Generate rma-style output, with initialized data and
+                  references specified.
+                  with <command>rmb</command> and <command>fcb</command>.
+                  The initialized data, labels within the data area, and
+                  labels that are referenced by the initialized data are
+                  automatically generated, so these need not be specified
+                  in a command or label file.
+                </entry>
+              </row>
+              <row>
+                <entry><command>r</command></entry>
+                <entry><para>
+                    Disassemble a <computeroutput>ROF</computeroutput> file.
+                  </para>
+                  <note>This option should not be needed since &odis;
+                    should automatically detect ROF files.
+                  </note>
+                </entry>
               </row>
             </tbody>
           </tgroup>
