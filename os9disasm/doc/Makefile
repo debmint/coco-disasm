@@ -13,9 +13,9 @@ VPATH	= $(HTMLDIR)
 
 # NOTE: The STYLSHEET parameter will probably need to be manually edited
 # for it to work, there are so many variables in the location of stylesheets.
-#STYLSHEET = /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/chunk.xsl
+STYLSHEET = /usr/share/xml/docbook/stylesheet/nwalsh/html/chunk.xsl
 #STYLSHEET	= /usr/share/xml/docbook/stylesheet/ldp/html/tldp-sections.xsl
-STYLSHEET	= /usr/share/xml/docbook/xsl-stylesheets-1.79.1/html/chunk.xsl
+#STYLSHEET	= /usr/share/xml/docbook/xsl-stylesheets-1.79.1/html/chunk.xsl
 
 index_SOURCES	= odcmd.xml odquick.xml odisinst.xml odrun.xml \
 				  os9disasm.xml g09dis.xml
@@ -31,6 +31,11 @@ index.html: $(index_SOURCES) Makefile
 
 clean:
 	rm -f $(HTMLDIR)/*.html
+
+# For now, at least, do nothing for 'make install'
+
+install:
+	@
 
 distdir:	all
 	$(mkdir_p) $(distdir)/html/images

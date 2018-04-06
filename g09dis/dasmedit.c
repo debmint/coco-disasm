@@ -172,7 +172,7 @@ on_bnds_define_response (GtkDialog *dialog, gint resp,
                 g_string_append_printf(line, "%c ", *bounds_list[indx]);
             }
 
-            if( (*(line->str) == 'S') || (*(line->str) == 'W'))
+            if( (*(line->str) == 'S') || (*(line->str) == 'L'))
             {
                 gchar *offsetdef;
 

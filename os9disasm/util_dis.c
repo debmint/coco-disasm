@@ -37,14 +37,14 @@
  * Returns: WORD in native-endian format.                   *
  * ******************************************************** */
 
-int
+unsigned int
 o9_fgetword(FILE *fp)
 {
-    int msb,
-        lsb;
+    unsigned int msb,
+                 lsb;
 
-    msb = fgetc(fp);
-    lsb = fgetc(fp);
+    msb = (unsigned)(fgetc(fp) & 0xff);
+    lsb = (unsigned)(fgetc(fp) & 0xff);
 
     return ((msb<<8) + lsb);
 }

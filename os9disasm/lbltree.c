@@ -103,7 +103,7 @@ ListRoot (char symbol)
  *      for Data Boundary tree                                      *
  * **************************************************************** */
 
-static struct databndaries *
+struct databndaries *
 bGoBegin (struct databndaries *pt)
 {
     while (pt->DLeft || pt->DRight)
@@ -178,8 +178,7 @@ int
 LblCalc (char *dst, int adr, int amod)
 {
     int raw = adr /*& 0xffff */ ;   /* Raw offset (postbyte) - was unsigned */
-    char mainclass,                 /* Class for this location */
-         oclass = 0;                /* Class for offset (if present) */
+    char mainclass;                 /* Class for this location */
 
     struct databndaries *kls = 0;
     struct nlist *mylabel = 0;
@@ -199,8 +198,6 @@ LblCalc (char *dst, int adr, int amod)
 
             if (kls->dofst)     /* Offset ? */
             {
-                oclass = (char) (kls->dofst->oclas_maj);
-
                 if (kls->dofst->add_to)
                 {
                     raw -= kls->dofst->of_maj;
@@ -234,8 +231,6 @@ LblCalc (char *dst, int adr, int amod)
 
             if (kls->dofst)
             {
-                oclass = kls->dofst->oclas_maj;
-
                 if (kls->dofst->add_to)
                 {
                     raw -= kls->dofst->of_maj;
@@ -522,44 +517,6 @@ addlbl (int loc, char C)
         }
     }
 
-    /* Now search list to see if label already defined      */
-
-    if ((pt = SymLst[c_indx]))
-    {                           /* Already have entries      */
-        register int found = 0;
-
-        while ( ! found)
-        {
-            if (loc < (int) pt->myaddr)
-            {
-                if (pt->LNext)
-                {
-                    pt = pt->LNext;
-                    continue;
-                }
-                else
-                    ++found;
-            }
-            else
-            {
-                if (loc > (int) pt->myaddr)
-                {
-                    if (pt->RNext)
-                    {
-                        pt = pt->RNext;
-                        continue;
-                    }
-                    else
-                        ++found;
-                }
-                else
-                {               /* Must be equal        */
-                    return 0;
-                }
-            }
-        }
-    }
-
     if ( ! (me = calloc (1, sizeof (struct nlist))))
     {
         fprintf (stderr, "Cannot allocate memory for Label.\n");
@@ -570,33 +527,48 @@ addlbl (int loc, char C)
 
     me->myaddr = loc;
 
-    if (pt)
-    {
-        if (loc < (int) pt->myaddr)
+
+    /* Now search list to see if label already defined      */
+
+    if ((pt = SymLst[c_indx]))
+    {                           /* Already have entries      */
+        if ((loc >= pt->myaddr))
         {
-            if (pt->LNext)
+            struct nlist *prevpt = pt;
+
+            while ((pt) && (loc >= pt->myaddr))
             {
-                fprintf (stderr, "Error in tree lookup!");
-                exit (1);
+                if ((pt->myaddr == loc))
+                {
+                    free(me);
+                    return pt;
+                }
+
+                prevpt = pt;    /* If last entry, pt->LNext will be NULL */
+                pt = pt->LNext;
             }
-            pt->LNext = me;
+
+            me->LNext = prevpt->LNext;
+            prevpt->LNext = me;
+            me->LPrev = prevpt;
+
+            if (me->LNext)
+            {
+                me->LNext->LPrev = me;
+            }
         }
         else
         {
-            if (pt->RNext)
-            {
-                fprintf (stderr, "Error in tree lookup!");
-                exit (1);
-            }
-            pt->RNext = me;
+            SymLst[c_indx] = me;
+            me->LNext = pt;
+            pt->LPrev = me;
         }
-        me->parent = pt;
     }
     else
     {                           /* First entry to this class */
         SymLst[c_indx] = me;
-        me->parent = 0;         /* Not needed, but just to be safe */
     }
+
     return me;
 }
 
@@ -612,38 +584,37 @@ struct nlist *
 FindLbl (struct nlist *nl, int loc)
 {
     loc &= 0xffff;
+
     if (!nl)
         return 0;
-    while (1)
+
+    while (nl)
     {
-        if (loc < nl->myaddr)
-        {
-            if (nl->LNext)      /* Still another entry */
-            {
-                nl = nl->LNext;
-            }
-            else
-            {
-                return 0;       /* No more in this direction */
-            }
-        }
-        else
-        {
-            if (loc > nl->myaddr)
-            {
-                if (nl->RNext)
-                {
-                    nl = nl->RNext;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-            else
-            {
-                return nl;          /* Success */
-            }
-        }
+        if ((nl->myaddr == loc))
+            return nl;
+
+        nl = nl->LNext;
     }
+
+    return NULL;
+}
+
+/* **************************************************************** *
+ * find the nlist * of the specified address, the address just past`*
+ * it, (0 if it's greater than the last                             *
+ * **************************************************************** */
+
+struct nlist *
+LblPos (struct nlist *nl, unsigned int loc)
+{
+    register struct nlist *me = nl;
+    register struct nlist *nprev;
+
+    while ((me) && (loc >= me->myaddr))
+    {
+        nprev = me;
+        me = me->LNext;
+    }
+
+    return me;
 }

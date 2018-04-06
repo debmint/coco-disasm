@@ -62,32 +62,32 @@ char rdbuf[500];
 static void
 usage ()
 {
-    fprintf (stderr, "\nos9disasm V %s\n", VERSION);
-    fprintf (stderr, "    Disassembles 6809/6309 code, sending a formatted listing to stdout\n");
-    fprintf (stderr, "\nSyntax: os9dis [opts] <module filename> [opts]\n");
-    fprintf (stderr, "\n Options:\n");
-    fprintf (stderr, "   PATHS\n");
-    fprintf (stderr, "    -c[=]<command file>\n");
-    fprintf (stderr,
-             "    -d  -  define path to defs files  (default=$HOME/coco/defs)\n");
-    fprintf (stderr, "    -s[=]<label file> - up to %d allowed\n", MAX_LBFIL);
-    fprintf (stderr, "    -o[=]<source (.asm) filename\n");
-    fprintf (stderr, "\n   OUTPUT OPTIONS\n");
-    fprintf (stderr, "    -ls -  short labels (6-char) default=8-char\n");
-    fprintf (stderr, "    -ll[=]<length> - Specify label length\n");
-    fprintf (stderr, "\n    -u  -  fold to uppercase\n");
-    fprintf (stderr, "    -a    Specify all 8-bit indexes with \"<\"\n");
-    fprintf (stderr, "    -g  -  Output listing in tabbed format suitable for g09dis to interpret\n");
-    fprintf (stderr,
-             "    -z  -  Print zero register offset. (Default is \"no\"\n");
-    fprintf (stderr, "\n   PAGE SPECS\n");
-    fprintf (stderr, "    -pw[=]<page width>     default=80\n");
-    fprintf (stderr,
-            "    -pd[=]<page depth>     default=66    0=disable pagination\n");
-    fprintf (stderr, "\n   TARGET CPU\n");
-    fprintf (stderr, "\n    -x[=]<type> - Target OS\n");
-    fprintf (stderr, "                C=Coco (default = OS9)\n");
-    fprintf (stderr, "    -3  -  target CPU is 6309 (accept 6309 opcodes)\n");
+    printf ("\nos9disasm V %s\n", VERSION);
+    printf ("    Disassembles 6809/6309 code, sending a formatted listing to stdout\n");
+    printf ("\nSyntax: os9dis [opts] <module filename> [opts]\n");
+    printf ("\n Options:\n");
+    printf ("   PATHS\n");
+    printf ("    -c[=]<command file>\n");
+    printf ("    -d  -  deine path to defs files  (default=$HOME/coco/defs)\n");
+    printf ("    -s[=]<label file> - up to %d allowed\n", MAX_LBFIL);
+    printf ("    -o[=]<source (.asm) filename\n");
+    printf ("\n   OUTPUT OPTIONS\n");
+    printf ("    -ls -  short labels (6-char) default=8-char\n");
+    printf ("    -ll[=]<length> - Specify label length\n");
+    printf ("\n    -u  -  fold to uppercase\n");
+    printf ("    -a    Specify all 8-bit indexes with \"<\"\n");
+    printf ("    -g  -  Output listing in tabbed format suitable for g09dis to interpret\n");
+    printf ("    -z  -  Print zero register ofset. (Default is \"no\"\n");
+    printf ("\n   PAGE SPECS\n");
+    printf ("    -pw[=]<page width>     default=80\n");
+    printf ("    -pd[=]<page depth>     default=66    0=disable pagination\n");
+    printf ("\n   TARGET CPU\n");
+    printf ("\n    -x[=]<type> - Target OS\n");
+    printf ("           C=Coco (default = OS9)\n");
+    printf ("           -3  -  target CPU is 6309 (accept 6309 opcodes)\n");
+    printf ("\n   SOURCE FILE TYPE\n");
+    printf ("      -r  File is ROF\n");
+    printf ("      -w  Module built with rma/rlink\n");
     return;
 }
 
@@ -339,6 +339,9 @@ do_opt (char *c)
         }
 
         break;
+    case 'w':
+        CSrc = 1;
+        break;
     case 'd':
         if ( ! doingcmds)
         {
@@ -387,41 +390,40 @@ pass1 ()
 
     switch (OSType)
     {
-        int firstword;
-
         case OS_Coco:
             rsdoshdr ();
             break;
         default:   /* default is OS_9 */
             UseFCC = 1;
 
-            firstword = o9_fgetword (progpath);
+            M_ID = o9_fgetword (progpath);
 
-            if (firstword == 0x62cd)    /* First half or ROF sync bytes? */
+            if (M_ID == 0x62cd)    /* First half or ROF sync bytes? */
             {
                 /* If so, get second 16 bytes */
 
-                firstword = firstword << 16 | o9_fgetword (progpath);
+                M_ID = M_ID << 16 | o9_fgetword (progpath);
 
-                if ( firstword == 0x62cd2387)
+                if ( M_ID == 0x62cd2387)
                 {
                     IsROF = 1;
                 }
                 else
                 {
                     fprintf (stderr, "Not an ROF Header - starts with %08x\n",
-                                     firstword);
+                                     M_ID);
                     exit (1);
                 }
             }
             else
             {
-                if (firstword != 0x87cd)
+                if (M_ID != 0x87cd)
                 {
                     fprintf (stderr, "Not a valid header - starts with %04x\n",
-                                     firstword);
+                                     M_ID);
                     exit (1);
                 }
+
             }
 
             rewind (progpath);

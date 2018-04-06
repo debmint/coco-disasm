@@ -22,16 +22,16 @@
  * OS9 Module header defs                                          *
  * *************************************************************** */
 
-struct modhead {
-	unsigned char M_ID[2],	    /* Sync bytes ($87CD)	*/
-	     M_Size[2],	            /* Module Size		*/
-	     M_Name[2];	            /* Ptr to Module Name	*/
-	unsigned char M_Type,	    /* Type / Language	*/
-	     M_Revs,	            /* Attributes/Rev Level	*/
-	     M_Parity,	            /* Header Parity	*/
-	     M_Exec[2],	            /*Execution Entry Offset*/
-	     M_Mem[2];	            /*Stack Requirement	*/
-};
+//struct modhead {
+//	unsigned char M_ID[2],	    /* Sync bytes ($87CD)	*/
+//	     M_Size[2],	            /* Module Size		*/
+//	     M_Name[2];	            /* Ptr to Module Name	*/
+//	unsigned char M_Type,	    /* Type / Language	*/
+//	     M_Revs,	            /* Attributes/Rev Level	*/
+//	     M_Parity,	            /* Header Parity	*/
+//	     M_Exec[2],	            /*Execution Entry Offset*/
+//	     M_Mem[2];	            /*Stack Requirement	*/
+//};
 
 /* This structure dflts contains the list of defaults/options
  * under which the program is running	*/
@@ -50,9 +50,8 @@ struct nlist {
 	int myaddr;		            /* address of symbol */
 	int stdnam;		            /* flag that it's a std named label */
     int global;                 /* For ROF use... flags it's global */
-	struct nlist *LNext;	    /* left (smaller) next	*/
-	struct nlist *RNext;	    /* right (larger) next	*/
-	struct nlist *parent;	    /* parent	*/
+	struct nlist *LPrev;	    /* left (smaller) next	*/
+	struct nlist *LNext;	    /* right (larger) next	*/
 };
 
 /* Offset [ (-L0053) - types stuff ] */

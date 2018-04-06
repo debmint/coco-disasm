@@ -12,21 +12,28 @@ void PrintLine(char *pfmt, struct printbuf *pb, char class, int cmdlow, int cmdh
 void RsOrg(void);
 void RsEnd(void);
 void ROFPsect(struct rof_hdr *rptr);
+void OS9Psect(void);
 void OS9Modline(void);
 void coco_wrt_end(void);
 void WrtEmod(void);
 void WrtEnds(void);
 void ROFDataPrint(void);
+void getIRefs(void);
+void VsectPrint(void);
 void OS9DataPrint(void);
-void ListData(struct nlist *me, int upadr, char class);
+void ListInitData(unsigned int addrbegin, unsigned int count);
+void RenderCData(unsigned int startaddr, char class, unsigned int datasize);
+void ListData(struct nlist *me, unsigned int startaddr, int upadr, char class);
 void WrtEquates(int stdflg);
 /* lbltree.c */
 struct nlist *ListRoot(char symbol);
+struct databndaries *bGoBegin(struct databndaries *pt);
 struct databndaries *ClasHere(struct databndaries *bp, int adrs);
 int LblCalc(char *dst, int adr, int amod);
 void PrintLbl(char *dest, char clas, int adr, struct nlist *dl);
 struct nlist *addlbl(int loc, char C);
 struct nlist *FindLbl(struct nlist *nl, int loc);
+struct nlist *LblPos(struct nlist *nl, unsigned int loc);
 /* os9disasm.c */
 void do_opt(char *c);
 int main(int argc, char **argv);
@@ -47,7 +54,7 @@ int rof_datasize(char class);
 void ListInitROF(struct nlist *nl, int mycount, int notdp, char class);
 void rof_ascii(char *cmdline);
 /* util_dis.c */
-int o9_fgetword(FILE *fp);
+unsigned int o9_fgetword(FILE *fp);
 int o9_int(char *o9num);
 char *skipblank(char *p);
 int strpos(char *s, char c);

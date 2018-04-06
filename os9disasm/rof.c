@@ -74,22 +74,22 @@ extern char realcmd[];
 extern struct printbuf *pbuf;
 
 /* DEBUGGING function */
-static void
-reflst (struct asc_data *cl)
-{
-
-    if (cl->LNext)
-    {
-        reflst (cl->LNext);
-    }
-
-    printf ("   >>>   %04x    %d\n",cl->start,cl->length);
-
-    if (cl->RNext)
-    {
-        reflst (cl->RNext);
-    }
-}
+//void
+//reflst (struct asc_data *cl)
+//{
+//
+//    if (cl->LNext)
+//    {
+//        reflst (cl->LNext);
+//    }
+//
+//    printf ("   >>>   %04x    %d\n",cl->start,cl->length);
+//
+//    if (cl->RNext)
+//    {
+//        reflst (cl->RNext);
+//    }
+//}
 
 /* ******************************************************************** *
  * fstrncpy() - equivalent to strncpy, except that the source comes     *
