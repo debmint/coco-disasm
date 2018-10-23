@@ -21,8 +21,7 @@ void ROFDataPrint(void);
 void getIRefs(void);
 void VsectPrint(void);
 void OS9DataPrint(void);
-void ListInitData(unsigned int addrbegin, unsigned int count);
-void RenderCData(unsigned int startaddr, char class, unsigned int datasize);
+void ListInitData(unsigned int addrbegin, unsigned int ttlbytes);
 void ListData(struct nlist *me, unsigned int startaddr, int upadr, char class);
 void WrtEquates(int stdflg);
 /* lbltree.c */

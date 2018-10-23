@@ -1445,7 +1445,6 @@ progdis ()
             {
                 if (CSrc)
                 {
-                    getIRefs();
                     fseek(progpath, eText, SEEK_SET);
                     VsectPrint();
                 }

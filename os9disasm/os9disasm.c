@@ -712,6 +712,11 @@ main (int argc, char **argv)
     pass1 ();
     progdis ();
 
+    if ((OSType == OS_9) && (CSrc))
+    {
+        getIRefs();
+    }
+
     GetLabels ();       /* Read in Label files before doing second pass */
     Pass2 = 1;
     rewind (progpath);

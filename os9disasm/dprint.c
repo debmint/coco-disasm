@@ -903,6 +903,7 @@ getIRefs ()
     fread(dpData, InitDP, 1, progpath);
     InitBSS = o9_fgetword(progpath);
     ndpDat = malloc(InitBSS);
+    unsigned int dst = CmdEnt;
     fread(ndpDat, InitBSS, 1, progpath);
 
     while (*klas)
@@ -912,7 +913,6 @@ getIRefs ()
 
         while ((count-- > 0))
         {
-            unsigned int dst;
 
             myloc = o9_fgetword(progpath);
             myref = malloc(sizeof(struct ireflist));
@@ -985,19 +985,6 @@ getIRefs ()
 
     free(dpData);
     free(ndpDat);
-//    {
-//        int count;
-//        struct ireflist *ir = IRefs;
-//
-//        for (count = 0; count < 0x20; count++)
-//        {
-//            
-//            fprintf (stderr,"%10s --- 0x%04x - '%c' (0x%x)\n", FindLbl(ListRoot(ir->Typ),ir->dAddr)->sname, ir->dAddr,ir->Typ, (ir->Prev ? ir->Prev->dAddr : 0));
-//            if (ir && (ir->dAddr > ir->Next->dAddr))
-//                fprintf(stderr, "????????????????????????????\n");
-//            ir=ir->Next;
-//        }
-//    }
 }
 
 static void
@@ -1026,6 +1013,11 @@ InitRmb (unsigned int rangeEnd)
     {
         unsigned int lblend = LblPos(ListRoot('D'),CmdEnt)->myaddr;
         unsigned int addr = CmdEnt;
+
+        if (! lblend)
+        {
+            lblend = rangeEnd;
+        }
 
         while (addr < lblend)
         {
@@ -1106,10 +1098,9 @@ VsectPrint ()
     if (dpSiz > CmdEnt)
     {
         writesect("vsect","dp");
-        struct nlist *nl = LblPos(ListRoot('D'), CmdEnt);
+        struct nlist *nl = FindLbl(ListRoot('D'), CmdEnt);
 
-        ListData((nl ? nl : LblPos(ListRoot('D'), CmdEnt)),
-                initCount, dpSiz, 'D');
+        ListData(nl, initCount, dpSiz, 'D');
         writesect("ends", NULL);
         BlankLine();
     }
@@ -1125,8 +1116,7 @@ VsectPrint ()
         register struct nlist *n = FindLbl(ListRoot('D'), CmdEnt);
 
         writesect("vsect", NULL);
-        ListData(n ? n : LblPos(ListRoot('D'), CmdEnt),
-                initCount, ModData, 'D');
+        ListData(n, CmdEnt, ModData, 'D');
         writesect("ends", NULL);
     }
 }
@@ -1262,7 +1252,7 @@ ListData (struct nlist *me, unsigned int startaddr, int upadr, char class)
 
     /* Don't print non-data elements here */
 
-    while ((me) && (me->myaddr <= upadr))
+    while ((me) && (me->myaddr < upadr))
     {
         unsigned int bsiz = 1;
 
@@ -1371,23 +1361,9 @@ WrtEquates (int stdflg)
                 {
                     continue;
                 }
-
-                /* Probably an error if this happens
-                 * What we're doing is positioning me to
-                 * last real data element*/
-
-               /* if (!(me = FindLbl (me, ModData)))
-                {
-                    continue;
-                }*/
             }
 
             /* Don't write vsect data for ROF's */
-
-/*            if ((IsROF) && stdflg && strchr ("BDGH", NowClass))
-            {
-                continue;
-            }*/
 
             switch (NowClass)
             {
