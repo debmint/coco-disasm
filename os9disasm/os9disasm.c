@@ -80,7 +80,7 @@ usage ()
     printf ("    -z  -  Print zero register ofset. (Default is \"no\"\n");
     printf ("\n   PAGE SPECS\n");
     printf ("    -pw[=]<page width>     default=80\n");
-    printf ("    -pd[=]<pagd depth>     default=66\n");
+    printf ("    -pd[=]<page depth>     default=66    0=disable pagination\n");
     printf ("\n   TARGET CPU\n");
     printf ("\n    -x[=]<type> - Target OS\n");
     printf ("           C=Coco (default = OS9)\n");

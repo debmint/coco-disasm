@@ -1405,7 +1405,8 @@ progdis ()
 
     long old_pos;
 
-    LinNum = PgLin = 0;
+    LinNum = 1;
+    PgLin = 0;
 
     /* Be sure we start with a clear pbuf */
 
