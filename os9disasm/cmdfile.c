@@ -762,7 +762,8 @@ do_mode (char *lpos)
         case 'Y':
         case 'U':
         case 'S':
-            AMode = (int) strpos ("DXYUS", c) + notimm + 1; /*+2 */
+        case 'W':
+            AMode = (int) strpos ("DXYUSW", c) + notimm + 1; /*+2 */
 
             if ( ! AMode)
             {

@@ -37,6 +37,7 @@
 #define DBOUND 1
 #define ADRMOD 2
 #define NOIDXINDIR if(c&0x20) return 0
+#define IS_W_IDX(s) ((s & 0x1f) == 0x10) || ((s & 0x1f) == 0x0f)
 
 char *RegReg[] =        /* 6809 registers */
     { "d", "x", "y", "u", "s", "pc", "", "", "a", "b", "cc", "dp" };
@@ -417,13 +418,20 @@ GetIdxOffset (int postbyte)
             /* Set up for n,R or n,PC later if other
             * cases don't apply */
 
-    switch (postbyte & 1)
+    switch ((IS_W_IDX(postbyte)) || (postbyte & 1))
     {                   /* postbyte size */
     case 0:            /* single byte */
         byt_offset = (char)fgetc (progpath);
         offset = (int)byt_offset;
         break;
     default:           /* 16-bit (only other option */
+        if (postbyte == 0x8f)
+        {
+            byt_offset = (char)fgetc (progpath);
+            offset = (int)byt_offset;
+            break;
+        }
+
         msk = o9_fgetword (progpath);
 
         /* The Following makes the 16-bit word a signed value. */
@@ -465,7 +473,7 @@ regput (int pbyte, char *op1, int pcrel)
 {
     int ofst;
     char tmp[10];
-    int bofst = pbyte & 1;
+    int bofst = (IS_W_IDX(pbyte)) ? 1 : pbyte & 1;
     int oldpc = Pc;
 
     ofst = GetIdxOffset (pbyte);
@@ -562,7 +570,7 @@ regput (int pbyte, char *op1, int pcrel)
 
     *op1 = '\0';
 
-    if (pbyte & 1)
+    if (!(IS_W_IDX(pbyte)) && (pbyte & 1))
     {
         if ((ofst < 0x80) && (ofst >= -128))
         {
@@ -575,7 +583,7 @@ regput (int pbyte, char *op1, int pcrel)
     {           /* Some assemblers don't automatically do 8-bit mode    */
                 /* for PCR indexing                                     */
 
-        if (pbyte & 4) /* PCR indexed */
+        if (!(IS_W_IDX(pbyte)) && (pbyte & 4)) /* PCR indexed */
         {
             strcpy (op1, "<");
         }
@@ -618,9 +626,7 @@ TxIdx ()
     strcat (pbuf->opcod, tmp);
     ++Pc;
 
-    /* Extended indirect    [mmnn] */
-
-    if (postbyte == 0x9f)
+    if (postbyte == 0x9f)    /* Extended indirect    [mmnn] */
     {
         register unsigned short da;
 
@@ -677,9 +683,56 @@ TxIdx ()
 
         return 1;
     }
+
+    /* First check for 6309 w-register addressing modes */
+    //if (((postbyte & 0x1f) == 0x10) || ((postbyte & 0x1f) == 0x0f))
+    if(IS_W_IDX(postbyte))
+    {
+        int indirect = 0;
+        unsigned short da;
+        register int op_typ = (postbyte & 0x60) >> 5;
+        char *brkt_left = "",
+             *brkt_right = "";
+        char *fmts[] = {"%s%s,w%s", "%s%s%s,w%s", "%s%s,w++%s", "%s%s,w++%s"};
+        char ofst[40];
+
+        ofst[0] = '\0';
+
+        if (CpuTyp < M_03)  /* This mode is 6309-only */
+            return 0;
+
+        if ((postbyte & 0x1f) == 0x10)
+        {
+            indirect = 1;
+            brkt_left = "[";
+            brkt_right = "]";
+        }
+
+
+        if (op_typ == 1)
+        {
+            regput(postbyte, ofst, 0);
+        }
+
+        if (Pass2)
+        {
+            if (op_typ == 1)
+            {
+                sprintf (pbuf->operand, fmts[1], pbuf->operand,
+                       brkt_left, ofst, brkt_right);
+            }
+            else
+            {
+                sprintf (pbuf->operand, fmts[op_typ], pbuf->operand,
+                       brkt_left, brkt_right);
+            }
+        }
+
+        return 1;
+    }
     else    /* Then anything BUT extended indirect */
     {
-        regNam = RegOrdr[((postbyte >> 5) & 3)]; /* Current register offset */
+        regNam = RegOrdr[((postbyte >> 5) & 3)]; /* Current reg offset */
         AMode += (postbyte >> 5) & 3;
 
         if ( ! (postbyte & 0x80))
@@ -927,6 +980,7 @@ GetCmd ()
     case AM_INH:
         return 1;               /*Nothing else to do */
     case AM_XIDX:
+    case AM_EXT:
         if ( ! TxIdx ())
         {                       /* Process Indexed mode */
             return 0;           /* ?????? */
@@ -1068,7 +1122,6 @@ GetCmd ()
     case AM_WIMM:
         strcpy (pbuf->operand, "#");
     case AM_DRCT:
-    case AM_EXT:
     case AM_REL:
         oprandpc = Pc;
 
@@ -1155,20 +1208,20 @@ GetCmd ()
 
                     if (nl)
                     {
-                        sprintf (pbuf->operand, "%s%s", pbuf->operand,
-                                                        nl->sname);
+                        snprintf (pbuf->operand, sizeof(pbuf->operand),
+                                "%s%s", pbuf->operand, nl->sname);
                     }
                     else
                     {
                         if (strlen (myref->name))
                         {
-                            sprintf (pbuf->operand, "%s%s", pbuf->operand,
-                                                            myref->name);
+                            snprintf (pbuf->operand, sizeof(pbuf->operand),
+                                    "%s%s", pbuf->operand, myref->name);
                         }
                         else        /* Will this ever happen??? */
                         {
-                            sprintf (pbuf->operand, "%s%c%04x", pbuf->operand,
-                                    C, offset);
+                            snprintf (pbuf->operand, sizeof(pbuf->operand),
+                                    "%s%c%04x", pbuf->operand, C, offset);
                         }
                     }
 

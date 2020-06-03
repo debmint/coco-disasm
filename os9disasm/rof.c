@@ -493,8 +493,9 @@ rof_lblref (int *value)
     /**value = getc (progpath);
     ++Pc;*/
 
-    if ( ! (thisref->Type & LOC1BYT))
+    if (thisref->Type & LOC1BYT)
     {
+        printf("\nLOC1BYT: 1 byte\n\n");
         *value = getc (progpath);
         ++Pc;
         /**value = (*value << 8) | getc (progpath);

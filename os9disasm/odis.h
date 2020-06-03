@@ -101,19 +101,19 @@ GLOBAL int IsROF;           /* ROF flag.  if true, we're doing a ROF */
 GLOBAL char *DfltLbls;	    /* Ptr to default label class table	*/
 GLOBAL char OS9Dflt[]	    /* Default addressing modes for diff. OS's */
 #ifdef MAIN
-= "@@@@@X&&D&DXL"
+= "@@@@X&&&D&D&XL@"
 #endif
 ;GLOBAL char FlexDflt[]
 #ifdef MAIN
-= "@@LLLL&&&&DLL"
+= "@@LLLL&&&&&&DLL"
 #endif
 ;GLOBAL char MotoDflt[]
 #ifdef MAIN
-= "@@@@@X&&D&DXL"
+= "@@@@@X&&&D&&DXL"
 #endif
 ;GLOBAL char CocoDflt[]
 #ifdef MAIN
-= "@@LLLL&&&&DLL"
+= "@@LLLL&&&&&&DLL"
 #endif
 ;
 
