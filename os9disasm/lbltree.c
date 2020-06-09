@@ -517,6 +517,44 @@ addlbl (int loc, char C)
         }
     }
 
+    /* Now search list to see if label already defined      */
+
+    if ((pt = SymLst[c_indx]))
+    {                           /* Already have entries      */
+        register int found = 0;
+
+        while ( ! found)
+        {
+            if (loc < (int) pt->myaddr)
+            {
+                if (pt->LNext)
+                {
+                    pt = pt->LNext;
+                    continue;
+                }
+                else
+                    ++found;
+            }
+            else
+            {
+                if (loc > (int) pt->myaddr)
+                {
+                    if (pt->RNext)
+                    {
+                        pt = pt->RNext;
+                        continue;
+                    }
+                    else
+                        ++found;
+                }
+                else
+                {               /* Must be equal        */
+                    return 0;
+                }
+            }
+        }
+    }
+
     if ( ! (me = calloc (1, sizeof (struct nlist))))
     {
         fprintf (stderr, "Cannot allocate memory for Label.\n");
@@ -527,48 +565,33 @@ addlbl (int loc, char C)
 
     me->myaddr = loc;
 
-
-    /* Now search list to see if label already defined      */
-
-    if ((pt = SymLst[c_indx]))
-    {                           /* Already have entries      */
-        if ((loc >= pt->myaddr))
+    if (pt)
+    {
+        if (loc < (int) pt->myaddr)
         {
-            struct nlist *prevpt = pt;
-
-            while ((pt) && (loc >= pt->myaddr))
+            if (pt->LNext)
             {
-                if ((pt->myaddr == loc))
-                {
-                    free(me);
-                    return pt;
-                }
-
-                prevpt = pt;    /* If last entry, pt->LNext will be NULL */
-                pt = pt->LNext;
+                fprintf (stderr, "Error in tree lookup!");
+                exit (1);
             }
-
-            me->LNext = prevpt->LNext;
-            prevpt->LNext = me;
-            me->LPrev = prevpt;
-
-            if (me->LNext)
-            {
-                me->LNext->LPrev = me;
-            }
+            pt->LNext = me;
         }
         else
         {
-            SymLst[c_indx] = me;
-            me->LNext = pt;
-            pt->LPrev = me;
+            if (pt->RNext)
+            {
+                fprintf (stderr, "Error in tree lookup!");
+                exit (1);
+            }
+            pt->RNext = me;
         }
+        me->parent = pt;
     }
     else
     {                           /* First entry to this class */
         SymLst[c_indx] = me;
+        me->parent = 0;         /* Not needed, but just to be safe */
     }
-
     return me;
 }
 
@@ -584,19 +607,40 @@ struct nlist *
 FindLbl (struct nlist *nl, int loc)
 {
     loc &= 0xffff;
-
     if (!nl)
         return 0;
-
-    while (nl)
+    while (1)
     {
-        if ((nl->myaddr == loc))
-            return nl;
-
-        nl = nl->LNext;
+        if (loc < nl->myaddr)
+        {
+            if (nl->LNext)      /* Still another entry */
+            {
+                nl = nl->LNext;
+            }
+            else
+            {
+                return 0;       /* No more in this direction */
+            }
+        }
+        else
+        {
+            if (loc > nl->myaddr)
+            {
+                if (nl->RNext)
+                {
+                    nl = nl->RNext;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                return nl;          /* Success */
+            }
+        }
     }
-
-    return NULL;
 }
 
 /* **************************************************************** *

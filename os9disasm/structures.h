@@ -50,8 +50,9 @@ struct nlist {
 	int myaddr;		            /* address of symbol */
 	int stdnam;		            /* flag that it's a std named label */
     int global;                 /* For ROF use... flags it's global */
-	struct nlist *LPrev;	    /* left (smaller) next	*/
-	struct nlist *LNext;	    /* right (larger) next	*/
+	struct nlist *LNext;	    /* left (smaller) next	*/
+	struct nlist *RNext;	    /* right (larger) next	*/
+	struct nlist *parent;	    /* parent	*/
 };
 
 /* Offset [ (-L0053) - types stuff ] */
