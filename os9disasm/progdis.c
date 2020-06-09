@@ -37,7 +37,7 @@
 #define DBOUND 1
 #define ADRMOD 2
 #define NOIDXINDIR if(c&0x20) return 0
-#define IS_W_IDX(s) ((s & 0x1f) == 0x10) || ((s & 0x1f) == 0x0f)
+#define IS_W_IDX(s) ((s & 0x9f) == 0x8f) || ((s & 0x9f) == 0x90)
 
 char *RegReg[] =        /* 6809 registers */
     { "d", "x", "y", "u", "s", "pc", "", "", "a", "b", "cc", "dp" };
@@ -693,7 +693,7 @@ TxIdx ()
         register int op_typ = (postbyte & 0x60) >> 5;
         char *brkt_left = "",
              *brkt_right = "";
-        char *fmts[] = {"%s%s,w%s", "%s%s%s,w%s", "%s%s,w++%s", "%s%s,w++%s"};
+        char *fmts[] = {"%s%s,w%s", "%s%s%s,w%s", "%s%s,w++%s", "%s%s,--w%s"};
         char ofst[40];
 
         ofst[0] = '\0';
