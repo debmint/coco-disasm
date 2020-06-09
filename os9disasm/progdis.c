@@ -980,7 +980,6 @@ GetCmd ()
     case AM_INH:
         return 1;               /*Nothing else to do */
     case AM_XIDX:
-    case AM_EXT:
         if ( ! TxIdx ())
         {                       /* Process Indexed mode */
             return 0;           /* ?????? */
@@ -1122,6 +1121,7 @@ GetCmd ()
     case AM_WIMM:
         strcpy (pbuf->operand, "#");
     case AM_DRCT:
+    case AM_EXT:
     case AM_REL:
         oprandpc = Pc;
 

@@ -738,7 +738,7 @@ do_mode (char *lpos)
 {
     struct databndaries *mptr;
     register int class;         /* addressing mode */
-    register int notimm = 4;    /* Was 5, but we moved AM_DRCT */
+    register int notimm = 5;    /* Was 5, but we moved AM_DRCT */
     char c;
     int lo, hi;
     register struct databndaries *lp;
