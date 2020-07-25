@@ -485,8 +485,10 @@ regput (int pbyte, char *op1, int pcrel)
 
         if ((myref = find_extrn (xtrn_code, oldpc)))
         {
-            sprintf (pbuf->opcod, opfmt[bofst], pbuf->opcod,
-                                                ofst & bytmsk[bofst]);
+            char hx[5];
+            sprintf(hx, (bofst == 1 ? "%02x" : "%04x"), ofst & bytmsk[bofst]);
+            strcat(pbuf->opcod, hx);
+
             if (myref->Extrn)
             {
                 if (Pass2)
@@ -618,7 +620,7 @@ TxIdx ()
     int postbyte;
     char oper1[25],
          oper2[5],
-         tmp[20];
+         tmp[30];
     char regNam;
 
     *oper1 = *oper2 = '\0';
@@ -644,16 +646,21 @@ TxIdx ()
 
             if (Pass2)
             {
-                sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, destval);
+                char tv[5];
+                sprintf(tv, "%04x", destval);
+                strncat(pbuf->opcod, tv,
+                        sizeof(pbuf->opcod) - strlen(pbuf->opcod));
 
                 if (myval)
                 {
-                    sprintf (pbuf->operand, "%s[%s]",
-                            pbuf->operand, myval->name);
+                    snprintf(tmp, sizeof(tmp), "[%s]", myval->name);
                 }
                 else {
-                    sprintf (pbuf->operand, "%s[%d]", pbuf->operand, destval);
+                    sprintf(tmp, "[%d]", destval);
                 }
+                
+                strncat(pbuf->operand, tmp,
+                        sizeof(pbuf->operand) - strlen(pbuf->operand));
             }
             else
             {
@@ -668,8 +675,10 @@ TxIdx ()
 
         if (Pass2)
         {
-            sprintf (tmp, "%04x", da);
-            strcat (pbuf->opcod, tmp);
+            char tv[5];
+            sprintf (tv, "%04x", da);
+            strncat (pbuf->opcod, tv,
+                    sizeof(pbuf->opcod) - strlen(pbuf->opcod));
         }
 
         Pc += 2;
@@ -678,7 +687,11 @@ TxIdx ()
 
         if (Pass2)
         {
-            sprintf (pbuf->operand, "%s[%s]", pbuf->operand, oper1);
+            char sn[28];
+            snprintf(sn, sizeof(sn), "[%s]", oper1);
+
+            if ((sizeof(pbuf->operand) - strlen(pbuf->operand)) > strlen(sn))
+                strcat(pbuf->operand, sn);
         }
 
         return 1;
@@ -688,13 +701,11 @@ TxIdx ()
     //if (((postbyte & 0x1f) == 0x10) || ((postbyte & 0x1f) == 0x0f))
     if(IS_W_IDX(postbyte))
     {
-        int indirect = 0;
-        unsigned short da;
         register int op_typ = (postbyte & 0x60) >> 5;
         char *brkt_left = "",
              *brkt_right = "";
-        char *fmts[] = {"%s%s,w%s", "%s%s%s,w%s", "%s%s,w++%s", "%s%s,--w%s"};
-        char ofst[40];
+        char *fmts[] = {"%s,w%s", "%s%s,w%s", "%s,w++%s", "%s,--w%s"};
+        char ofst[25];
 
         ofst[0] = '\0';
 
@@ -703,7 +714,6 @@ TxIdx ()
 
         if ((postbyte & 0x1f) == 0x10)
         {
-            indirect = 1;
             brkt_left = "[";
             brkt_right = "]";
         }
@@ -718,14 +728,17 @@ TxIdx ()
         {
             if (op_typ == 1)
             {
-                sprintf (pbuf->operand, fmts[1], pbuf->operand,
+                snprintf (tmp, sizeof(tmp), fmts[1],
                        brkt_left, ofst, brkt_right);
             }
             else
             {
-                sprintf (pbuf->operand, fmts[op_typ], pbuf->operand,
+                snprintf (tmp, sizeof(tmp), fmts[op_typ],
                        brkt_left, brkt_right);
             }
+
+            strncat(pbuf->operand, tmp,
+                    sizeof(pbuf->operand) - strlen(pbuf->operand));
         }
 
         return 1;
@@ -733,6 +746,8 @@ TxIdx ()
     else    /* Then anything BUT extended indirect */
     {
         regNam = RegOrdr[((postbyte >> 5) & 3)]; /* Current reg offset */
+        char rg[3];
+        sprintf(rg, ",%c", regNam);
         AMode += (postbyte >> 5) & 3;
 
         if ( ! (postbyte & 0x80))
@@ -760,18 +775,23 @@ TxIdx ()
 
             if (IsROF &&  ! (ClasHere (LAdds[AMode], CmdEnt)))
             {       /* Don't think that 5-bit mode will occur for labels */
-                sprintf (pbuf->operand, "%s%d,%c", pbuf->operand, sbit, regNam);
+                strncat(pbuf->operand, rg,
+                        sizeof(pbuf->operand) - strlen(pbuf->operand));
             }
             else
             {
                 LblCalc (pbuf->operand, sbit, AMode);
-                sprintf (pbuf->operand, "%s,%c", pbuf->operand, regNam);
+
+                if ((sizeof(pbuf->operand) - strlen(pbuf->operand)) > 1)
+                    strcat(pbuf->operand, rg);
             }
 
             return 1;
         }
         else        /* then it's 8- or 16-bit offset */
         {
+            char rg[4];
+            sprintf(rg, ",%c", regNam);
             PBytSiz = (postbyte & 1) + 1;
 
             switch (postbyte & 0x0f)
@@ -791,8 +811,11 @@ TxIdx ()
                 case 4:
                     if (dozeros)
                     {
+
                         LblCalc (oper1, 0, AMode);
-                        sprintf (oper1, "%s,%c", oper1, regNam);
+                
+                        if ((sizeof(pbuf->operand) - strlen(pbuf->operand)) > 1)
+                            strcat(pbuf->operand, rg);
                     }
                     else
                     {
@@ -812,7 +835,7 @@ TxIdx ()
                 case 0x08:                      /*  n,R */
                 case 0x09:                      /* nn,R */
                     regput (postbyte, oper1, 0);
-                    sprintf (oper1, "%s,%c", oper1, regNam);
+                    strcat(oper1, rg);
                     break;
                 case 0x0c:                      /*  n,PC (8-bit) */
                 case 0x0d:                      /* nn,PC (16 bit) */
@@ -820,7 +843,7 @@ TxIdx ()
                     /* below is a temporary fix */
                     regput (postbyte, oper1, 1);
 
-                    sprintf (oper1, "%s,%s", oper1, "pcr");
+                    strcat(oper1, ",pcr");
                     break;
                 default:           /* Illegal Code */
                     return 0;
@@ -828,11 +851,11 @@ TxIdx ()
 
             if (postbyte & 0x10)
             {
-                sprintf (pbuf->operand, "%s[%s]", pbuf->operand, oper1);
+                strcat(pbuf->operand, rg);
             }
             else
             {
-                sprintf (pbuf->operand, "%s%s", pbuf->operand, oper1);
+                strcat(pbuf->operand, rg);
             }
         }
     }
@@ -1127,15 +1150,20 @@ GetCmd ()
 
         switch (tbl->adbyt)
         {
+            char hx[6];
         case 4:                /* only one instance, "ldq (immediate mode)" */
             offset = o9_fgetword (progpath);
-            sprintf (pbuf->opcod, "%04x", offset & 0xffff);
-            sprintf (pbuf->operand, "%s$%s", pbuf->operand, pbuf->opcod);
+            sprintf(hx, "%04x",  offset & 0xffff);
+            strncat (pbuf->opcod, hx, sizeof(pbuf->opcod) - strlen(pbuf->opcod));
+            strncat (pbuf->operand, pbuf->opcod,
+                     sizeof(pbuf->operand) - strlen(pbuf->operand));
             Pc += 2;
 
             offset = o9_fgetword (progpath);
-            sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, offset & 0xffff);
-            sprintf (pbuf->operand, "%s%04x", pbuf->operand, offset & 0xffff);
+            sprintf(hx, "%04x",  offset & 0xffff);
+            strncat (pbuf->opcod, hx, sizeof(pbuf->opcod) - strlen(pbuf->opcod));
+            strncat (pbuf->operand, pbuf->opcod,
+                     sizeof(pbuf->operand) - strlen(pbuf->operand));
             Pc += 2;
             return 1;           /* done */
         case 2:
@@ -1152,7 +1180,9 @@ GetCmd ()
                 offset |= (-1) ^ 0xffff;
             }
 
-            sprintf (pbuf->opcod, "%s%04x", pbuf->opcod, offset & 0xffff);
+            sprintf(hx, "%04x", offset & 0xffff);
+            strncat (pbuf->opcod, hx,
+                    sizeof(pbuf->opcod) - strlen(pbuf->opcod));
             Pc += 2;
             
             /* Force 16-bit mode to match original code */
@@ -1175,13 +1205,16 @@ GetCmd ()
             byte_offset = (char)fgetc (progpath);
             offset = (int)byte_offset;
             ++Pc;
+            char op_val[4];
 
             if ((AMode == AM_DRCT) || (AMode == AM_BYTI))
             {
                 offset &= 0xff;
             }
 
-            sprintf (pbuf->opcod, "%s%02x", pbuf->opcod, offset & 0xff);
+            sprintf(op_val, "%02x", offset & 0xff);
+            strncat (pbuf->opcod, op_val,
+                    sizeof(pbuf->opcod) - strlen(pbuf->opcod));
 
             if ((AMode == AM_DRCT) && Show8bit)
             {
@@ -1200,21 +1233,20 @@ GetCmd ()
             if (myref)
             {
                 char C = rof_class (myref->Type);
-                struct nlist *nl;
 
                 if (Pass2)
                 {
-                    nl =  FindLbl (ListRoot (C), offset);
-
                     if (strlen (myref->name))
                     {
-                        snprintf (pbuf->operand, sizeof(pbuf->operand),
-                                "%s%s", pbuf->operand, myref->name);
+                        strncat (pbuf->operand, myref->name,
+                                sizeof(pbuf->operand) - strlen(pbuf->operand));
                     }
                     else        /* Will this ever happen??? */
                     {
-                        snprintf (pbuf->operand, sizeof(pbuf->operand),
-                                "%s%c%04x", pbuf->operand, C, offset);
+                        char op[8];
+                        sprintf(op, "%c%04x", C, offset);
+                        strncat (pbuf->operand, op,
+                            sizeof(pbuf->operand) - strlen(pbuf->operand));
                     }
 
                     /* We need now to take into account the fact that a

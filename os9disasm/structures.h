@@ -106,7 +106,7 @@ struct printbuf {
 	     opcod[20],
 	     lbnm[NLMAX+1],
 	     mnem[6],
-	     operand[50],
+	     operand[100],
          *comment;
 };
 
@@ -169,7 +169,7 @@ struct rof_hdr {
 /* Global definitions */
 
 struct rof_glbl {
-            char  name[100];
+            char  name[30];
             char  Type;
             int   Ofst;
 };
@@ -177,7 +177,7 @@ struct rof_glbl {
 /* External references */
 
 struct rof_extrn {
-            char  name[100];        /* External name                  */
+            char  name[20];        /* External name                  */
             char  Type;             /* Type Flag                      */
             int   Ofst;             /* Offset into code               */
             int   Extrn;            /* Flag that it's an external ref */
