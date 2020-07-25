@@ -773,8 +773,11 @@ TxIdx ()
              * option open for the off-chance that an offset assignment   *
              * would work somewhere                                       */
 
+            /* The code below is duplicated for either case.  Test for
+             * a while and if no errors. combine */
             if (IsROF &&  ! (ClasHere (LAdds[AMode], CmdEnt)))
             {       /* Don't think that 5-bit mode will occur for labels */
+                LblCalc (pbuf->operand, sbit, AMode);
                 strncat(pbuf->operand, rg,
                         sizeof(pbuf->operand) - strlen(pbuf->operand));
             }
@@ -790,8 +793,8 @@ TxIdx ()
         }
         else        /* then it's 8- or 16-bit offset */
         {
-            char rg[4];
-            sprintf(rg, ",%c", regNam);
+            /*char rg[4];
+            sprintf(rg, ",%c", regNam);*/
             PBytSiz = (postbyte & 1) + 1;
 
             switch (postbyte & 0x0f)
@@ -813,9 +816,10 @@ TxIdx ()
                     {
 
                         LblCalc (oper1, 0, AMode);
+                        strcat(oper1, rg);
                 
-                        if ((sizeof(pbuf->operand) - strlen(pbuf->operand)) > 1)
-                            strcat(pbuf->operand, rg);
+                        /*if ((sizeof(pbuf->operand) - strlen(pbuf->operand)) > 1)
+                            strcat(pbuf->operand, oper1);*/
                     }
                     else
                     {
@@ -851,11 +855,13 @@ TxIdx ()
 
             if (postbyte & 0x10)
             {
-                strcat(pbuf->operand, rg);
+                char tmpop[27];
+                sprintf(tmpop, "[%s]", oper1);
+                strcat(pbuf->operand, tmpop);
             }
             else
             {
-                strcat(pbuf->operand, rg);
+                strcat(pbuf->operand, oper1);
             }
         }
     }
