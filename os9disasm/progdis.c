@@ -1206,23 +1206,15 @@ GetCmd ()
                 {
                     nl =  FindLbl (ListRoot (C), offset);
 
-                    if (nl)
+                    if (strlen (myref->name))
                     {
                         snprintf (pbuf->operand, sizeof(pbuf->operand),
-                                "%s%s", pbuf->operand, nl->sname);
+                                "%s%s", pbuf->operand, myref->name);
                     }
-                    else
+                    else        /* Will this ever happen??? */
                     {
-                        if (strlen (myref->name))
-                        {
-                            snprintf (pbuf->operand, sizeof(pbuf->operand),
-                                    "%s%s", pbuf->operand, myref->name);
-                        }
-                        else        /* Will this ever happen??? */
-                        {
-                            snprintf (pbuf->operand, sizeof(pbuf->operand),
-                                    "%s%c%04x", pbuf->operand, C, offset);
-                        }
+                        snprintf (pbuf->operand, sizeof(pbuf->operand),
+                                "%s%c%04x", pbuf->operand, C, offset);
                     }
 
                     /* We need now to take into account the fact that a
