@@ -744,27 +744,25 @@ WrtEnds(void)
     struct printbuf bf;
     struct printbuf *pb = &bf;
 
-    memset (pb, 0, sizeof (struct printbuf));
-    strcpy (pb->mnem, "ends");
+    memset (&bf, 0, sizeof (struct printbuf));
+    strcpy (bf.mnem, "ends");
 
-    BlankLine();
+    //BlankLine();
 
     PrintFormatted (realcmd, pb);
 
     if (WrtSrc)
     {
-        fprintf (outpath, "%s %s %s", pb->lbnm,
-                                           pb->mnem,
-                                           pb->operand  );
-        fprintf (outpath, "\n");
+        fprintf (outpath, "%s %s %s\n", bf.lbnm, bf.mnem, bf.operand);
     }
 
+    ++PgLin;
+    ++LinNum;
     BlankLine();
 }
 
 /* *************************************************** *
- * ROFDataPrint() - Mainline routine to list data defs *
- *          for ROF's                                  *
+ * Mainline routine to list data defs for ROF's         *
  * *************************************************** */
 
 void
@@ -815,9 +813,7 @@ ROFDataPrint ()
                 strcpy (pbuf->operand, "");
             }
 
-            BlankLine();
             PrintLine (realcmd, pbuf, dattyp[vs], 0, 0);
-            BlankLine();
 
             /* Process each of un-init, init */
 
@@ -831,7 +827,7 @@ ROFDataPrint ()
                 {
                     if (thissz[isinit])
                     {
-                        PrintNonCmd (mytmp, 0, 1);
+                        PrintNonCmd (mytmp, 1, 0);
                     }
 
                     ListInitROF (dta, thissz[isinit], vs, dattyp[isinit]);
@@ -846,7 +842,7 @@ ROFDataPrint ()
 
                         if (thissz[isinit])
                         {
-                            PrintNonCmd (mytmp, isinit, 1);
+                            PrintNonCmd (mytmp, 1, 0);
                         }
 
                         srch = dta;
