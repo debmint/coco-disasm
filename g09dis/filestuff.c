@@ -724,7 +724,8 @@ load_list_tree (FILEINF * fdat, FILE *infile)
 
             splits = g_strsplit (buffer, "\t", LST_NCOLS + 1);
 
-            if (!str_digit (splits[LST_LIN]) || !str_xdigit (splits[LST_ADR]))
+            //if (!str_digit (splits[LST_LIN]) || !str_xdigit (splits[LST_ADR]))
+            if (!str_digit(splits[LST_LIN]))
             {
                 continue;
             }

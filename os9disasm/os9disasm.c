@@ -231,6 +231,7 @@ void
 do_opt (char *c)
 {
     char *pt = c;
+    static int tabsep = 0;
 
     switch (tolower (*(pt++)))
     {
@@ -299,6 +300,7 @@ do_opt (char *c)
         break;
     case 'g':                  /* tabs (g-print-capable) */
         tabinit ();
+        tabsep = 1;
         break;
     case 'p':                  /* Page width/depth */
         switch (tolower (*(pt++)))
@@ -330,7 +332,8 @@ do_opt (char *c)
                 NamLen = NLMAX;
             }
 
-            adjpscmd ();        /* Adjust the printout formats */
+            if (!tabsep)
+                adjpscmd ();        /* Adjust the printout formats */
 
             break;
         default:
