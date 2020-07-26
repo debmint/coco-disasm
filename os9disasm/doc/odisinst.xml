@@ -11,6 +11,17 @@
 -->
 
 <section id="ssetup"><title>Installation</title>
+ <section><title>GIT Clone</title>
+   <para>This package can be cloned from its Github repository.  The
+     address is <ulink url="https://github.com/debmint/coco-disasm"/>
+     The commandline command is
+   </para>
+   <screen># git clone https://github.com/debmint/coco-disasm.git</screen>
+   <para>This will clone the project into the directory <filename>coco-disasm
+     </filename>.  You can specify a different directory name by appending
+     this name to the end of the command to clone the project.
+   </para>
+ </section>
  <section><title>Tarfile extraction</title>
   <para>If the package was downloaded as a tarfile, it should have
    the extension of <filename>tar.bz2</filename> or
@@ -25,13 +36,6 @@
   <para>In either case, a directory named
     <filename>cocodis<emphasis>x.x</emphasis></filename> will be created in
     the current location, and all files will be created under that directory.
-  </para>
- </section>
- <section><title>CVS os9tools download</title>
-  <para>If you have the CVS download of the <filename>os9tools</filename>
-    hierarchy, you already have the necessary files in the
-    <filename>os9disasm</filename> directory under
-    <filename>os9tools/</filename>.
   </para>
  </section>
  <section><title>Building and Installing the Package</title>
@@ -73,8 +77,9 @@
        </para>
        <para>If you do find that the system is trying to do a reconfigure and
          you are stuck, you can always remove your install of the package and
-         re-extract it from the original tarfile.
+         re-extract it from the original tarfile or do
        </para>
+       <screen># git checkout master</screen>
      </note>
    </section>
    <section>
