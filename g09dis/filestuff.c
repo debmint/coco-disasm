@@ -96,7 +96,7 @@ set_fname (glbls *hbuf, gchar **flag)
 
 /* Returns column number or -1 if not found or on error */
 
-gint
+/*gint
 get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
 {
     GList *cols;
@@ -112,7 +112,7 @@ get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
     g_list_free(cols);
 
     return num;
-}
+}*/
 
 /* Callback for click on a row in the Listing display */
 

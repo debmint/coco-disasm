@@ -24,8 +24,6 @@ struct fontsel_data {
 };
 
 static GtkWidget * selected_view;
-static GtkTooltips *optips;
-static GtkTooltips *font_tips;  /* Created/destroyed each call to fonts dlg */
 
 /* ************************************************ *
  * newspin1() - create a new spin button            *
@@ -277,11 +275,6 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
                                      NULL);
     gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
 
-    if ( ! optips)
-    {
-        optips = gtk_tooltips_new();
-    }
-    
     /* ********************** *
      *                        *
      * Create options widgets *
@@ -293,7 +286,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
      * **************************************** */
 
     notebk = gtk_notebook_new();
-    gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(dialog)),
                        notebk, FALSE, FALSE, 2);
 
     /* Create a table into which to place two *
@@ -335,9 +328,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
 
     ofile_toggle = gtk_check_button_new_with_label (
                                     "Generate .asm source file");
-    gtk_tooltips_set_tip (optips, ofile_toggle,
-           "Generate a source file that (should) assemble into a valid binary",
-           NULL);
+    gtk_widget_set_tooltip_text(ofile_toggle,
+           "Generate a source file that (should) assemble into a valid binary");
     gtk_box_pack_start (GTK_BOX (entry_box), ofile_toggle, FALSE, FALSE, 2);
     asmout_wdg->o_entry = build_entry_entry (entry_box,
                         asmout_wdg->fname ? asmout_wdg->fname : "output.a");
@@ -371,9 +363,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     defs_wdg->browse_button = build_browse_button (entry_box,
                                                   defs_wdg,
                                                   FALSE);
-    gtk_tooltips_set_tip (optips, defs_toggle,
-           "Secify the path to where your standard label files are stored.",
-           NULL);
+    gtk_widget_set_tooltip_text(defs_toggle,
+           "Secify the path to where your standard label files are stored.");
 
     g_signal_connect (G_OBJECT (defs_toggle), "toggled",
                       G_CALLBACK (on_ofile_tgle), defs_wdg);
@@ -402,9 +393,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
 
     /* set tooltip for list_radio_file label */
     
-    gtk_tooltips_set_tip (optips, list_radio_file,
-                          "Write the formatted listing to file\nor stdout if filename is blank.\nThis is the regular, space-separated listing",
-                          NULL);
+    gtk_widget_set_tooltip_text(list_radio_file,
+                          "Write the formatted listing to file\nor stdout if filename is blank.\nThis is the regular, space-separated listing");
     listing_box = gtk_vbox_new (FALSE, 2);
     listing_wdg->o_entry = build_entry_entry (listing_box,
             listing_wdg->fname ? listing_wdg->fname : "output.List");
@@ -414,13 +404,13 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     
     list_radio_none = gtk_radio_button_new_with_label_from_widget (
                         GTK_RADIO_BUTTON(list_radio_file), "No output");
-    gtk_tooltips_set_tip (optips, list_radio_none,
-              "\"Quiet\" mode.  No listing is  generated.", NULL);
+    gtk_widget_set_tooltip_text(list_radio_none,
+              "\"Quiet\" mode.  No listing is  generated.");
     list_radio_gtk = gtk_radio_button_new_with_label_from_widget (
                         GTK_RADIO_BUTTON(list_radio_file),
                         "Build for GUI");
-    gtk_tooltips_set_tip (optips, list_radio_gtk,
-                          "Generate listing directly into GUI window for manipulation.\nNo file is written", NULL);
+    gtk_widget_set_tooltip_text(list_radio_gtk,
+                          "Generate listing directly into GUI window for manipulation.\nNo file is written");
     
     /* Now determine which radio button to set active */
     
@@ -502,8 +492,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     /* Fold to uppercase */
     
     UpCase_toggle = gtk_check_button_new_with_label ("Fold to Upper Case");
-    gtk_tooltips_set_tip (optips, UpCase_toggle,
-          "Labels, mnemonics, in source and listing are output in upper-case",            NULL);
+    gtk_widget_set_tooltip_text(UpCase_toggle,
+          "Labels, mnemonics, in source and listing are output in upper-case");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (UpCase_toggle),
                                   (gboolean) upcase);
     gtk_box_pack_start (GTK_BOX(vbx), UpCase_toggle, FALSE, FALSE, 2);
@@ -511,8 +501,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     /* Show zero offsets */
 
     Zero_toggle = gtk_check_button_new_with_label ("Show Zero Offsets");
-    gtk_tooltips_set_tip (optips, Zero_toggle,
-            "Show \"0,R\" in operand rather than \",R\"", NULL);
+    gtk_widget_set_tooltip_text(Zero_toggle,
+            "Show \"0,R\" in operand rather than \",R\"");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (Zero_toggle),
                                   (gboolean)showzeros);
     gtk_box_pack_start (GTK_BOX(vbx), Zero_toggle, FALSE, FALSE, 2);
@@ -540,9 +530,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
 
     /* do CPU type */
     CPU_toggle = gtk_check_button_new_with_label ("CPU = 6309");
-    gtk_tooltips_set_tip (optips, CPU_toggle,
-          "Disassemble 6309 instructions.\nIn normal mode, 6309-only instructions are not accepted\nand rendered as data",
-                          NULL);
+    gtk_widget_set_tooltip_text(CPU_toggle,
+          "Disassemble 6309 instructions.\nIn normal mode, 6309-only instructions are not accepted\nand rendered as data");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (CPU_toggle),
                                   (gboolean) cputype);
     gtk_box_pack_start (GTK_BOX(vbx), CPU_toggle, FALSE, FALSE, 2);
@@ -550,8 +539,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     /* Disassemble RS-DOS code */
     
     OS_toggle = gtk_check_button_new_with_label ("RS-DOS binary");
-    gtk_tooltips_set_tip (optips, OS_toggle,
-		          "The file is an RS-DOS binary instead of OS9", NULL);
+    gtk_widget_set_tooltip_text(OS_toggle,
+		          "The file is an RS-DOS binary instead of OS9");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (OS_toggle),
                                   (gboolean) isrsdos);
     gtk_box_pack_start (GTK_BOX(vbx), OS_toggle, FALSE, FALSE, 2);
@@ -849,19 +838,17 @@ cbtn_add_lbl (GtkWidget *btn, gchar *label)
  * ******************************************************************** */
 
 void
-dlg_set_tips (GtkWidget *btn, GtkDialog *dialog, GtkTooltips *tips)
+dlg_set_tips (GtkWidget *btn, GtkDialog *dialog, gpointer *tips)
 {
-    font_tips = gtk_tooltips_new();
-
     switch (gtk_dialog_get_response_for_widget (dialog, btn))
     {
         case GTK_RESPONSE_OK:
-            gtk_tooltips_set_tip (font_tips, btn,
-                    "Exit session, keeping all changes", NULL);
+            gtk_widget_set_tooltip_text(btn,
+                    "Exit session, keeping all changes");
             break;
         default:    /* Cancel */
-            gtk_tooltips_set_tip (font_tips, btn,
-                    "End session, rejecting all changes made\nduring session.\nAll windows will revert back to\ntheir state on entry into this session", NULL);
+            gtk_widget_set_tooltip_text(btn,
+                    "End session, rejecting all changes made\nduring session.\nAll windows will revert back to\ntheir state on entry into this session");
     }
 }
 
@@ -896,7 +883,7 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
                             "OK",     GTK_RESPONSE_OK,
                             NULL);
     btnlist = gtk_container_get_children (
-                GTK_CONTAINER(GTK_DIALOG(fonts_main_dialog)->action_area));
+                GTK_CONTAINER(gtk_dialog_get_action_area(fonts_main_dialog)));
     g_list_foreach (btnlist, (GFunc)dlg_set_tips, fonts_main_dialog);
     hbox_main = gtk_hbox_new (FALSE, 10);
 
@@ -917,19 +904,22 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
     radiolist = gtk_radio_button_new_with_label (NULL, "Listings");
     gtk_widget_set_name (radiolist, "listing");
     g_signal_connect (radiolist, "toggled", G_CALLBACK(set_list_ptr), &fs_data);
-    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), GTK_WIDGET(radiolist));
+    gtk_box_pack_start(GTK_BOX(tmp_vbox), GTK_WIDGET(radiolist),
+            FALSE, FALSE, 5);
     radiolist = gtk_radio_button_new_with_label_from_widget (
                                                 GTK_RADIO_BUTTON(radiolist),
                                                 "Commands");
     gtk_widget_set_name (radiolist, "cmds");
     g_signal_connect (radiolist, "toggled", G_CALLBACK(set_list_ptr), &fs_data);
-    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), GTK_WIDGET(radiolist));
+    gtk_box_pack_start(GTK_BOX(tmp_vbox), GTK_WIDGET(radiolist),
+            FALSE, FALSE, 5);
     radiolist = gtk_radio_button_new_with_label_from_widget (
                                                 GTK_RADIO_BUTTON(radiolist),
                                                "Labels");
     gtk_widget_set_name (radiolist, "labels");
     g_signal_connect (radiolist, "toggled", G_CALLBACK(set_list_ptr), &fs_data);
-    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), GTK_WIDGET(radiolist));
+    gtk_box_pack_start(GTK_BOX(tmp_vbox), GTK_WIDGET(radiolist),
+            FALSE, FALSE, 5);
 
     /* This may be a temporary thing... */
     /* Following is not necessary, but the list is originally set up in
@@ -939,7 +929,7 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
     gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
     gtk_container_set_border_width (GTK_CONTAINER(frame), 10);
     gtk_container_add (GTK_CONTAINER(frame), tmp_vbox);
-    gtk_box_pack_start_defaults (GTK_BOX(hbox_main), frame);
+    gtk_box_pack_start(GTK_BOX(hbox_main), frame, FALSE, FALSE, 5);
 
     /* Select Font/Color buttons on right-hand side */
 
@@ -949,9 +939,10 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
     fs_data.font_btn = gtk_font_button_new ();
     g_signal_connect (fs_data.font_btn, "font-set", G_CALLBACK(font_select_cb),
                                                &fs_data);
-    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), fs_data.font_btn);
+    gtk_box_pack_start(GTK_BOX(tmp_vbox), fs_data.font_btn, FALSE, FALSE, 5);
 
-    gtk_box_pack_start_defaults (GTK_BOX(tmp_vbox), gtk_hseparator_new());
+    gtk_box_pack_start(GTK_BOX(tmp_vbox), gtk_hseparator_new(),
+            FALSE, FALSE, 5);
 
     /* The colors buttons */
 
@@ -966,7 +957,7 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
                                 "Background");
     gtk_widget_set_name(fs_data.cb_bg, "background");
     cbtn_add_lbl (fs_data.cb_bg, "Background");
-    gtk_box_pack_start_defaults (GTK_BOX(tmp_hbox), fs_data.cb_bg);
+    gtk_box_pack_start(GTK_BOX(tmp_hbox), fs_data.cb_bg, FALSE, FALSE, 5);
 
     /* The foreground button */
     fs_data.cb_fg = gtk_color_button_new ();
@@ -976,7 +967,7 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
                                 "Foreground");
     gtk_widget_set_name(fs_data.cb_fg, "foreground");
     cbtn_add_lbl (fs_data.cb_fg, "Foreground");
-    gtk_box_pack_start_defaults (GTK_BOX(tmp_hbox), fs_data.cb_fg);
+    gtk_box_pack_start(GTK_BOX(tmp_hbox), fs_data.cb_fg, FALSE, FALSE, 5);
 
     frame = gtk_frame_new ("Select Font/Color");
     gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
@@ -984,7 +975,7 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
     gtk_container_add (GTK_CONTAINER(tmp_vbox), tmp_hbox);
     gtk_container_add (GTK_CONTAINER(frame), tmp_vbox);
 
-    gtk_box_pack_start_defaults (GTK_BOX(hbox_main), frame);
+    gtk_box_pack_start(GTK_BOX(hbox_main), frame, FALSE, FALSE, 5);
 
     /* Set up for the first radio button in the list-selection */
 
@@ -996,8 +987,8 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
                                 &(fs_data.style->text[0]));
 
     /* Now pack all into the dialog vbox */
-    gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(fonts_main_dialog)->vbox),
-                                 hbox_main);
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(
+                    fonts_main_dialog)), hbox_main, FALSE, FALSE, 5);
     gtk_widget_show_all (hbox_main);
 
     response = gtk_dialog_run (GTK_DIALOG(fonts_main_dialog));
@@ -1015,7 +1006,5 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
             reset_lists (&(globals->lblfile));
     }
 
-    gtk_object_destroy (GTK_OBJECT(font_tips));
-    font_tips = NULL;
     gtk_widget_destroy (fonts_main_dialog);
 }

@@ -18,7 +18,6 @@ struct srch_log
     GHashTable * radio_pos; /* Hash of names=>column position (to search)    */
 };
 
-static GtkTooltips *srch_tips;
 static GtkWidget * srch_dialog,
                  * srch_entry;
 static GHashTable *allviews;
@@ -49,7 +48,7 @@ box_add_new_button (GtkWidget *box, GtkWidget *button, gchar *txt)
         newbtn = gtk_radio_button_new_with_label (NULL, txt);
     }
 
-    gtk_box_pack_start_defaults (GTK_BOX(box), newbtn);
+    gtk_box_pack_start(GTK_BOX(box), newbtn, FALSE, FALSE, 5);
     gtk_widget_show (newbtn);
 
     return newbtn;
@@ -258,15 +257,6 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
     gchar * curnt_str;
     gint srch_col = -1;     /* Init to unreasonable value */
 
-    /* If it's the first call to this function
-     * create the search dialog and set it up
-     */
-
-    if ( ! srch_tips)
-    {
-        srch_tips = gtk_tooltips_new ();
-    }
-
     if ( ! srch_dialog)
     {
         GtkWidget * eventbox,
@@ -289,7 +279,8 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
                     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                     NULL);
         gtk_widget_hide_on_delete (srch_dialog);
-        gtk_box_set_spacing (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox), 10);
+        gtk_box_set_spacing (GTK_BOX(gtk_dialog_get_content_area(
+                        GTK_DIALOG(srch_dialog))), 10);
 
         frame = gtk_frame_new ("Column to Search");
         gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
@@ -301,13 +292,15 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
 
         /* Build the Listings search data */
 
-        gtk_box_pack_start_defaults (GTK_BOX(cols_vbox),
-                                     build_listings_radio_button_group ());
+        gtk_box_pack_start(GTK_BOX(cols_vbox),
+                                     build_listings_radio_button_group(),
+                                     FALSE, FALSE, 5);
 
         /* The Labels search data */
 
-        gtk_box_pack_start_defaults (GTK_BOX(cols_vbox),
-                                     build_labels_radio_button_group ());
+        gtk_box_pack_start(GTK_BOX(cols_vbox),
+                                     build_labels_radio_button_group (),
+                                     FALSE, FALSE, 5);
 
         /* All the tables are created, now do generic stuff
          * Add the all-elements vbox to the frame */
@@ -321,42 +314,48 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
 
         eventbox = gtk_event_box_new ();
         gtk_container_add (GTK_CONTAINER(eventbox), frame);
-        gtk_tooltips_set_tip (srch_tips, eventbox,
-                "Selects which column in the view to search\nNot all columns are searchable - only those displayed", NULL);
+        gtk_widget_set_tooltip_text(eventbox,
+                "Selects which column in the view to search\nNot all columns are searchable - only those displayed");
 
-        gtk_box_pack_start_defaults ( GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
-                                      eventbox);
+        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(
+                        gtk_dialog_get_content_area(srch_dialog))), eventbox,
+                                     FALSE, FALSE, 5);
         gtk_widget_show (frame);
         gtk_widget_show (eventbox);
 
         /* Exact/Partial match check button */
 
-        gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
-                                    hsep_show_new ());
+        gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(
+                    GTK_DIALOG(srch_dialog))), hsep_show_new (),
+                                     FALSE, FALSE, 5);
         exact_toggle = gtk_check_button_new_with_label ("Exact text Match");
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(exact_toggle), TRUE);
         gtk_widget_show (exact_toggle);
         g_signal_connect (exact_toggle, "toggled",
                             G_CALLBACK(exact_button_toggled), NULL);
         exact_button_toggled (GTK_TOGGLE_BUTTON(exact_toggle),NULL);
-        gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
-                                     exact_toggle);
-        gtk_tooltips_set_tip (srch_tips, exact_toggle,
-            "When checked, the search string must match the entire field\notherwise, the search string may be only a substring of the field",
-            "This has no effect upon the case sensitivity");
-        gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
-                                    hsep_show_new ());
+        gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(
+                        GTK_DIALOG(srch_dialog))), exact_toggle,
+                                     FALSE, FALSE, 5);
+        gtk_widget_set_tooltip_text(exact_toggle,
+            "When checked, the search string must match the entire field\notherwise, the search string may be only a substring of the field\nThis has no effect upon the case sensitivity");
+        gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(
+                        GTK_DIALOG(srch_dialog))), hsep_show_new (),
+                                     FALSE, FALSE, 5);
 
         /* the search entry */
 
         entry_hbox = gtk_hbox_new (FALSE, 5);
-        gtk_box_pack_start_defaults (GTK_BOX(entry_hbox),
-                                     gtk_label_new ("Enter Search Text"));
+        gtk_box_pack_start(GTK_BOX(entry_hbox),
+                                     gtk_label_new ("Enter Search Text"),
+                                     FALSE, FALSE, 5);
         srch_entry = gtk_entry_new();
-        gtk_box_pack_start_defaults (GTK_BOX(entry_hbox), srch_entry);
+        gtk_box_pack_start(GTK_BOX(entry_hbox), srch_entry,
+                                     FALSE, FALSE, 5);
         gtk_widget_show_all (entry_hbox);
-        gtk_box_pack_start_defaults (GTK_BOX(GTK_DIALOG(srch_dialog)->vbox),
-                                     entry_hbox);
+        gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(
+                        GTK_DIALOG(srch_dialog))), entry_hbox,
+                                     FALSE, FALSE, 5);
     }       /* End build search dialog */
 
     /* Determine which set of radio buttons to display */

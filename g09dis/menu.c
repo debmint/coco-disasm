@@ -10,8 +10,6 @@
 #include <string.h>
 #include "g09dis.h"
 
-GtkTooltips *ttip;
-
 static void
 hlp_about (GtkAction * action, glbls * hbuf)
 {
@@ -71,11 +69,9 @@ tip_toggle(GtkToggleAction *ta, glbls *hbuf)
 {
     if( gtk_toggle_action_get_active(ta) )
     {
-        gtk_tooltips_enable(ttip);
         sysfailed ("Tooltips are now ON...", FALSE);
     }
     else {
-        gtk_tooltips_disable(ttip);
         sysfailed ("Tooltips are now OFF...", FALSE);
     }
 }
@@ -285,36 +281,27 @@ get_menubar_menu (GtkWidget * main_window)
     }
 
     /* add tooltips */
-    ttip = gtk_tooltips_new();
-    gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget( ui_manager,
+    gtk_widget_set_tooltip_text(gtk_ui_manager_get_widget( ui_manager,
                          "/MainMenu/FileMenu/File_New/"),
-                         "Clears buffer for selected file",
-                         NULL);
-    gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
+                         "Clears buffer for selected file");
+    gtk_widget_set_tooltip_text(gtk_ui_manager_get_widget(ui_manager,
                          "/MainMenu/FileMenu/QuitProg"),
-                         "Quit the program",
-                         NULL);
+                         "Quit the program");
 
-    gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
+    gtk_widget_set_tooltip_text(gtk_ui_manager_get_widget(ui_manager,
                          "/MainMenu/ToolMenu/DasmPrg"),
-                         "Disassemble the program, sending output to the Listing Window",
-                         NULL);
+                         "Disassemble the program, sending output to the Listing Window");
 
-    gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
+    gtk_widget_set_tooltip_text(gtk_ui_manager_get_widget(ui_manager,
                          "/MainMenu/ToolMenu/DasmToFile"),
-                         "Disassemble the program, sending output to a text file",
-                         NULL);
+                         "Disassemble the program, sending output to a text file");
 
-    gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
+    gtk_widget_set_tooltip_text(gtk_ui_manager_get_widget(ui_manager,
                          "/MainMenu/OptionMenu/DisOptions"),
-                         "Set command-line options\nto pass to disassembler.",
-                         NULL);
-    gtk_tooltips_set_tip(ttip, gtk_ui_manager_get_widget(ui_manager,
+                         "Set command-line options\nto pass to disassembler.");
+    gtk_widget_set_tooltip_text(gtk_ui_manager_get_widget(ui_manager,
                          "/MainMenu/ViewMenu/FontsChange"),
-                         "Reset Font, foreground and background colors for the view windows",
-                         NULL);
-
-    gtk_tooltips_enable(ttip);
+                         "Reset Font, foreground and background colors for the view windows");
 
     /* ***************************** *
      * Insensitize select menu items *

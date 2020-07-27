@@ -50,7 +50,7 @@ doc_set_modified(FILEINF *doc, gboolean value)
 static void
 add_combo_class (G_CONST_RETURN gchar *lclass, GtkWidget **cbox)
 {
-    gtk_combo_box_append_text (GTK_COMBO_BOX(*cbox), lclass);
+    gtk_combo_box_text_append(GTK_COMBO_BOX(*cbox), NULL, lclass);
 }
 
 /* **************************************************************** *
@@ -89,17 +89,17 @@ build_label_selector (gchar **modept, gboolean with_entry)
 
     if (with_entry)
     {
-        combo_box = gtk_combo_box_entry_new_text();
+        combo_box = gtk_combo_box_text_new_with_entry();
     }
     else {
-        combo_box = gtk_combo_box_new_text();
+        combo_box = gtk_combo_box_text_new();
     }
     
     if (modept)
     {       /* We're building addressing mode from gchar array */
         
         while (*modept) {
-            gtk_combo_box_append_text(GTK_COMBO_BOX(combo_box) , *modept);
+            gtk_combo_box_text_append(GTK_COMBO_BOX(combo_box), NULL, *modept);
             ++modept;
         };
     }
@@ -178,13 +178,13 @@ on_bnds_define_response (GtkDialog *dialog, gint resp,
 
                 g_string_append_printf(line, "%c ",
                                        *(gtk_entry_get_text(GTK_ENTRY (
-                                            GTK_BIN(
-                                                data->label_entry)->child))));
+                                            gtk_bin_get_child(GTK_BIN(
+                                                data->label_entry))))));
 #if (GTK_MAJOR_VERSION < 3) && (GTK_MINOR_VERSION < 6)
                 offsetdef = gtk_entry_get_text (GTK_ENTRY (GTK_BIN (
                                         data->offset_entry)->child));
 #else
-                offsetdef = gtk_combo_box_get_active_text (
+                offsetdef = gtk_combo_box_text_get_active_text(
                                         GTK_COMBO_BOX(data->offset_entry));
 #endif
 
@@ -339,8 +339,8 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
              *   Boundary Type dropdown menu    *
              * ******************************** */
             
-            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(bounds_dlg)->vbox),
-                                          "Boundary type");
+            align = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(
+                            GTK_DIALOG(bounds_dlg))), "Boundary type");
             bnds_widgets->label_combo
                 = build_label_selector (bounds_list, FALSE);
             gtk_container_add (GTK_CONTAINER(align),bnds_widgets->label_combo);
@@ -349,8 +349,8 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
              *   Addressing Mode dropdown menu  *
              * ******************************** */
             
-            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(bounds_dlg)->vbox),
-                                          "Addressing Mode");
+            align = bounds_aligned_frame (GTK_BOX(gtk_dialog_get_content_area(
+                            GTK_DIALOG(bounds_dlg))), "Addressing Mode");
             bnds_widgets->label_entry = build_label_selector (NULL, TRUE);
             gtk_widget_set_sensitive (bnds_widgets->label_entry, FALSE);
             gtk_container_add (GTK_CONTAINER(align),bnds_widgets->label_entry);
@@ -362,8 +362,9 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
              *   Address dropdown menu          *
              * ******************************** */
             
-            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(bounds_dlg)->vbox),
-                                          "Address or Address Range");
+            align = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(
+                            GTK_DIALOG(bounds_dlg))),
+                                  "Address or Address Range");
             bnds_widgets->address_entry = gtk_entry_new();
             gtk_container_add (GTK_CONTAINER(align),
                                bnds_widgets->address_entry);
@@ -373,9 +374,11 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
              * ******************************** */
             
             bnds_widgets->offset_entry =
-                pack_offset_entry (GTK_BOX(GTK_DIALOG(bounds_dlg)->vbox));
+                pack_offset_entry (GTK_BOX(gtk_dialog_get_content_area(
+                                GTK_DIALOG(bounds_dlg))));
           
-            gtk_widget_show_all(GTK_WIDGET(GTK_DIALOG(bounds_dlg)->vbox));
+            gtk_widget_show_all(GTK_WIDGET(gtk_dialog_get_content_area(
+                            GTK_DIALOG(bounds_dlg))));
         }
 
         gtk_combo_box_set_active (GTK_COMBO_BOX(bnds_widgets->label_combo), 0);
@@ -385,9 +388,8 @@ bnds_define_cb (GtkAction *action, glbls *fdat)
         gtk_entry_set_text (GTK_ENTRY(bnds_widgets->address_entry), addr);
         g_free (addr);
 
-        gtk_entry_set_text (
-                    GTK_ENTRY (GTK_BIN(bnds_widgets->offset_entry)->child),
-                    "NONE");
+        gtk_entry_set_text (GTK_ENTRY(gtk_bin_get_child(GTK_BIN(
+                                bnds_widgets->offset_entry))), "NONE");
         gtk_widget_set_sensitive (bnds_widgets->offset_entry, FALSE);
         gtk_widget_show (bounds_dlg);
     }
@@ -400,9 +402,8 @@ name_label_response (GtkDialog *dialog, gint resp,
                      struct adr_widgets *data)
 {
     GtkTreeIter iter;
-    gchar *class = g_strndup (gtk_entry_get_text(GTK_ENTRY(GTK_BIN(
-                                                 data->label_combo)->child)),
-                              1);
+    gchar *class = g_strndup (gtk_entry_get_text(GTK_ENTRY(gtk_bin_get_child(
+                        GTK_BIN(data->label_combo)))), 1);
     gchar *hexaddr = NULL;
     
     hexaddr = g_strconcat ("$", gtk_entry_get_text(GTK_ENTRY(
@@ -501,8 +502,8 @@ rename_label (GtkAction * action, glbls *fdat)
                     G_CALLBACK(name_label_response), cb_data);
         
 
-            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                          "Label Name");
+            align = bounds_aligned_frame(GTK_BOX(
+                        gtk_dialog_get_content_area(dialog)), "Label Name");
             cb_data->label_entry = gtk_entry_new();
             gtk_container_add (GTK_CONTAINER(align), cb_data->label_entry);
                     
@@ -510,8 +511,8 @@ rename_label (GtkAction * action, glbls *fdat)
              * Address entry box *
              * ***************** */
         
-            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                          "Label Address");
+            align = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(
+                            dialog)), "Label Address");
             cb_data->address_entry = gtk_entry_new();
             gtk_container_add (GTK_CONTAINER(align), cb_data->address_entry);
             
@@ -520,13 +521,14 @@ rename_label (GtkAction * action, glbls *fdat)
              * Build selection for desired Addressing Mode *
              * ******************************************* */
             
-            align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
-                                          "Addressing Mode");
+            align = bounds_aligned_frame(GTK_BOX(
+                    gtk_dialog_get_content_area(dialog)), "Addressing Mode");
             
             cb_data->label_combo = build_label_selector (NULL, TRUE);
             gtk_container_add (GTK_CONTAINER(align), cb_data->label_combo);
 
-            gtk_widget_show_all (GTK_WIDGET(GTK_DIALOG(dialog)->vbox));
+            gtk_widget_show_all(GTK_WIDGET(
+                        gtk_dialog_get_content_area(dialog)));
         }
         /*gtk_dialog_run(GTK_DIALOG(dialog));*/
 
@@ -535,15 +537,14 @@ rename_label (GtkAction * action, glbls *fdat)
             gtk_entry_set_text (GTK_ENTRY(cb_data->label_entry), lblname);
         }
 
-        gtk_entry_set_text(GTK_ENTRY(GTK_BIN(cb_data->label_combo)->child),
-                               guess_addr_mode(mnem));
+        gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(
+                            cb_data->label_combo))), guess_addr_mode(mnem));
         gtk_entry_set_text (GTK_ENTRY(cb_data->address_entry), addr);
         g_free(addr); g_free(opcod); g_free(pbyt);
         g_free(oprand); g_free(mnem); g_free(lblname);
         
         gtk_widget_show (dialog);
     }
-
 }
 
 /* **************************************************** *
@@ -562,7 +563,7 @@ lbl_edit_line(gchar **label, gchar **addr, gchar **class)
    
     dialog = build_dialog_cancel_save ("Edit Label Line", FALSE);
 
-    align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
+    align = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(dialog)),
                                   "Label Name");
     name_ent = gtk_entry_new();
     gtk_container_add (GTK_CONTAINER(align), name_ent);
@@ -572,7 +573,7 @@ lbl_edit_line(gchar **label, gchar **addr, gchar **class)
         gtk_entry_set_text (GTK_ENTRY(name_ent), *label);
     }
     
-    align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
+    align = bounds_aligned_frame (GTK_BOX(gtk_dialog_get_content_area(dialog)),
                                   "Label Address");
     addr_ent = gtk_entry_new();
     gtk_container_add (GTK_CONTAINER(align), addr_ent);
@@ -582,7 +583,7 @@ lbl_edit_line(gchar **label, gchar **addr, gchar **class)
         gtk_entry_set_text (GTK_ENTRY(addr_ent), *addr);
     }
     
-    align = bounds_aligned_frame (GTK_BOX(GTK_DIALOG(dialog)->vbox),
+    align = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(dialog)),
                                   "Label Class");
     /*class_ent = gtk_entry_new();*/
     class_ent = build_label_selector(NULL, TRUE);
@@ -590,17 +591,17 @@ lbl_edit_line(gchar **label, gchar **addr, gchar **class)
 
     if(*class)
     {
-        gtk_entry_set_text (GTK_ENTRY (GTK_BIN(class_ent)->child), *class);
+        gtk_entry_set_text(GTK_ENTRY(gtk_bin_get_child(GTK_BIN(class_ent))), *class);
     }
     
-    gtk_widget_show_all (GTK_WIDGET (GTK_DIALOG(dialog)->vbox));
+gtk_widget_show_all(GTK_WIDGET(gtk_dialog_get_content_area(dialog)));
 
     response = gtk_dialog_run (GTK_DIALOG (dialog));
     
     *label = g_strdup (gtk_entry_get_text (GTK_ENTRY(name_ent)));
     *addr = g_strdup (gtk_entry_get_text (GTK_ENTRY(addr_ent)));
-    *class = g_strndup (gtk_entry_get_text(GTK_ENTRY (GTK_BIN (
-                                                   class_ent)->child)), 1);
+    *class = g_strndup (gtk_entry_get_text(GTK_ENTRY(gtk_bin_get_child(
+                        GTK_BIN(class_ent)))), 1);
     
     gtk_widget_destroy(dialog);
     
