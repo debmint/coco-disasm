@@ -42,31 +42,30 @@ newspin1 (int defval)
     return spin;
 }
 
-/* ************************************************************ *
- * browse_files() - get a filename using selectfile_open ()     *
- *                                                              *
- *   Passed: (1) - The button pressed                           *
- *           (2) - The associated FILE_WIDGET *                 *
- *   Returns: nothing                                           *
- * ************************************************************ */
+/* ******************************************** *
+ * Get a filename using selectfile_open ()      *
+ *                                              *
+ *   Passed: (1) - The button pressed           *
+ *           (2) - The associated FILE_WIDGET   *
+ * ******************************************** */
 
 static void
-browse_files (GtkButton * button, FILE_WIDGET *wp)
+browse_files(GtkButton *button, FILE_WIDGET *wp)
 {
     if (wp->is_read)
     {
-        selectfile_open ( &O9Dis, wp->dialog_ttl, TRUE,
-                          gtk_entry_get_text (GTK_ENTRY(wp->o_entry)));
+        selectfile_open(&O9Dis, wp->dialog_ttl, TRUE,
+                        gtk_entry_get_text (GTK_ENTRY(wp->o_entry)));
     }
     else
     {
-        selectfile_save ( &O9Dis,
-                          gtk_entry_get_text(GTK_ENTRY(wp->o_entry)),
-                          wp->dialog_ttl);
+        selectfile_save(&O9Dis,
+                        gtk_entry_get_text(GTK_ENTRY(wp->o_entry)),
+                        wp->dialog_ttl);
     }
 
 
-    if ((O9Dis.filename_to_return && strlen (O9Dis.filename_to_return)))
+    if ((O9Dis.filename_to_return && strlen(O9Dis.filename_to_return)))
     {
         gtk_entry_set_text (GTK_ENTRY(wp->o_entry), O9Dis.filename_to_return);
         
@@ -154,10 +153,8 @@ build_entry_entry (GtkWidget * entry_box, gchar * filnam)
 }
 
 /* ******************************************************************** *
- * build_browse_button () - create a browse button inside an alignment  *
- *                          to the right, placed inside the provided    *
- *                          entry_box, and connect a callback for       *
- *                          "clicked".                                  *
+ * Create a browse button inside an alignment to the right, placed      *
+ * inside the provided entry_box, and connect a callback for "clicked". *
  *     Passed: (1) - The container into which to pack new button        *
  *             (2) - The entry widget to pass to callback as data.      *
  *             (3) - TRUE if browsing files, FALSE if dir               *
@@ -165,38 +162,25 @@ build_entry_entry (GtkWidget * entry_box, gchar * filnam)
  * ******************************************************************** */
 
 static GtkWidget *
-build_browse_button (GtkWidget * entry_box,
-                     FILE_WIDGET *wp,
-                     gboolean IsFile)
+build_browse_button(GtkWidget *entry_box,
+                  FILE_WIDGET *wp,
+                     gboolean  IsFile)
 {
     GtkWidget *browse_button;
-    GtkWidget *alignment;
-
-    /* entry_box[alignment[browse_button]] */
 
     browse_button = gtk_button_new_with_label ("Browse");
     gtk_widget_set_size_request(browse_button, -1, -1);
-    /*alignment = gtk_alignment_new(1, 0.5, 0, 0);
-    gtk_container_add(GTK_CONTAINER(alignment), browse_button);*/
     gtk_box_pack_end (GTK_BOX (entry_box), browse_button, FALSE, FALSE, 2);
 
-    if (IsFile)
-    {
-        g_signal_connect (G_OBJECT (browse_button), "clicked",
-                          G_CALLBACK (browse_files), wp);
-    }
-    else
-    {
-        g_signal_connect (G_OBJECT (browse_button), "clicked",
-                          G_CALLBACK (browse_dirs), wp);
-    }
+    g_signal_connect(G_OBJECT(browse_button), "clicked",
+                          G_CALLBACK(IsFile ? browse_files : browse_dirs), wp);
 
     return browse_button;
 }
 
 /* **************************************************************** *
- * build_entry_box () - build a frame with an entry box and a       *
- *                      browse button inside                        *
+ * Build a frame with an entry box and a browse button inside       *
+ *                                                                  * 
  *      Passed:  (1) - Label for frame                              *
  *               (2) - Container into which new frame is stored     *
  *               (3) - Filname to insert into entry (if != NULL)    *
@@ -206,7 +190,7 @@ build_browse_button (GtkWidget * entry_box,
  * **************************************************************** */
 
 static GtkWidget *
-build_entry_box (FILE_WIDGET *wp, GtkWidget * main_box, GtkWidget **m_frame)
+build_entry_box (FILE_WIDGET *wp, GtkWidget *main_box, GtkWidget **m_frame)
 {
     GtkWidget *entry_box;
 
@@ -217,15 +201,12 @@ build_entry_box (FILE_WIDGET *wp, GtkWidget * main_box, GtkWidget **m_frame)
     return wp->o_entry;
 }
 
-/* **************************************************************** *
- * on_ofile_tgl ()  - callback for checkbox toggles to              *
- *                enable/disable out/in file usage                  *
- *                                                                  *
- * Passed:  The toggle button (checkbox) widget                     *
- *          The corresponding struct ofile_widgets (as data ptr)    *
- *                                                                  *
- * Returns: Nothing                                                 *
- * **************************************************************** */
+/* ******************************************************************** *
+ * Callback for checkbox toggles to enable/disable out/in file usage    *
+ *                                                                      *
+ * Passed:  The toggle button (checkbox) widget                         *
+ *          The corresponding struct ofile_widgets (as data ptr)        *
+ * ******************************************************************** */
 
 static void
 on_ofile_tgle (GtkToggleButton * tbutton, struct ofile_widgets *srcf)
@@ -238,12 +219,10 @@ on_ofile_tgle (GtkToggleButton * tbutton, struct ofile_widgets *srcf)
 }
 
 /* ********************************************************** *
- *                                                            *
  *           Dialog to Set Disassembler Options               *
  *                                                            *
  *                 Called from GtkAction                      *
  * Passed:  GtkAction Widget, the global hbuf pointer         *
- *                                                            *
  * ********************************************************** */
 
 void
@@ -262,12 +241,10 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
               *list_radio_file, *list_radio_gtk, *list_radio_none,
               *aprbx,
               *hbx, *vbx, *frame, *lbl;       /* Generic temporary widgets */
-    /*GtkWidget *hsep1;*/
     gint result;
     int files_page, misc_page;  /* Save page numbers */
 
-    dialog =
-        gtk_dialog_new_with_buttons ("Command Line options for os9disasm",
+    dialog = gtk_dialog_new_with_buttons("Command Line options for os9disasm",
                                      GTK_WINDOW(w_main),
                                      GTK_DIALOG_MODAL |
                                      GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -277,21 +254,17 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
 
     /* ********************** *
-     *                        *
      * Create options widgets *
-     *                        *
      * ********************** */
 
-    /* **************************************** *
-     * Create the "Files" Page entries          *
-     * **************************************** */
+    /* Create the "Files" Page entries      */
 
     notebk = gtk_notebook_new();
     gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(
                         dialog))), notebk, FALSE, FALSE, 2);
 
     /* Create a grid into which to place two *
-     * entry boxes side by side               *
+     * entry boxes side by side              *
      */
 
     grid = gtk_grid_new();
@@ -302,8 +275,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     {
     }
     
-    /* Program file to be disassembled *
-     */
+    /* Program file to be disassembled */
     
     bin_entry = build_entry_box (prog_wdg, grid, &m_frame);
     gtk_grid_attach( GTK_GRID(grid), m_frame, 0, 0, 1, 1);
@@ -326,8 +298,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     asmout_wdg->o_entry = build_entry_entry (entry_box,
                         asmout_wdg->fname ? asmout_wdg->fname : "output.a");
     asmout_wdg->browse_button = build_browse_button (entry_box,
-                                                 asmout_wdg,
-                                                 TRUE);
+                                                     asmout_wdg,
+                                                     TRUE);
 
     g_signal_connect (G_OBJECT (ofile_toggle), "toggled",
                       G_CALLBACK (on_ofile_tgle), asmout_wdg);
@@ -337,9 +309,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     on_ofile_tgle (GTK_TOGGLE_BUTTON (ofile_toggle), asmout_wdg);
     gtk_widget_show_all (m_frame);
 
-    /* 
-     * path to defs files
-     */
+    /*  path to defs files */
 
     entry_box = build_entry_frame ("\"Defs\" files", &m_frame);
     gtk_grid_attach( GTK_GRID(grid), m_frame, 1, 3, 2, 3);
@@ -349,16 +319,13 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     gtk_box_pack_start (GTK_BOX (entry_box), defs_toggle, FALSE, FALSE, 2);
     defs_wdg->o_entry = build_entry_entry (entry_box,
             defs_wdg->fname ? defs_wdg->fname : "/dd/defs");
-    defs_wdg->browse_button = build_browse_button (entry_box,
-                                                  defs_wdg,
-                                                  FALSE);
+    defs_wdg->browse_button = build_browse_button (entry_box, defs_wdg, FALSE);
     gtk_widget_set_tooltip_text(defs_toggle,
            "Secify the path to where your standard label files are stored.");
 
     g_signal_connect (G_OBJECT (defs_toggle), "toggled",
-                      G_CALLBACK (on_ofile_tgle), defs_wdg);
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (defs_toggle),
-                                  alt_defs);
+                      G_CALLBACK(on_ofile_tgle), defs_wdg);
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (defs_toggle), alt_defs);
     
     on_ofile_tgle (GTK_TOGGLE_BUTTON (defs_toggle), defs_wdg);
     gtk_widget_show_all (m_frame);
@@ -448,8 +415,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     gtk_container_set_border_width(GTK_CONTAINER(vbx), 10);
 
     /* Begin page setup
-     * First, create an hbox to set the page width/depth side by side
-     */
+     * First, create an hbox to set the page width/depth side by side */
 
     hbx = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
@@ -507,14 +473,12 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     gtk_container_add(GTK_CONTAINER(frame), vbx);
     gtk_box_pack_start(GTK_BOX(aprbx), frame, FALSE, FALSE, 5);
 
-    /* ******************************** *
-     * Types options                    *
-     * ******************************** */
+    /* Types options */
 
     vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL,5); /* Vbox for Types widgets */
     gtk_container_set_border_width (GTK_CONTAINER(vbx), 10);
 
-    /* do CPU type */
+    /* CPU type */
     CPU_toggle = gtk_check_button_new_with_label ("CPU = 6309");
     gtk_widget_set_tooltip_text(CPU_toggle,
           "Disassemble 6309 instructions.\nIn normal mode, 6309-only instructions are not accepted\nand rendered as data");
@@ -551,7 +515,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     }
 
     gtk_widget_show_all(dialog);
-    switch (result = gtk_dialog_run (GTK_DIALOG (dialog)))
+
+    switch (result = gtk_dialog_run (GTK_DIALOG(dialog)))
     {
     case GTK_RESPONSE_OK:
     case GTK_RESPONSE_ACCEPT:
@@ -563,7 +528,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
             g_free (prog_wdg->fname);
         }
         
-        prog_wdg->fname = g_strdup (gtk_entry_get_text (GTK_ENTRY (bin_entry)));
+        prog_wdg->fname = g_strdup(gtk_entry_get_text(GTK_ENTRY(bin_entry)));
 
         if ((prog_wdg->fname) && !(strlen(prog_wdg->fname)))
         {
@@ -571,7 +536,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
             prog_wdg->fname = NULL;
         }
 
-        menu_do_dis_sensitize ();
+        menu_do_dis_sensitize();
 
         if (cmd_wdg->fname != NULL)
         {
@@ -619,7 +584,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
 
         /* Handle listing output */
         
-        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(list_radio_file)))
+        if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(list_radio_file)))
         {
             write_list = LIST_FILE;
 
@@ -628,7 +593,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
                 g_free(listing_wdg->fname);
             }
             listing_wdg->fname =
-                g_strdup (gtk_entry_get_text (GTK_ENTRY(listing_wdg->o_entry)));
+                g_strdup(gtk_entry_get_text(GTK_ENTRY(listing_wdg->o_entry)));
         }
         else {
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(list_radio_gtk))) 
@@ -646,12 +611,10 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     }
 
     gtk_widget_destroy (dialog);
-
 }
 
 /* ******************************************************************** *
- * font_sel_cb () - Main (top-level) callback for modifying the font of *
- *          one of the views.                                           *
+ * Main (top-level) callback for modifying the font of one of the views *
  * ******************************************************************** */
 
 static void
@@ -660,18 +623,18 @@ font_select_cb (GtkButton *btn, struct fontsel_data *w_sel)
     w_sel->newfont = NULL;
     w_sel->oldfont = pango_font_description_to_string (w_sel->style->font_desc);
 
-    /* Save the font name for now - we may wish to eliminate this step
-     * later */
+    /* Save the font name for now */
+    /* we may wish to eliminate this step later */
+
     w_sel->newfont = (gchar *)gtk_font_button_get_font_name (
                                         GTK_FONT_BUTTON(w_sel->font_btn));
     gtk_widget_modify_font (selected_view,
                         pango_font_description_from_string (w_sel->newfont));
 }
 
-/* ******************************************************************** *
- * color_sel_cb () - Callback for when a color selection button is      *
- *          pressed.                                                    *
- * ******************************************************************** */
+/* ************************************************************ *
+ * Callback for when a color selection button is  pressed.      *
+ * ************************************************************ */
 
 static void
 color_select_cb (GtkButton *btn, struct fontsel_data *w_sel)
@@ -691,18 +654,17 @@ color_select_cb (GtkButton *btn, struct fontsel_data *w_sel)
     }
 }
 
-/* ******************************************************************** *
- * set_list_ptr() - Callback for when a Listing selection radio button  *
- *          is toggled.                                                 *
- *          If it became active, set "selected_view" to the proper      *
- *          window.  If it became inactive, do nothing.                 *
- *          Also sets the colors in the color selection buttons.        *
- * ******************************************************************** */
+/* **************************************************************** *
+ * Callback for when a Listing selection radio button is toggled.   *
+ *          If it became active, set "selected_view" to the proper  *
+ *          window.  If it became inactive, do nothing.             *
+ *          Also sets the colors in the color selection buttons.    *
+ * **************************************************************** */
 
 static void
 set_list_ptr (GtkWidget *rb, struct fontsel_data *w_sel)
 {
-    if ( gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb)))
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb)))
     {
         selected_view = g_hash_table_lookup(w_sel->list_to_widg,
                                              gtk_widget_get_name (rb));
@@ -716,11 +678,11 @@ set_list_ptr (GtkWidget *rb, struct fontsel_data *w_sel)
     }
 }
 
-/* ******************************************************************** *
- * reset_lists() - Resets a list window to the state in which it was on *
- *      entry to the procedure.  This is called when the "Cancel"       *
- *      button is pressed in the Fonts/Colors select.                   *
- * ******************************************************************** */
+/* ************************************************************ *
+ * Resets a list window to the state in which it was on entry   *
+ *      to the procedure.  This is called when the "Cancel"     *
+ *      button is pressed in the Fonts/Colors select.           *
+ * ************************************************************ */
 
 static void
 reset_lists (FILEINF *inf)
@@ -745,9 +707,9 @@ reset_lists (FILEINF *inf)
     }
 }
 
-/* ******************************************************************** *
- * replace_gdkcolor () - replaces the GdkColor if it is different       *
- * ******************************************************************** */
+/* ************************************************ *
+ * Replaces the GdkColor if it is different         *
+ * ************************************************ */
 
 static void
 replace_gdkcolor (GdkColor **oldcolor, GdkColor *newcolor)
@@ -772,10 +734,10 @@ replace_gdkcolor (GdkColor **oldcolor, GdkColor *newcolor)
     }
 }
 
-/* ******************************************************************** *
- * update_lists() - update the FILEINF data passed as a parameter       *
- *      to reflect the current font and {fore,back}ground colors        *
- * ******************************************************************** */
+/* *******************************************i************ *
+ * Update the FILEINF data passed as a parameter to reflect *
+ *      the current font and {fore,back}ground colors       *
+ * ******************************************************** */
 
 void
 update_lists (FILEINF *inf)
@@ -802,26 +764,10 @@ update_lists (FILEINF *inf)
     replace_gdkcolor (&(inf->bakcolor), &(style->base[0]));
 }
 
-/* ******************************************************************** *
- * cbtn_add_lbl() - Finds the GtkFrame in the gtk_color_button and set  *
- *          the label to that passed as the second parameter.           *
- * ******************************************************************** */
-
-static void
-cbtn_add_lbl(GtkWidget *btn, gchar *label)
-{
-    while (! GTK_IS_FRAME (btn))
-    {
-        btn = gtk_bin_get_child (GTK_BIN(btn));
-    }
-
-    gtk_frame_set_label (GTK_FRAME(btn), label);
-}
-
-/* ******************************************************************** *
- * dlg_set_tips() - Parses the GList of Buttons in the dialog and sets  *
- *          tooltips for them.                                          *
- * ******************************************************************** */
+/* **************************************************** *
+ * Parses the GList of Buttons in the dialog and sets   *
+ *          tooltips for them.                          *
+ * **************************************************** */
 
 void
 dlg_set_tips (GtkWidget *btn, GtkDialog *dialog)
@@ -838,13 +784,13 @@ dlg_set_tips (GtkWidget *btn, GtkDialog *dialog)
     }
 }
 
-/* ******************************************************************** *
- * fonts_main_dialog () - Callback for main menu choice to select a     *
- *      different font and/or color for the listing, commands, or       *
- *      labels display(s).                                              *
- *      This dialog will be destroyed at the end of usage, since it     *
- *      should not be called often, surely only once in a session.      *
- * ******************************************************************** */
+/* **************************************************************** *
+ * Callback for main menu choice to select a different font and/or  *
+ *      color for the listing, commands, or labels display(s).      *
+ *                                                                  *
+ *      This dialog will be destroyed at the end of usage, since it *
+ *      should not be called often, surely only once in a session.  *
+ * **************************************************************** */
 
 void
 fonts_main_dialog (GtkAction *action, glbls *globals)
@@ -856,7 +802,6 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
               *clr_grid,
               *radiolist = NULL;
     struct fontsel_data fs_data;
-    gint response;
     GList *btnlist;
 
     /* Build the dialog */
@@ -879,6 +824,7 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
 
     selected_view = globals->list_file.tview;
     fs_data.style = gtk_widget_get_style (selected_view);
+
     /* Listings radio group on left-hand side */
 
     /* Build a list_to_widg hash */
@@ -923,10 +869,13 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
 
     /* Select Font/Color buttons in 'frame" on right-hand side */
     /* The main frame containing all the widgets */
+
     frame = gtk_frame_new ("Select Font/Color");
     gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
     gtk_container_set_border_width (GTK_CONTAINER(frame), 10);
+
     /* 'tmp_vbox' to hold multiple widgets */
+
     tmp_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_container_set_border_width(GTK_CONTAINER(tmp_vbox), 10);
 
@@ -946,29 +895,26 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
     gtk_container_set_border_width (GTK_CONTAINER(clr_grid), 10);
 
     /* The background button */
+
     fs_data.cb_bg = gtk_color_button_new();
     g_signal_connect (fs_data.cb_bg, "color-set", G_CALLBACK(color_select_cb),
                                                   &fs_data);
     gtk_color_button_set_title (GTK_COLOR_BUTTON(fs_data.cb_bg),
                                 "Background");
     gtk_widget_set_name(fs_data.cb_bg, "background");
-    //cbtn_add_lbl(fs_data.cb_bg, "Background");
     gtk_grid_attach(GTK_GRID(clr_grid), fs_data.cb_bg, 0, 0, 1, 1);
-    //gtk_box_pack_start(GTK_BOX(tmp_vbox), gtk_label_new("Background"), FALSE, FALSE, 5);
-    gtk_grid_attach(GTK_GRID(clr_grid), gtk_label_new("Background"),
-            0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(clr_grid), gtk_label_new("Background"), 0,1,1,1);
 
     /* The foreground button */
+
     fs_data.cb_fg = gtk_color_button_new ();
     g_signal_connect (fs_data.cb_fg, "color-set", G_CALLBACK(color_select_cb),
                                                    &fs_data);
     gtk_color_button_set_title (GTK_COLOR_BUTTON(fs_data.cb_fg),
                                 "Foreground");
     gtk_widget_set_name(fs_data.cb_fg, "foreground");
-    //cbtn_add_lbl (fs_data.cb_fg, "Foreground");
     gtk_grid_attach(GTK_GRID(clr_grid), fs_data.cb_fg, 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(clr_grid), gtk_label_new("Foreground"),
-            1, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(clr_grid), gtk_label_new("Foreground"), 1,1,1,1);
     gtk_box_pack_start(GTK_BOX(tmp_vbox), clr_grid, FALSE, FALSE, 5);
     gtk_container_add (GTK_CONTAINER(frame), tmp_vbox);
     gtk_box_pack_start(GTK_BOX(hbox_main), frame, FALSE, FALSE, 5);
@@ -979,12 +925,12 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
                             GTK_RADIO_BUTTON(radiolist)))->data), &fs_data);
 
     /* Now pack all into the dialog vbox */
+
     gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(
                     fonts_main_dialog))), hbox_main, FALSE, FALSE, 5);
     gtk_widget_show_all (hbox_main);
-    response = gtk_dialog_run(GTK_DIALOG(fonts_main_dialog));
 
-    switch (response)
+    switch (gtk_dialog_run(GTK_DIALOG(fonts_main_dialog)))
     {
         case GTK_RESPONSE_OK:
             update_lists(&(globals->list_file));
