@@ -54,8 +54,9 @@ build_cmd_window (GtkWidget * mainbox, FILEINF * fi)
     
     fi->tview = gtk_text_view_new ();
     gtk_widget_set_name (GTK_WIDGET (fi->tview), "txtwin");
-    gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (s_win),
-                                           fi->tview);
+    /*gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (s_win),
+                                           fi->tview);*/
+    gtk_container_add(GTK_CONTAINER(s_win), fi->tview);
 
     /* Add text buffer to textview */
     
@@ -342,9 +343,9 @@ main (int argc, char *argv[])
 
     /* Make a vbox to put the three menus in */
     
-    main_vbox = gtk_vbox_new (FALSE, 1);
-    gtk_container_set_border_width (GTK_CONTAINER (main_vbox), 1);
-    gtk_container_add (GTK_CONTAINER (w_main), main_vbox);
+    main_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
+    gtk_container_set_border_width(GTK_CONTAINER (main_vbox), 1);
+    gtk_container_add (GTK_CONTAINER(w_main), main_vbox);
 
     /* Get the three types of menu */
     /* Note: all three menus are separately created, so they are not the
@@ -356,8 +357,9 @@ main (int argc, char *argv[])
 
     /* First, create a paned window in the mainbox */
     
-    work_area = gtk_hpaned_new ();
-    gtk_container_add (GTK_CONTAINER (main_vbox), work_area);
+    work_area = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
+    //gtk_container_add (GTK_CONTAINER (main_vbox), work_area);
+    gtk_box_pack_start(GTK_BOX(main_vbox), work_area, TRUE, TRUE, 5);
     gtk_widget_show (work_area);
 
     /*      create List window */
@@ -370,7 +372,7 @@ main (int argc, char *argv[])
 
     /* add a vertically-paned window to the right-hand side */
     
-    panedv = gtk_vpaned_new ();
+    panedv = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
     gtk_paned_pack2 (GTK_PANED (work_area), panedv, TRUE, TRUE);
     /*gtk_widget_set_size_request (GTK_WIDGET (panedv), WWIDTH / 3, -1);*/
 

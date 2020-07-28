@@ -64,7 +64,7 @@ pack_hsep (GtkBox *box)
 {
     GtkWidget *hsep;
 
-    hsep = gtk_hseparator_new();
+    hsep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
     gtk_box_pack_start (box, hsep, FALSE, FALSE, 2);
 }
 
@@ -261,7 +261,7 @@ delete_amode_cb (GtkButton *button, gpointer zilch)
                                           GTK_WINDOW(w_main),
                                           GTK_DIALOG_MODAL |
                                             GTK_DIALOG_DESTROY_WITH_PARENT,
-                                          GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+                                          "Close", GTK_RESPONSE_CLOSE,
                                           NULL);
 
     combo = build_label_selector(NULL, FALSE);
@@ -286,7 +286,7 @@ void
 amode_list_edit_cb(GtkAction * action, glbls *fdat)
 {
     GtkWidget *dialog,
-              *table,
+              *grid,
               *button,
               *alignment,
               *man_entry;
@@ -295,7 +295,7 @@ amode_list_edit_cb(GtkAction * action, glbls *fdat)
                                           GTK_WINDOW(w_main),
                                           /*GTK_DIALOG_MODAL|*/
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
-                                          GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+                                          "Close", GTK_RESPONSE_CLOSE,
                                           NULL);
 
     /* ********************* *
@@ -305,20 +305,20 @@ amode_list_edit_cb(GtkAction * action, glbls *fdat)
     /* Set up containers */
     alignment = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(
                     GTK_DIALOG(dialog))), "Add an addressing mode");
-    table = gtk_table_new (2, 2, FALSE);
-    gtk_widget_set_size_request ( table, 280, -1);
-    gtk_container_add (GTK_CONTAINER (alignment), table);
+    grid = gtk_grid_new();
+    gtk_widget_set_size_request(grid, 280, -1);
+    gtk_container_add(GTK_CONTAINER (alignment), grid);
 
     /* Now insert tools */
     man_entry = gtk_entry_new ();
-    gtk_table_attach_defaults (GTK_TABLE (table), man_entry, 0, 2, 0, 1);
+    gtk_grid_attach(GTK_GRID (grid), man_entry, 0, 2, 0, 1);
 
-    button = gtk_button_new_from_stock (GTK_STOCK_CLEAR);
-    gtk_table_attach_defaults (GTK_TABLE (table), button, 0, 1, 1, 2);
+    button = gtk_button_new_with_label("Clear");
+    gtk_grid_attach(GTK_GRID (grid), button, 0, 1, 1, 2);
     g_signal_connect (button, "clicked", G_CALLBACK (clear_entry), man_entry);
 
-    button = gtk_button_new_from_stock (GTK_STOCK_APPLY);
-    gtk_table_attach_defaults (GTK_TABLE (table), button, 1, 2, 1, 2);
+    button = gtk_button_new_with_label ("Apply");
+    gtk_grid_attach(GTK_GRID (grid), button, 1, 2, 1, 2);
     g_signal_connect (button, "clicked", G_CALLBACK(add_amode_man), man_entry);
     
     /* ********************* *
@@ -328,7 +328,7 @@ amode_list_edit_cb(GtkAction * action, glbls *fdat)
     /* Set up containers */
     alignment = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(
                     GTK_DIALOG(dialog))), "Add entries from file");
-    button = gtk_button_new_from_stock (GTK_STOCK_OPEN);
+    button = gtk_button_new_with_label("Open");
     g_signal_connect (button, "clicked", G_CALLBACK(amodes_from_file), &O9Dis);
     gtk_container_add (GTK_CONTAINER (alignment), button);
 
@@ -533,7 +533,7 @@ on_adr_mode_response( GtkDialog *dialog, gint resp,
                 {
                     offset_list = g_list_append (offset_list,
                                                  g_strdup (offsetpt));
-                    gtk_combo_box_text_append(GTK_COMBO_BOX(
+                    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(
                                 data->offset_entry), NULL, offsetpt);
                 }
             }
@@ -592,7 +592,7 @@ on_use_offset_toggled (GtkToggleButton *button, GtkWidget **entry)
 static void
 populate_offset (char *element, GtkWidget **combobox)
 {
-    gtk_combo_box_text_append(GTK_COMBO_BOX(*combobox), NULL, element);
+    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(*combobox), NULL, element);
 }
 
 /* ************************************************************************ *
@@ -609,8 +609,7 @@ pack_offset_entry (GtkBox *mainbox)
               * label;
 
     frame = bounds_aligned_frame (mainbox, "Offset from address");
-
-    vbox = gtk_vbox_new (0, 1);    // Utilize vbox for vbox
+    vbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 1);
 
     if (offset_list == NULL )   /* If not initialized */
     {

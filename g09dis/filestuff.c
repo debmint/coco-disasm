@@ -159,10 +159,11 @@ onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
         }*/
         
         /* do pop-up window */
-        popup = gtk_ui_manager_get_widget (ui_manager, menu_name);
+        popup = gtk_ui_manager_get_widget(ui_manager, menu_name);
 
-        gtk_menu_popup (GTK_MENU(popup), NULL, NULL,NULL, NULL,
-                        0, gdk_event_get_time((GdkEvent*)event));
+        /*gtk_menu_popup(GTK_MENU(popup), NULL, NULL,NULL, NULL,
+                        0, gdk_event_get_time((GdkEvent*)event));*/
+        gtk_menu_popup_at_pointer(GTK_MENU(popup), (GdkEvent *)event);
         return TRUE;
     }
     
@@ -250,10 +251,8 @@ selectfile_open ( glbls *hbuf,
     fsel = gtk_file_chooser_dialog_new (title,
                                         GTK_WINDOW (w_main),
                                         action_type,
-                                        GTK_STOCK_CANCEL,
-                                        GTK_RESPONSE_CANCEL,
-                                        GTK_STOCK_OPEN,
-                                        GTK_RESPONSE_ACCEPT,
+                                        "CANCEL", GTK_RESPONSE_CANCEL,
+                                        "OPEN", GTK_RESPONSE_ACCEPT,
                                         NULL);    /* Leak??? */
 
     g_free (title);
@@ -298,10 +297,8 @@ selectfile_save (glbls *hbuf, const gchar *cur_name, const gchar *type)
     fsel = gtk_file_chooser_dialog_new (title,
                                         GTK_WINDOW (w_main),
                                         GTK_FILE_CHOOSER_ACTION_SAVE,
-                                        GTK_STOCK_CANCEL,
-                                        GTK_RESPONSE_CANCEL,
-                                        GTK_STOCK_SAVE,
-                                        GTK_RESPONSE_ACCEPT,
+                                        "CANCEL", GTK_RESPONSE_CANCEL,
+                                        "SAVE", GTK_RESPONSE_ACCEPT,
                                         NULL);    /* Leak??? */
 
     g_free (title);
@@ -401,7 +398,7 @@ save_warn_OW (gchar *type, gchar *fnam, gboolean can_cancel)
                            "Discard Changes", GTK_RESPONSE_NO);
     if(can_cancel) {
         gtk_dialog_add_button (GTK_DIALOG(dialog),
-                               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
+                               "CANCEL", GTK_RESPONSE_CANCEL);
     }
     gtk_dialog_add_button (GTK_DIALOG(dialog),
                            "Save Changes", GTK_RESPONSE_YES);

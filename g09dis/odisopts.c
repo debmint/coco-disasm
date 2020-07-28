@@ -117,7 +117,8 @@ build_entry_frame (const gchar *title, GtkWidget **m_frame)
     *m_frame = gtk_frame_new (title);
     gtk_container_set_border_width (GTK_CONTAINER (*m_frame), 10);
 
-    entry_vbox = gtk_vbox_new (TRUE, 3);    /* VBox to hold entry widgets */
+    /* VBox to hold entry widgets */
+    entry_vbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
     gtk_container_set_border_width(GTK_CONTAINER(entry_vbox), 10);
     gtk_container_add (GTK_CONTAINER (*m_frame), entry_vbox);
 
@@ -175,9 +176,9 @@ build_browse_button (GtkWidget * entry_box,
 
     browse_button = gtk_button_new_with_label ("Browse");
     gtk_widget_set_size_request(browse_button, -1, -1);
-    alignment = gtk_alignment_new(1, 0.5, 0, 0);
-    gtk_container_add(GTK_CONTAINER(alignment), browse_button);
-    gtk_box_pack_end (GTK_BOX (entry_box), alignment, FALSE, FALSE, 2);
+    /*alignment = gtk_alignment_new(1, 0.5, 0, 0);
+    gtk_container_add(GTK_CONTAINER(alignment), browse_button);*/
+    gtk_box_pack_end (GTK_BOX (entry_box), browse_button, FALSE, FALSE, 2);
 
     if (IsFile)
     {
@@ -249,7 +250,7 @@ void
 set_dis_opts_cb (GtkAction *action, glbls *hbuf)
 {
     GtkWidget *dialog,
-              *table,
+              *grid,
               *bin_entry, *cmd_entry,
               *w_frame, *d_frame,
               *w_spin, *d_spin,
@@ -270,8 +271,8 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
                                      GTK_WINDOW(w_main),
                                      GTK_DIALOG_MODAL |
                                      GTK_DIALOG_DESTROY_WITH_PARENT,
-                                     GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                                     GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                                     "Cancel", GTK_RESPONSE_REJECT,
+                                     "OK", GTK_RESPONSE_ACCEPT,
                                      NULL);
     gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
 
@@ -286,17 +287,17 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
      * **************************************** */
 
     notebk = gtk_notebook_new();
-    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(dialog)),
-                       notebk, FALSE, FALSE, 2);
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(
+                        dialog))), notebk, FALSE, FALSE, 2);
 
-    /* Create a table into which to place two *
+    /* Create a grid into which to place two *
      * entry boxes side by side               *
      */
 
-    table = gtk_table_new( 4, 2, FALSE );
+    grid = gtk_grid_new();
 
     if ((files_page = gtk_notebook_append_page(GTK_NOTEBOOK(notebk),
-                                               table,
+                                               grid,
                                                gtk_label_new("Files"))) == -1)
     {
     }
@@ -304,27 +305,18 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     /* Program file to be disassembled *
      */
     
-    bin_entry = build_entry_box (prog_wdg, table, &m_frame);
-    gtk_table_attach( GTK_TABLE(table), m_frame,
-                                0, 1, 0, 1,
-                                0, 0,
-                                5, 2);
+    bin_entry = build_entry_box (prog_wdg, grid, &m_frame);
+    gtk_grid_attach( GTK_GRID(grid), m_frame, 0, 0, 1, 1);
 
      /* Command file  */
     
-    cmd_entry = build_entry_box (cmd_wdg, table, &m_frame);
-    gtk_table_attach( GTK_TABLE(table), m_frame,
-                      1, 2, 0, 1,
-                      0, 0,
-                      5, 2);
+    cmd_entry = build_entry_box (cmd_wdg, grid, &m_frame);
+    gtk_grid_attach( GTK_GRID(grid), m_frame, 1, 0, 1, 1);
 
      /*  output file ( -o option ) */
 
     entry_box = build_entry_frame ("Assembly Source File", &m_frame);
-    gtk_table_attach( GTK_TABLE(table), m_frame,
-                      0, 1, 1, 2,
-                      0, 0,
-                      5, 2);
+    gtk_grid_attach( GTK_GRID(grid), m_frame, 1, 1, 1, 1);
 
     ofile_toggle = gtk_check_button_new_with_label (
                                     "Generate .asm source file");
@@ -350,10 +342,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
      */
 
     entry_box = build_entry_frame ("\"Defs\" files", &m_frame);
-    gtk_table_attach( GTK_TABLE(table), m_frame,
-                      0, 1, 2, 3,
-                      0, 0,
-                      5, 2);
+    gtk_grid_attach( GTK_GRID(grid), m_frame, 1, 3, 2, 3);
 
     defs_toggle = gtk_check_button_new_with_label (
                                     "Specify (alternate) path");
@@ -377,13 +366,10 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     /* send Listing to file ( > filename ) */
 
     entry_box = build_entry_frame("Formatted File Listing ", &m_frame);
-    gtk_table_attach( GTK_TABLE(table), m_frame,
-                      1, 2, 1, 3,
-                      0, GTK_FILL,
-                      5, 2);
+    gtk_grid_attach(GTK_GRID(grid), m_frame, 0, 2, 1, 1);
     
     gtk_widget_show_all(m_frame);
-    vbx = gtk_vbox_new (FALSE, 2);
+    vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
     
     gtk_widget_set_size_request(vbx,300,-1);
     list_radio_file = gtk_radio_button_new_with_label (NULL,
@@ -395,7 +381,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     
     gtk_widget_set_tooltip_text(list_radio_file,
                           "Write the formatted listing to file\nor stdout if filename is blank.\nThis is the regular, space-separated listing");
-    listing_box = gtk_vbox_new (FALSE, 2);
+    listing_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
     listing_wdg->o_entry = build_entry_entry (listing_box,
             listing_wdg->fname ? listing_wdg->fname : "output.List");
     listing_wdg->browse_button = build_browse_button (listing_box,
@@ -435,18 +421,18 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
     
     /* Now pack them all into the vbox */
     
-    gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
-                        FALSE, FALSE, 4);
+    gtk_box_pack_start (GTK_BOX (vbx), gtk_separator_new (
+                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_gtk, FALSE, FALSE, 2);
-    gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
-                        FALSE, FALSE, 4);
+    gtk_box_pack_start (GTK_BOX (vbx), gtk_separator_new(
+                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_none, FALSE, FALSE, 2);
-    gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
-                        FALSE, FALSE, 4);
+    gtk_box_pack_start (GTK_BOX (vbx), gtk_separator_new(
+                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_file, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX(vbx), listing_box, FALSE, FALSE, 2);
-    gtk_box_pack_start (GTK_BOX (vbx), gtk_hseparator_new (),
-                        FALSE, FALSE, 4);
+    gtk_box_pack_start(GTK_BOX (vbx), gtk_separator_new(
+                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
     gtk_container_add(GTK_CONTAINER(entry_box), vbx);
     gtk_widget_show_all (m_frame);
     
@@ -457,15 +443,15 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
      * vbox to contain all the elements                     *
      * **************************************************** */
 
-    aprbx = gtk_vbox_new(0, 5);     /* Main vbox for appearance page */
-    vbx = gtk_vbox_new(0,5);       /* Vbox for Page Setup widgets   */
+    aprbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); // Main vbox for appearance page */
+    vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL,5); // for Page Setup widgets
     gtk_container_set_border_width(GTK_CONTAINER(vbx), 10);
 
     /* Begin page setup
      * First, create an hbox to set the page width/depth side by side
      */
 
-    hbx = gtk_hbox_new(0, 2);
+    hbx = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
     /* Page Width */
 
@@ -525,7 +511,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
      * Types options                    *
      * ******************************** */
 
-    vbx = gtk_vbox_new(0,5);       /* Vbox for Types widgets   */
+    vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL,5); /* Vbox for Types widgets */
     gtk_container_set_border_width (GTK_CONTAINER(vbx), 10);
 
     /* do CPU type */
@@ -822,7 +808,7 @@ update_lists (FILEINF *inf)
  * ******************************************************************** */
 
 static void
-cbtn_add_lbl (GtkWidget *btn, gchar *label)
+cbtn_add_lbl(GtkWidget *btn, gchar *label)
 {
     while (! GTK_IS_FRAME (btn))
     {
@@ -838,7 +824,7 @@ cbtn_add_lbl (GtkWidget *btn, gchar *label)
  * ******************************************************************** */
 
 void
-dlg_set_tips (GtkWidget *btn, GtkDialog *dialog, gpointer *tips)
+dlg_set_tips (GtkWidget *btn, GtkDialog *dialog)
 {
     switch (gtk_dialog_get_response_for_widget (dialog, btn))
     {
@@ -864,11 +850,11 @@ void
 fonts_main_dialog (GtkAction *action, glbls *globals)
 {
     GtkWidget *fonts_main_dialog,
-              * hbox_main,
-              * frame,
-              * tmp_vbox,
-              * tmp_hbox,
-              * radiolist = NULL;
+              *hbox_main,
+              *frame,
+              *tmp_vbox,
+              *clr_grid,
+              *radiolist = NULL;
     struct fontsel_data fs_data;
     gint response;
     GList *btnlist;
@@ -882,10 +868,14 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
                             "Cancel", GTK_RESPONSE_CANCEL,
                             "OK",     GTK_RESPONSE_OK,
                             NULL);
-    btnlist = gtk_container_get_children (
-                GTK_CONTAINER(gtk_dialog_get_action_area(fonts_main_dialog)));
+    btnlist = gtk_container_get_children(GTK_CONTAINER(
+                gtk_dialog_get_action_area(
+                    GTK_DIALOG(fonts_main_dialog))));
     g_list_foreach (btnlist, (GFunc)dlg_set_tips, fonts_main_dialog);
-    hbox_main = gtk_hbox_new (FALSE, 10);
+
+    /* The Main HBox */
+
+    hbox_main = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
     selected_view = globals->list_file.tview;
     fs_data.style = gtk_widget_get_style (selected_view);
@@ -899,7 +889,7 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
                                                globals->cmdfile.tview);
     g_hash_table_insert (fs_data.list_to_widg, "labels",
                                                globals->lblfile.tview);
-    tmp_vbox = gtk_vbox_new (FALSE, 5);
+    tmp_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_container_set_border_width (GTK_CONTAINER(tmp_vbox), 10);
     radiolist = gtk_radio_button_new_with_label (NULL, "Listings");
     gtk_widget_set_name (radiolist, "listing");
@@ -923,7 +913,7 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
 
     /* This may be a temporary thing... */
     /* Following is not necessary, but the list is originally set up in
-     * reverse order, so we pick the last button in the list to gt the first */
+     * reverse order, so we pick the last button in the list to go the first */
 
     frame = gtk_frame_new ("Listings to alter");
     gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
@@ -931,33 +921,42 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
     gtk_container_add (GTK_CONTAINER(frame), tmp_vbox);
     gtk_box_pack_start(GTK_BOX(hbox_main), frame, FALSE, FALSE, 5);
 
-    /* Select Font/Color buttons on right-hand side */
+    /* Select Font/Color buttons in 'frame" on right-hand side */
+    /* The main frame containing all the widgets */
+    frame = gtk_frame_new ("Select Font/Color");
+    gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
+    gtk_container_set_border_width (GTK_CONTAINER(frame), 10);
+    /* 'tmp_vbox' to hold multiple widgets */
+    tmp_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_container_set_border_width (GTK_CONTAINER(tmp_vbox), 10);
 
     /* The fonts button */
-    tmp_vbox = gtk_vbox_new (FALSE, 5);
-    gtk_container_set_border_width (GTK_CONTAINER(tmp_vbox), 10);
     fs_data.font_btn = gtk_font_button_new ();
     g_signal_connect (fs_data.font_btn, "font-set", G_CALLBACK(font_select_cb),
                                                &fs_data);
     gtk_box_pack_start(GTK_BOX(tmp_vbox), fs_data.font_btn, FALSE, FALSE, 5);
 
-    gtk_box_pack_start(GTK_BOX(tmp_vbox), gtk_hseparator_new(),
-            FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(tmp_vbox),
+            gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 5);
 
     /* The colors buttons */
 
-    tmp_hbox = gtk_hbox_new (FALSE, 5);
-    gtk_container_set_border_width (GTK_CONTAINER(tmp_hbox), 10);
+    clr_grid = gtk_grid_new();
+    gtk_grid_set_column_spacing(GTK_GRID(clr_grid),10);
+    gtk_container_set_border_width (GTK_CONTAINER(clr_grid), 10);
 
     /* The background button */
-    fs_data.cb_bg = gtk_color_button_new ();
+    fs_data.cb_bg = gtk_color_button_new();
     g_signal_connect (fs_data.cb_bg, "color-set", G_CALLBACK(color_select_cb),
                                                   &fs_data);
     gtk_color_button_set_title (GTK_COLOR_BUTTON(fs_data.cb_bg),
                                 "Background");
     gtk_widget_set_name(fs_data.cb_bg, "background");
-    cbtn_add_lbl (fs_data.cb_bg, "Background");
-    gtk_box_pack_start(GTK_BOX(tmp_hbox), fs_data.cb_bg, FALSE, FALSE, 5);
+    //cbtn_add_lbl(fs_data.cb_bg, "Background");
+    gtk_grid_attach(GTK_GRID(clr_grid), fs_data.cb_bg, 0, 0, 1, 1);
+    //gtk_box_pack_start(GTK_BOX(tmp_vbox), gtk_label_new("Background"), FALSE, FALSE, 5);
+    gtk_grid_attach(GTK_GRID(clr_grid), gtk_label_new("Background"),
+            0, 1, 1, 1);
 
     /* The foreground button */
     fs_data.cb_fg = gtk_color_button_new ();
@@ -966,13 +965,12 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
     gtk_color_button_set_title (GTK_COLOR_BUTTON(fs_data.cb_fg),
                                 "Foreground");
     gtk_widget_set_name(fs_data.cb_fg, "foreground");
-    cbtn_add_lbl (fs_data.cb_fg, "Foreground");
-    gtk_box_pack_start(GTK_BOX(tmp_hbox), fs_data.cb_fg, FALSE, FALSE, 5);
+    //cbtn_add_lbl (fs_data.cb_fg, "Foreground");
+    gtk_grid_attach(GTK_GRID(clr_grid), fs_data.cb_fg, 1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(clr_grid), gtk_label_new("Foreground"),
+            1, 1, 1, 1);
+    gtk_box_pack_start(GTK_BOX(tmp_vbox), clr_grid, FALSE, FALSE, 5);
 
-    frame = gtk_frame_new ("Select Font/Color");
-    gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);
-    gtk_container_set_border_width (GTK_CONTAINER(frame), 10);
-    gtk_container_add (GTK_CONTAINER(tmp_vbox), tmp_hbox);
     gtk_container_add (GTK_CONTAINER(frame), tmp_vbox);
 
     gtk_box_pack_start(GTK_BOX(hbox_main), frame, FALSE, FALSE, 5);
@@ -981,14 +979,14 @@ fonts_main_dialog (GtkAction *action, glbls *globals)
 
     set_list_ptr (GTK_WIDGET(g_slist_last (gtk_radio_button_get_group (
                             GTK_RADIO_BUTTON(radiolist)))->data), &fs_data);
-    gtk_color_button_set_color (GTK_COLOR_BUTTON(fs_data.cb_bg),
+    /*gtk_color_button_set_color (GTK_COLOR_BUTTON(fs_data.cb_bg),
                                 &(fs_data.style->base[0]));
     gtk_color_button_set_color (GTK_COLOR_BUTTON(fs_data.cb_fg),
-                                &(fs_data.style->text[0]));
+                                &(fs_data.style->text[0]));*/
 
     /* Now pack all into the dialog vbox */
-    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(
-                    fonts_main_dialog)), hbox_main, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(
+                    fonts_main_dialog))), hbox_main, FALSE, FALSE, 5);
     gtk_widget_show_all (hbox_main);
 
     response = gtk_dialog_run (GTK_DIALOG(fonts_main_dialog));

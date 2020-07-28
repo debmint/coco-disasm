@@ -69,7 +69,7 @@ build_listings_radio_button_group ()
               * button;
     struct srch_log * shown_radios;
 
-    buttons_vbox = gtk_vbox_new(FALSE, 5);
+    buttons_vbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_widget_set_name (buttons_vbox, "listingcols");
 
     button = box_add_new_button (buttons_vbox, NULL, "Address");
@@ -119,7 +119,7 @@ build_labels_radio_button_group ()
               * button;
     struct srch_log * shown_radios;
 
-    buttons_vbox = gtk_vbox_new(FALSE, 5);
+    buttons_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_widget_set_name (buttons_vbox, "labelscols");
 
     button = box_add_new_button (buttons_vbox, NULL, "Label");
@@ -159,7 +159,7 @@ build_labels_radio_button_group ()
 GtkWidget *
 hsep_show_new (void)
 {
-    GtkWidget *sep = gtk_hseparator_new ();
+    GtkWidget *sep = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
     gtk_widget_show (sep);
     return sep;
 }
@@ -276,7 +276,7 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
                     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                     "Search Backward", 1,
                     "Search Forward", 2,
-                    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                    "Cancel", GTK_RESPONSE_CANCEL,
                     NULL);
         gtk_widget_hide_on_delete (srch_dialog);
         gtk_box_set_spacing (GTK_BOX(gtk_dialog_get_content_area(
@@ -288,7 +288,7 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
 
         /* The VBox to contain all the buttons groups */
 
-        cols_vbox = gtk_vbox_new (FALSE, 5);
+        cols_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
         /* Build the Listings search data */
 
@@ -317,9 +317,8 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
         gtk_widget_set_tooltip_text(eventbox,
                 "Selects which column in the view to search\nNot all columns are searchable - only those displayed");
 
-        gtk_box_pack_start(GTK_BOX(GTK_DIALOG(
-                        gtk_dialog_get_content_area(srch_dialog))), eventbox,
-                                     FALSE, FALSE, 5);
+        gtk_box_pack_start(GTK_BOX( gtk_dialog_get_content_area(
+                        GTK_DIALOG(srch_dialog))), eventbox, FALSE, FALSE, 5);
         gtk_widget_show (frame);
         gtk_widget_show (eventbox);
 
@@ -345,7 +344,7 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
 
         /* the search entry */
 
-        entry_hbox = gtk_hbox_new (FALSE, 5);
+        entry_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
         gtk_box_pack_start(GTK_BOX(entry_hbox),
                                      gtk_label_new ("Enter Search Text"),
                                      FALSE, FALSE, 5);
