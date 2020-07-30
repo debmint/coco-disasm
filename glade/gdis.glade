@@ -363,6 +363,7 @@
                     <child>
                       <object class="GtkMenuItem" id="distogui">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Disassemble to GUI</property>
                         <property name="use_underline">True</property>
@@ -372,6 +373,7 @@
                     <child>
                       <object class="GtkMenuItem" id="distofile">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Disassemble, sending normal listing to file</property>
                         <property name="label" translatable="yes">Disassemble to File</property>

@@ -305,14 +305,14 @@ create_main_window(gchar *home)
     gladesrc = g_strconcat(home, home[strlen(home) - 1] == '/' ? "" : "/",
             ".config/g09dis/glade/gdis.glade", NULL);
     builder = gtk_builder_new_from_file(gladesrc);
-    w_main = gtk_builder_get_object(builder, "w_main");
-    listPopup = gtk_builder_get_object(builder,"mnu_lstpopup");
-    lblPopup = gtk_builder_get_object(builder,"mnu_lblpopup");
-    O9Dis.mnuToolDasm = gtk_builder_get_object(builder,"distogui");
-    O9Dis.mnuToolDasmFile = gtk_builder_get_object(builder,"distofile");
+    w_main = GTK_WIDGET(gtk_builder_get_object(builder, "w_main"));
+    listPopup = GTK_WIDGET(gtk_builder_get_object(builder,"mnu_lstpopup"));
+    lblPopup = GTK_WIDGET(gtk_builder_get_object(builder,"mnu_lblpopup"));
+    O9Dis.mnuToolDasm = GTK_WIDGET(gtk_builder_get_object(builder,"distogui"));
+    O9Dis.mnuToolDasmFile = GTK_WIDGET(gtk_builder_get_object(builder,"distofile"));
     gtk_builder_connect_signals(builder, &O9Dis);
     g_free(gladesrc);
-    return gtk_builder_get_object(builder, "vbox_main");
+    return GTK_WIDGET(gtk_builder_get_object(builder, "vbox_main"));
 }
 
 /* ************************************ *
@@ -323,14 +323,10 @@ int
 main (int argc, char *argv[])
 {
     GtkWidget *main_vbox;
-    GtkWidget *menubar;
     GtkWidget *work_area;
     GtkWidget *panedv;
-
     GtkWidget *fw;
-
-    gchar *ho,
-          *rcpath;
+    gchar *ho;
 
     /* Go set defaults, etc */
     

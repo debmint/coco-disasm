@@ -61,9 +61,9 @@ lbl_new_cb (GtkMenuItem *mi, glbls *hbuf)
 }
 
 void
-tip_toggle(GtkToggleButton *btn, glbls *hbuf)
+tip_toggle(GtkCheckMenuItem *btn, glbls *hbuf)
 {
-    if( gtk_toggle_action_get_active(btn) )
+    if( gtk_check_menu_item_get_active(btn) )
     {
         sysfailed ("Tooltips are now ON...", FALSE);
     }

@@ -477,8 +477,7 @@ list_store_empty( FILEINF *fdat)
     }
 
     /* clear out current list_store */
-
-    if (fdat->fname != NULL)
+    if (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(fdat->l_store), NULL) > 0)
     {
         gtk_list_store_clear (fdat->l_store);
         fdat->fname = NULL;

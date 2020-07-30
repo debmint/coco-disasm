@@ -41,7 +41,7 @@ amode_init()
                            "I - I/O channel (stdin, etc)",
                            "T - Module type/language mask",
                            NULL};
-    gchar **cur =amode_dflt;
+    gchar **cur = amode_dflt;
 
     while (*cur) {
         amode_list = g_list_append (amode_list, g_strdup(*cur));
@@ -218,7 +218,7 @@ delete_combo_changed (GtkComboBox *cbox, GtkWidget *call_win)
                                          GTK_BUTTONS_YES_NO,
                                          "Delete:\n     %s?", element);
 
-        switch ( gtk_dialog_run (GTK_DIALOG(dialog)) ) {
+        switch (gtk_dialog_run (GTK_DIALOG(dialog)) ) {
             case GTK_RESPONSE_YES:
                 amode_list = g_list_remove (amode_list, element);
                 g_free (element);
@@ -297,6 +297,10 @@ amode_list_edit_cb(GtkMenuItem *mi, glbls *fdat)
                                              GTK_DIALOG_DESTROY_WITH_PARENT,
                                           "Close", GTK_RESPONSE_CLOSE,
                                           NULL);
+    gtk_box_set_spacing(GTK_BOX(gtk_dialog_get_content_area(
+        GTK_DIALOG(dialog))), 10);                                    
+    gtk_container_set_border_width(GTK_CONTAINER(gtk_dialog_get_content_area(
+        GTK_DIALOG(dialog))), 10);
 
     /* ********************* *
      * Manually add an entry *
@@ -306,19 +310,22 @@ amode_list_edit_cb(GtkMenuItem *mi, glbls *fdat)
     alignment = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(
                     GTK_DIALOG(dialog))), "Add an addressing mode");
     grid = gtk_grid_new();
-    gtk_widget_set_size_request(grid, 280, -1);
+    gtk_container_set_border_width(GTK_CONTAINER(grid), 10);
+    //gtk_widget_set_size_request(grid, 280, -1);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
     gtk_container_add(GTK_CONTAINER (alignment), grid);
 
     /* Now insert tools */
     man_entry = gtk_entry_new ();
-    gtk_grid_attach(GTK_GRID (grid), man_entry, 0, 2, 0, 1);
+    gtk_grid_attach(GTK_GRID(grid), man_entry, 0, 0, 2, 1);
 
     button = gtk_button_new_with_label("Clear");
-    gtk_grid_attach(GTK_GRID (grid), button, 0, 1, 1, 2);
+    gtk_grid_attach(GTK_GRID(grid), button, 0, 1, 1, 1);
     g_signal_connect (button, "clicked", G_CALLBACK (clear_entry), man_entry);
 
     button = gtk_button_new_with_label ("Apply");
-    gtk_grid_attach(GTK_GRID (grid), button, 1, 2, 1, 2);
+    gtk_grid_attach(GTK_GRID(grid), button, 1, 1, 1, 1);
     g_signal_connect (button, "clicked", G_CALLBACK(add_amode_man), man_entry);
     
     /* ********************* *
@@ -329,6 +336,7 @@ amode_list_edit_cb(GtkMenuItem *mi, glbls *fdat)
     alignment = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(
                     GTK_DIALOG(dialog))), "Add entries from file");
     button = gtk_button_new_with_label("Open");
+    gtk_container_set_border_width(GTK_CONTAINER(button), 10);
     g_signal_connect (button, "clicked", G_CALLBACK(amodes_from_file), &O9Dis);
     gtk_container_add (GTK_CONTAINER (alignment), button);
 
@@ -339,6 +347,7 @@ amode_list_edit_cb(GtkMenuItem *mi, glbls *fdat)
     alignment = bounds_aligned_frame(GTK_BOX(gtk_dialog_get_content_area(
                     GTK_DIALOG(dialog))), "Delete an amode entry");
     button = gtk_button_new_with_label("Delete Entry");
+    gtk_container_set_border_width(GTK_CONTAINER(button), 10);
     g_signal_connect (button, "clicked", G_CALLBACK(delete_amode_cb), NULL);
     gtk_container_add (GTK_CONTAINER (alignment), button);
     

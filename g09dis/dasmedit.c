@@ -68,6 +68,7 @@ bounds_aligned_frame (GtkBox *box, gchar *title)
     /*gtk_frame_set_shadow_type (GTK_FRAME(frame), GTK_SHADOW_IN);*/
     gtk_widget_set_halign(frame, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(frame, GTK_ALIGN_CENTER);
+    gtk_frame_set_label_align(GTK_FRAME(frame), 0.10, 0.50);
     gtk_box_pack_start(box, frame, FALSE, FALSE, 5);
 
     return frame;

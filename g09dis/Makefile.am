@@ -9,7 +9,7 @@ GHDR = g09dis.h menu.h proto.h
 
 g09dis_SOURCES = ${GCSRC} ${GHDR} 
 
-AM_CFLAGS	= -Wl,--export-dynamic @gwinflags@ -Wall @pkgcfg_CFLAGS@
+AM_CFLAGS	= @gwinflags@ -Wall @pkgcfg_CFLAGS@
 g09dis_LDADD	= @pkgcfg_LIBS@
 
 ##proto.h:
