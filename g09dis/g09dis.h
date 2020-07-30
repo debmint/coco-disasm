@@ -79,7 +79,8 @@ typedef struct
     /* TODO : include the ability to see all 16 label files */
     FILEINF lblfile;            /* An os9disasm label file         */
     gchar *filename_to_return;  /* tmp storage for file selection */
-/*	GtkWidget *fsel;*/
+    GtkWidget *mnuToolDasm;
+    GtkWidget *mnuToolDasmFile;
 } glbls;
 
 GLOBAL glbls O9Dis;

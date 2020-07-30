@@ -10,8 +10,8 @@
 #include <string.h>
 #include "g09dis.h"
 
-static void
-hlp_about (GtkAction * action, glbls * hbuf)
+void
+hlp_about (GtkMenuItem * mi, glbls *hbuf)
 {
     GtkWidget *dialog;
     gchar *msg;
@@ -32,42 +32,38 @@ hlp_about (GtkAction * action, glbls * hbuf)
 }
 
 void
-menu_do_dis_sensitize(void)
+menu_do_dis_sensitize(glbls *hbuf)
 {
     gint binstat;
 
     binstat = (prog_wdg->fname) && (strlen(prog_wdg->fname) > 0);
     
-    gtk_widget_set_sensitive(gtk_ui_manager_get_widget(ui_manager,
-                             "/MainMenu/ToolMenu/DasmPrg"),
-                             binstat);
-    gtk_widget_set_sensitive(gtk_ui_manager_get_widget(ui_manager,
-                             "/MainMenu/ToolMenu/DasmToFile"),
-                             binstat);
-    
+    gtk_widget_set_sensitive(hbuf->mnuToolDasm,  binstat);
+    gtk_widget_set_sensitive(hbuf->mnuToolDasmFile,  binstat);
 }
-static void
-listing_new_cb (GtkAction * action, glbls * hbuf)
+
+void
+listing_new_cb (GtkMenuItem *mi, glbls *hbuf)
 {
     list_store_empty(&(hbuf->list_file));
 }
 
-static void
-cmd_new_cb (GtkAction * action, glbls * hbuf)
+void
+cmd_new_cb (GtkMenuItem *mi, glbls *hbuf)
 {
     clear_text_buf(&(hbuf->cmdfile));
 }
 
-static void
-lbl_new_cb (GtkAction * action, glbls * hbuf)
+void
+lbl_new_cb (GtkMenuItem *mi, glbls *hbuf)
 {
     list_store_empty(&(hbuf->lblfile));
 }
 
-static void
-tip_toggle(GtkToggleAction *ta, glbls *hbuf)
+void
+tip_toggle(GtkToggleButton *btn, glbls *hbuf)
 {
-    if( gtk_toggle_action_get_active(ta) )
+    if( gtk_toggle_action_get_active(btn) )
     {
         sysfailed ("Tooltips are now ON...", FALSE);
     }
@@ -79,7 +75,7 @@ tip_toggle(GtkToggleAction *ta, glbls *hbuf)
 /* Construct a GtkActionEntry */
 
 /* Normal items */
-static GtkActionEntry entries[] = {
+/*static GtkActionEntry entries[] = {
     {"FileMenu", NULL, "_File"},
     {"ViewMenu", NULL, "_View"},
     {"ToolMenu", NULL, "_Tools"},
@@ -148,13 +144,13 @@ static GtkActionEntry entries[] = {
     {"QuitProg", GTK_STOCK_QUIT, "_Quit", "<control>Q",
      "Quit program", G_CALLBACK(window_quit)},
     {"HlpAbout", NULL, "About", NULL, NULL, G_CALLBACK (hlp_about)}
-};
+};*/
 
-/* Toggle items */
+/* Toggle items
 static GtkToggleActionEntry toggle_entries[] = {
     {"ShowTips", NULL, "Show Tooltips", NULL, "Show tooltips",
         G_CALLBACK (tip_toggle), TRUE}
-};
+}; */
 
             /* Listing popup */
 /*static GtkActionEntry list_group[] = {
@@ -168,7 +164,7 @@ static GtkToggleActionEntry toggle_entries[] = {
 
 /* The XML description of the menubar */
 
-static const char *ui_description =
+/*static const char *ui_description =
     "<ui>"
     "  <menubar name='MainMenu'>"
     "    <menu action='FileMenu'>"
@@ -236,19 +232,17 @@ static const char *ui_description =
     "    <separator/>"
     "    <menuitem action='LblProps'/>"
     "  </popup>"
-    "</ui>";
+    "</ui>";*/
 
 /* Returns a menubar widget made from the above menu */
 
 /*extern GtkTreeSelection *list_selection;*/
 
-GtkWidget *
+/*GtkWidget *
 get_menubar_menu (GtkWidget * main_window)
 {
     GtkWidget *mnubar;
     GtkActionGroup *action_group;
-    /*GtkActionGroup *list_action_grp;*/
-    /*GtkUIManager *ui_manager;*/
     GtkAccelGroup *accel_group;
     GError *error;
 
@@ -259,14 +253,8 @@ get_menubar_menu (GtkWidget * main_window)
                                          G_N_ELEMENTS (toggle_entries),
                                          &O9Dis);
 
-/*    list_action_grp = gtk_action_group_new("ListPopActions");
-    gtk_action_group_add_actions (list_action_grp, list_group,
-                                  G_N_ELEMENTS (list_group),
-                                  &list_selection);*/
-    
     ui_manager = gtk_ui_manager_new ();
     gtk_ui_manager_insert_action_group (ui_manager, action_group, 0);
-    /*gtk_ui_manager_insert_action_group (ui_manager, list_action_grp, 0);*/
 
     accel_group = gtk_ui_manager_get_accel_group (ui_manager);
     gtk_window_add_accel_group (GTK_WINDOW (main_window), accel_group);
@@ -280,7 +268,6 @@ get_menubar_menu (GtkWidget * main_window)
         exit (EXIT_FAILURE);
     }
 
-    /* add tooltips */
     gtk_widget_set_tooltip_text(gtk_ui_manager_get_widget( ui_manager,
                          "/MainMenu/FileMenu/File_New/"),
                          "Clears buffer for selected file");
@@ -303,18 +290,8 @@ get_menubar_menu (GtkWidget * main_window)
                          "/MainMenu/ViewMenu/FontsChange"),
                          "Reset Font, foreground and background colors for the view windows");
 
-    /* ***************************** *
-     * Insensitize select menu items *
-     * ***************************** */
-
     menu_do_dis_sensitize();
-/*    gtk_widget_set_sensitive(gtk_ui_manager_get_widget(ui_manager,
-                                 "/MainMenu/FileMenu/SaveAsMenu/CmdSaveAs"),
-                             FALSE);
-    gtk_widget_set_sensitive(gtk_ui_manager_get_widget(ui_manager,
-                                 "/MainMenu/FileMenu/SaveAsMenu/LblSaveAs"),
-                             FALSE);*/
     
     mnubar = gtk_ui_manager_get_widget (ui_manager, "/MainMenu");
     return mnubar;
-}
+}*/

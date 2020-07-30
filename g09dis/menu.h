@@ -57,3 +57,9 @@ static GtkItemFactoryEntry menu_items[] = {
     {"/_Help", NULL, NULL, 0, "<LastBranch>"},
     {"/_Help/About", NULL, NULL, 0, "<Item>"},
 };
+/*char menuxml[] = {
+    "<?xml version="1.0" encoding="utf8"?>",
+    "<interface>",
+    "  <requires lib="gtk+" version="3.20"/>",
+    "</interface>",
+};*/

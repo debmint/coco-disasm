@@ -114,11 +114,12 @@ get_col_number_from_tree_view_column (GtkTreeViewColumn *col)
     return num;
 }*/
 
-/* Callback for click on a row in the Listing display */
+/* Callback for click on a row in the Listing or Labels display
+ * popup is the desired popup */
 
 gboolean
 onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
-                      gchar *menu_name)
+                      GtkMenu *popup)
 {
     GtkTreeSelection *selection;
 
@@ -127,15 +128,11 @@ onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
     /* single click with the right mouse button? */
     if (event->type == GDK_BUTTON_PRESS  &&  event->button == 3)
     {
-        GtkWidget *popup;
-        
         /* optional: select row if no row is selected or only
          * one other row is selected (will only do something
          * if you set a tree selection mode as described later
          * in the tutorial) */
 
-        /* Note: gtk_tree_selection_count_selected_rows() does not
-         * exist in gtk+-2.0, only in gtk+ >= v2.2 ! */
         if (gtk_tree_selection_count_selected_rows(selection)  <= 1)
         {
             GtkTreePath *path;
@@ -151,19 +148,8 @@ onListRowButtonPress (GtkTreeView *treevue, GdkEventButton *event,
             }
         } /* end of optional bit */
 
-        /*if( ! gtk_tree_selection_get_selected (list_selection,
-                                               NULL, NULL))
-        {*/
-            /* No row selected ... return */
-           /* return FALSE;
-        }*/
-        
         /* do pop-up window */
-        popup = gtk_ui_manager_get_widget(ui_manager, menu_name);
-
-        /*gtk_menu_popup(GTK_MENU(popup), NULL, NULL,NULL, NULL,
-                        0, gdk_event_get_time((GdkEvent*)event));*/
-        gtk_menu_popup_at_pointer(GTK_MENU(popup), (GdkEvent *)event);
+        gtk_menu_popup_at_pointer(popup, (GdkEvent *)event);
         return TRUE;
     }
     
@@ -896,15 +882,13 @@ sysfailed (char *msg, gboolean free_it)
     }
 }
 
-
 /* **************************************************** *
- * run_disassembler  - a callback from the menu does a  *
- *                     disassembly pass                 *
+ * Callback from the menu does a disassembly pass       *
  * Passed: action, the global variables                 *
  * **************************************************** */
 
 void
-run_disassembler (GtkAction * action, glbls * hbuf)
+run_disassembler (GtkMenuItem *mi, glbls *hbuf)
 {
     GString *CmdL;
     gchar *cmdline;
@@ -1058,14 +1042,14 @@ run_disassembler (GtkAction * action, glbls * hbuf)
 /* Disassemble listing to file */
 
 void
-dasm_list_to_file_cb (GtkAction *action, glbls *hbuf)
+dasm_list_to_file_cb (GtkMenuItem *mi, glbls *hbuf)
 {
     gint old_write = write_list;
 
     selectfile_save (hbuf, listing_wdg->fname, "File for Listing");
     set_fname (hbuf, &listing_wdg->fname);
     write_list = LIST_FILE;
-    run_disassembler (action, hbuf);
+    run_disassembler (mi, hbuf);
     write_list = old_write;
 }
 
@@ -1083,12 +1067,12 @@ free_filename_to_return (gchar ** fname)
 
 /* ******************************************** *
  * Callbacks for file selection                 *
- * Passed:  (1) GtkAction *action,              *
+ * Passed  (1) GtkMenuItem *mi,                 *
  *          (2) address of global data pointer  *
  * ******************************************** */
 
 void
-compile_listing (GtkAction * action, glbls * hbuf)
+compile_listing (GtkMenuItem *mi, glbls *hbuf)
 {
     int old_write_list = write_list;
 
@@ -1096,7 +1080,7 @@ compile_listing (GtkAction * action, glbls * hbuf)
     
     write_list = LIST_GTK;
 
-    run_disassembler (action, hbuf);
+    run_disassembler (mi, hbuf);
 
     write_list = old_write_list;        /* restore write_list */
 }
@@ -1108,7 +1092,7 @@ compile_listing (GtkAction * action, glbls * hbuf)
  * ******************************************************** */
 
 void
-load_listing (GtkAction * action, glbls * hbuf)
+load_listing (GtkMenuItem *mi, glbls *hbuf)
 {
     FILE *infile;
 
@@ -1157,7 +1141,7 @@ do_cmdfileload (glbls * hbuf)
  * **************************************************************** */
 
 void
-load_cmdfile (GtkAction * action, glbls * hbuf)
+load_cmdfile (GtkMenuItem *mi, glbls *hbuf)
 {
     selectfile_open (hbuf, "Command file", TRUE, cmd_wdg->fname);
 
@@ -1171,7 +1155,7 @@ load_cmdfile (GtkAction * action, glbls * hbuf)
 }
 
 void
-do_lblfileload (glbls * hbuf)
+do_lblfileload (glbls *hbuf)
 {
     if (hbuf->filename_to_return != NULL)       /* Leak? */
     {
@@ -1182,7 +1166,7 @@ do_lblfileload (glbls * hbuf)
 }
 
 void
-load_lblfile (GtkAction * action, glbls * hbuf)
+load_lblfile (GtkMenuItem * action, glbls *hbuf)
 {
     selectfile_open (hbuf, "Label File", TRUE, NULL);
     do_lblfileload (hbuf);
@@ -1196,7 +1180,7 @@ load_lblfile (GtkAction * action, glbls * hbuf)
  * ************************************************************ */
 
 void
-cmd_save_as (GtkAction * action, glbls * hbuf)
+cmd_save_as (GtkMenuItem *mi, glbls *hbuf)
 {
     selectfile_save(hbuf, hbuf->cmdfile.fname, "Command File");
     
@@ -1220,11 +1204,11 @@ cmd_save_as (GtkAction * action, glbls * hbuf)
 }
 
 void
-cmd_save(GtkAction *action, glbls *hbuf)
+cmd_save(GtkMenuItem *mi, glbls *hbuf)
 {
     if (!(hbuf->cmdfile.fname))
     {
-        cmd_save_as(action, hbuf);
+        cmd_save_as(mi, hbuf);
     }
     else {
         save_text (&hbuf->cmdfile, list_win, &(hbuf->cmdfile.fname));
@@ -1234,7 +1218,7 @@ cmd_save(GtkAction *action, glbls *hbuf)
 }
 
 void
-lbl_save_as (GtkAction * action, glbls * hbuf)
+lbl_save_as (GtkMenuItem *mi, glbls *hbuf)
 {
     selectfile_save(hbuf, hbuf->lblfile.fname, "Label File");
     
@@ -1255,11 +1239,11 @@ lbl_save_as (GtkAction * action, glbls * hbuf)
 }
 
 void
-lbl_save (GtkAction *action, glbls *hbuf)
+lbl_save (GtkMenuItem *mi, glbls *hbuf)
 {
     if( !(hbuf->lblfile.fname))
     {
-        lbl_save_as(action, hbuf);
+        lbl_save_as(mi, hbuf);
     }
     else {
         save_lbl (&hbuf->lblfile, list_win, &(hbuf->lblfile.fname));
@@ -1313,7 +1297,7 @@ opt_load_path (gchar **pthptr, gchar *pthnm, gboolean *flag, gchar* hdr)
  * **************************************************************** */
 
 static gint
-opt_get_val ( gchar *ctrl, gchar *buf, gint *addr)
+opt_get_val (gchar *ctrl, gchar *buf, gint *addr)
 {
     gchar *start = buf;
 
@@ -1329,7 +1313,7 @@ opt_get_val ( gchar *ctrl, gchar *buf, gint *addr)
 }
 
 void
-opts_save (GtkAction *action, glbls *hbuf)
+opts_save (GtkMenuItem *mi, glbls *hbuf)
 {
     FILE *optfile;
 
@@ -1376,7 +1360,8 @@ opts_save (GtkAction *action, glbls *hbuf)
     fclose (optfile);
 }
 
-void opts_load (GtkAction *action, glbls *hbuf)
+void
+opts_load (GtkMenuItem *mi, glbls *hbuf)
 {
     FILE *optfile;
     gchar buf[200];
@@ -1388,7 +1373,7 @@ void opts_load (GtkAction *action, glbls *hbuf)
     {
         /* Print Error message */
         
-        free_filename_to_return ( &(hbuf->filename_to_return));
+        free_filename_to_return (&(hbuf->filename_to_return));
         return;
     }
     
@@ -1399,7 +1384,7 @@ void opts_load (GtkAction *action, glbls *hbuf)
         if ( ! strncmp (OPT_BIN, buf, strlen(OPT_BIN)))
         {
             opt_load_path (&(prog_wdg->fname), buf, NULL, OPT_BIN);
-            menu_do_dis_sensitize();
+            menu_do_dis_sensitize(hbuf);
             continue;
         }
         if ( ! strncmp (OPT_CMD, buf, strlen (OPT_CMD)))

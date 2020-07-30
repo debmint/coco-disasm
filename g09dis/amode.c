@@ -283,7 +283,7 @@ delete_amode_cb (GtkButton *button, gpointer zilch)
  * ************************************************************ */
 
 void
-amode_list_edit_cb(GtkAction * action, glbls *fdat)
+amode_list_edit_cb(GtkMenuItem *mi, glbls *fdat)
 {
     GtkWidget *dialog,
               *grid,
@@ -646,7 +646,7 @@ pack_offset_entry (GtkBox *mainbox)
  * ******************************************* */
 
 void
-adr_mode_cb(GtkAction * action, glbls *fdat)
+adr_mode_cb(GtkMenuItem *mi, glbls *fdat)
 {
     static GtkWidget *dialog,
                      *mainmode; /* The label widget showing main AMode */

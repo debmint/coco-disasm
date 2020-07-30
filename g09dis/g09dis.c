@@ -23,6 +23,8 @@
 GtkTextBuffer *buffer;
 GString *odlist;
 
+static GtkWidget *listPopup, *lblPopup;
+
 char *text;
 
 static void
@@ -31,11 +33,11 @@ cmdbuf_changed_cb (GtkTextBuffer *buffer, FILEINF *cmdbuf)
     doc_set_modified (cmdbuf, TRUE);
 }
 
-/* ******************************************************************** *
- * build_cmd_window() - create and set up a text window ( cmd file )    *
- *   Passed:   the box into which new window goes ptr to valid FILEINF  *
- *             data structure                                           *
- * ******************************************************************** */
+/* ************************************************************ *
+ * Create and set up a text window ( cmd file )                 *
+ *   Passed:   the box into which new window goes ptr to valid  *
+ *             FILEINF data structure                           *
+ * ************************************************************ */
 
 static GtkWidget *
 build_cmd_window (GtkWidget * mainbox, FILEINF * fi)
@@ -137,7 +139,7 @@ build_list_window (GtkWidget * mainbox, FILEINF * fi)
                              GTK_TREE_MODEL (fi->l_store));
 
     g_signal_connect (G_OBJECT(view), "button-press-event",
-                      G_CALLBACK(onListRowButtonPress), "/ListPopUp");
+                      G_CALLBACK(onListRowButtonPress), listPopup);
 
     gtk_container_add (GTK_CONTAINER (s_win), view);
 
@@ -200,7 +202,7 @@ new_lbl_win (GtkWidget **view)
                              GTK_TREE_MODEL (O9Dis.lblfile.l_store));
 
     g_signal_connect (G_OBJECT(*view), "button-press-event",
-                      G_CALLBACK(onListRowButtonPress), "/LabelPopUp");
+                      G_CALLBACK(onListRowButtonPress), lblPopup);
 
     gtk_container_add (GTK_CONTAINER (s_win), *view);
 
@@ -295,6 +297,24 @@ window_quit()
     return TRUE;
 }
 
+GtkWidget *
+create_main_window(gchar *home)
+{
+    GtkBuilder *builder;
+    gchar *gladesrc;
+    gladesrc = g_strconcat(home, home[strlen(home) - 1] == '/' ? "" : "/",
+            ".config/g09dis/glade/gdis.glade", NULL);
+    builder = gtk_builder_new_from_file(gladesrc);
+    w_main = gtk_builder_get_object(builder, "w_main");
+    listPopup = gtk_builder_get_object(builder,"mnu_lstpopup");
+    lblPopup = gtk_builder_get_object(builder,"mnu_lblpopup");
+    O9Dis.mnuToolDasm = gtk_builder_get_object(builder,"distogui");
+    O9Dis.mnuToolDasmFile = gtk_builder_get_object(builder,"distofile");
+    gtk_builder_connect_signals(builder, &O9Dis);
+    g_free(gladesrc);
+    return gtk_builder_get_object(builder, "vbox_main");
+}
+
 /* ************************************ *
  * The main entry point for the program *
  * ************************************ */
@@ -326,39 +346,11 @@ main (int argc, char *argv[])
         }
     }
 
-    rcpath = g_strconcat (ho, "/", "disrc", NULL);
-    
-    gtk_rc_parse (rcpath);
     gtk_init (&argc, &argv);
+    main_vbox = create_main_window(ho);
 
-    /* Create top-level window */
-    
-    w_main = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    g_signal_connect (G_OBJECT (w_main), "destroy",
-                      G_CALLBACK (window_quit), NULL);
-    g_signal_connect (G_OBJECT(w_main), "delete-event",
-                      G_CALLBACK (window_quit), NULL);
-    gtk_window_set_title (GTK_WINDOW (w_main), "G-O9DisAsm");
-    gtk_window_set_default_size(GTK_WINDOW (w_main), WWIDTH, WHEIGHT);
-
-    /* Make a vbox to put the three menus in */
-    
-    main_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
-    gtk_container_set_border_width(GTK_CONTAINER (main_vbox), 1);
-    gtk_container_add (GTK_CONTAINER(w_main), main_vbox);
-
-    /* Get the three types of menu */
-    /* Note: all three menus are separately created, so they are not the
-     *      same menu */
-    menubar = get_menubar_menu (w_main);
-
-    /* Pack it all together */
-    gtk_box_pack_start (GTK_BOX (main_vbox), menubar, FALSE, TRUE, 0);
-
-    /* First, create a paned window in the mainbox */
     
     work_area = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
-    //gtk_container_add (GTK_CONTAINER (main_vbox), work_area);
     gtk_box_pack_start(GTK_BOX(main_vbox), work_area, TRUE, TRUE, 5);
     gtk_widget_show (work_area);
 
@@ -368,13 +360,9 @@ main (int argc, char *argv[])
     fw = gtk_frame_new ("Program Listing");
     gtk_container_add (GTK_CONTAINER (fw), list_win);
     gtk_paned_pack1 (GTK_PANED (work_area), /*list_win */ fw, TRUE, TRUE);
-    /*gtk_widget_set_size_request (GTK_WIDGET (list_win), WWIDTH / 3, -1);*/
-
-    /* add a vertically-paned window to the right-hand side */
     
     panedv = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
     gtk_paned_pack2 (GTK_PANED (work_area), panedv, TRUE, TRUE);
-    /*gtk_widget_set_size_request (GTK_WIDGET (panedv), WWIDTH / 3, -1);*/
 
     /* cmd window to top of right-hand window */
     
@@ -383,7 +371,6 @@ main (int argc, char *argv[])
     gtk_frame_set_label_align (GTK_FRAME (fw), 1.0, 0.5);
     gtk_container_add (GTK_CONTAINER (fw), cmd_win);
     gtk_paned_pack1 (GTK_PANED (panedv), /*cmd_win */ fw, TRUE, TRUE);
-    /*gtk_widget_set_size_request (GTK_WIDGET (cmd_win), -1, WHEIGHT / 2);*/
 
     /* and the label file window to the bottom of right window */
     
@@ -392,7 +379,6 @@ main (int argc, char *argv[])
     gtk_frame_set_label_align (GTK_FRAME (fw), 1.0, 0.5);
     gtk_container_add (GTK_CONTAINER (fw), lbl_win);
     gtk_paned_pack2 (GTK_PANED (panedv), fw, TRUE, TRUE);
-    /*gtk_widget_set_size_request (GTK_WIDGET (lbl_win), -1, WHEIGHT / 2);*/
 
     /* Show the widgets */
 

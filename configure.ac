@@ -47,7 +47,7 @@ AC_ARG_WITH([g09dis],
 	                       [include g09dis (requires pkg-config) (default=no)])],
 	       [case "${withval}" in
 	         yes) compile_g09dis=true
-	              PKG_CHECK_MODULES(pkgcfg, gtk+-3.0);;
+	              PKG_CHECK_MODULES(pkgcfg, gtk+-3.0 gmodule-export-2.0);;
 		 no)  compile_g09dis=false;;
 		 *) AC_MSG_ERROR(bad value ${withval} for --with-g09dis) ;;
 	       [esac]],[compile_g09dis=false])

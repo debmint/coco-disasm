@@ -296,7 +296,7 @@ sensitize_amode (GtkComboBox *btype, struct adr_widgets *wdgs)
  * ******************************************************************** */
 
 void
-bnds_define_cb (GtkAction *action, glbls *fdat)
+bnds_define_cb (GtkMenuItem *mi, glbls *fdat)
 {
     static GtkWidget *bounds_dlg;
     static struct adr_widgets *bnds_widgets;
@@ -433,7 +433,7 @@ name_label_response (GtkDialog *dialog, gint resp,
  * ******************************************** */
 
 void
-rename_label (GtkAction * action, glbls *fdat)
+rename_label (GtkMenuItem *mi, glbls *fdat)
 {
     static struct adr_widgets *cb_data;
     static GtkWidget *dialog;
@@ -608,7 +608,7 @@ lbl_edit_line(gchar **label, gchar **addr, gchar **class)
  * ************************************************************ */
 
 void
-lbl_insert_line (GtkAction * action, glbls *fdat)
+lbl_insert_line (GtkMenuItem *mi, glbls *fdat)
 {
     GtkTreeModel *model;
     GtkTreeIter iter, blank_iter, *new_iter;
@@ -680,7 +680,7 @@ lbl_insert_line (GtkAction * action, glbls *fdat)
  * ************************************************************ */
 
 void
-lbl_delete_line (GtkAction * action, glbls *fdat)
+lbl_delete_line (GtkMenuItem *mi, glbls *fdat)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
@@ -700,7 +700,7 @@ lbl_delete_line (GtkAction * action, glbls *fdat)
  * ************************************************ */
 
 void
-lbl_properties (GtkAction * action, glbls *fdat)
+lbl_properties (GtkMenuItem *mi, glbls *fdat)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;

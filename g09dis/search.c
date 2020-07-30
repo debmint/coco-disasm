@@ -509,7 +509,7 @@ do_search (GtkWidget *widg, gchar *title, gchar *radioname)
  * **************************************************************** */
 
 void
-listing_srch (GtkAction *action, gpointer user_data)
+listing_srch (GtkMenuItem *mi, gpointer user_data)
 {
     do_search (O9Dis.list_file.tview, "Search in Listings", "listingcols");
 }
@@ -521,7 +521,7 @@ listing_srch (GtkAction *action, gpointer user_data)
  * ******************************************************************** */
 
 void
-labels_srch (GtkAction *action, gpointer user_data)
+labels_srch (GtkMenuItem *mi, gpointer user_data)
 {
     do_search (O9Dis.lblfile.tview, "Search in Labels", "labelscols");
 }

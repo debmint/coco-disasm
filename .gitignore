@@ -19,6 +19,7 @@ Win09dis/Makefile
 Makefile.in
 *.[oa]
 *.txt
+*~
 os9disasm/os9disasm
 win09dis
 g09dis

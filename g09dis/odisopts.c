@@ -226,7 +226,7 @@ on_ofile_tgle (GtkToggleButton * tbutton, struct ofile_widgets *srcf)
  * ********************************************************** */
 
 void
-set_dis_opts_cb (GtkAction *action, glbls *hbuf)
+set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
 {
     GtkWidget *dialog,
               *grid,
@@ -536,7 +536,7 @@ set_dis_opts_cb (GtkAction *action, glbls *hbuf)
             prog_wdg->fname = NULL;
         }
 
-        menu_do_dis_sensitize();
+        menu_do_dis_sensitize(hbuf);
 
         if (cmd_wdg->fname != NULL)
         {
@@ -793,7 +793,7 @@ dlg_set_tips (GtkWidget *btn, GtkDialog *dialog)
  * **************************************************************** */
 
 void
-fonts_main_dialog (GtkAction *action, glbls *globals)
+fonts_main_dialog (GtkMenuItem *mi, glbls *globals)
 {
     GtkWidget *fonts_main_dialog,
               *hbox_main,

@@ -9,8 +9,8 @@ GHDR = g09dis.h menu.h proto.h
 
 g09dis_SOURCES = ${GCSRC} ${GHDR} 
 
-AM_CFLAGS	=@gwinflags@ -Wall @pkgcfg_CFLAGS@
-g09dis_LDADD	=@pkgcfg_LIBS@
+AM_CFLAGS	= -Wl,--export-dynamic @gwinflags@ -Wall @pkgcfg_CFLAGS@
+g09dis_LDADD	= @pkgcfg_LIBS@
 
 ##proto.h:
 ##	cproto `pkg-config --cflags gtk+-2.0` *.c >proto.h
