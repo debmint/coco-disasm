@@ -1,0 +1,615 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Invoking and Running OS9Disasm</title><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="up" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="prev" href="ar01s03.html" title="Installation"><link rel="next" href="ar01s05.html" title="The Command File in Detail"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Invoking and Running <span class="command"><strong>OS9Disasm</strong></span></th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ar01s03.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s05.html">Next</a></td></tr></table><hr></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="odrun"></a>Invoking and Running <span class="command"><strong>OS9Disasm</strong></span></h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm405"></a>Invoking <span class="command"><strong>OS9Disasm</strong></span></h3></div></div></div><p>
+      <span class="command"><strong>OS9Disasm</strong></span> is invoked by issuing the command in the following format: 
+      </p><pre class="screen"><span class="command"><strong>
+      os9disasm &lt;options&gt; [module-name] &lt;options&gt;
+      </strong></span></pre><p>
+    </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm412"></a>Output from <span class="command"><strong>OS9Disasm</strong></span> - what goes where</h4></div></div></div><p>To be clear on the output from <span class="command"><strong>OS9Disasm</strong></span> and where everything
+        goes, a note about the difference between the formatted listing
+        and the assembly source may be in order.
+      </p><p><b>The formatted listing. </b>The formatted listing - something like you'd get with the
+          <span class="command"><strong>-l</strong></span> option with most assemblers, goes to
+          the standard output path.  If you invoke <span class="command"><strong>OS9Disasm</strong></span> with no
+          redirection ( "&gt; something"), the output will go to the screen,
+          or wherever normal output would go.  This holds true if the
+          <span class="command"><strong>-g</strong></span> option is invoked.  The output for this
+          goes to the same place as the regular listing would go.
+        </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>At present, there is no "quiet" option.  To get no listing,
+            redirect output to <span class="command"><strong>/dev/null</strong></span> or whatever is the
+            "bit bucket" for your system.
+          </p></div><p><b>The assembly source file. </b>The assembly source file, the one that would be used to
+          generate the binary, is not produced unless the <span class="command"><strong>-o
+          </strong></span>option is used.  This is because normally, several
+          invocations of <span class="command"><strong>OS9Disasm</strong></span> will probably be called before there will
+          be any interest in the source file.
+        Of course, at any time when you become curious if the source
+          will assemble identically to the original binary, one can generate
+          a source file at any time.  In reality, the source file <span class="emphasis"><em>
+          should</em></span> compile back identically at any time, but,
+          remember Murphy's law.
+        </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="cmdoptions"></a>Options Used by <span class="command"><strong>OS9Disasm</strong></span></h4></div></div></div><p><span class="command"><strong>OS9Disasm</strong></span> uses the following options. Some of these options will
+        be more fully explained later.  The options cannot be grouped, and must
+        be preceded by a minus sign (-).
+      </p><p>The equal (=) sign is optional, but if omitted, no space is
+        permitted between the option letter and the argument.
+      </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="cmdfilespec"></a>Files</h5></div></div></div><div class="informaltable"><table class="informaltable" border="0"><colgroup><col width="2.0in"><col></colgroup><tbody valign="top"><tr><td valign="top"><span class="command"><strong>c[=]&lt;command-file&gt;</strong></span>
+                </td><td valign="top">Use &lt;command-file&gt; for disassembly commands.  This
+                  is the only option that cannot be specified in the command
+                  file (which would be itself).  Only one
+                  <code class="computeroutput">command file</code> is accepted -
+                  the first one encountered.  Any subsequent
+                  <span class="command"><strong>-c</strong></span> options encountered are ignored - with
+                  an error message to the <code class="computeroutput">standard
+                    error</code> path.
+                </td></tr><tr><td valign="top"><span class="command"><strong>s[=]&lt;label-file&gt;</strong></span>
+                </td><td valign="top">Use &lt;label-file&gt; for label assignments.  More than
+                  one label file can be specified, and these will be read one
+                  after the other, in order that they are entered.  Label files
+                  are explained in <a class="xref" href="ar01s05.html#labelfile" title="The Label File">the section called &#8220;The Label File&#8221;</a>.  <span class="command"><strong>OS9Disasm</strong></span> tries
+                  very hard to resolve the path to the label file.  Please see
+                  <a class="xref" href="ar01s04.html#pathresolution" title="How OS9Disasm resolves paths">the section called &#8220;How <span class="command"><strong>OS9Disasm</strong></span> resolves paths&#8221;</a> to see how it works.
+                </td></tr><tr><td valign="top"><span class="command"><strong>o[=]&lt;asm-source-filename&gt;
+                </strong></span></td><td valign="top">Output assembly source code to filename (off by
+                  default).  This is the file that <span class="emphasis"><em>should</em></span>
+                  reassemble.
+                </td></tr><tr><td valign="top"><a name="defspath"></a><span class="command"><strong>d[=]&lt;path-to-defsdir&gt;</strong></span></td><td valign="top">Define path to defs.  This is the directory under which
+                  the default label files are found.  The default is
+                  <code class="filename">/dd/coco/defs</code>
+                </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="cmdoutput"></a>Output specifications</h5></div></div></div><div class="informaltable"><table class="informaltable" border="0"><colgroup><col width="1.0in"><col></colgroup><tbody valign="top"><tr><td valign="top"><span class="command"><strong>ls</strong></span></td><td valign="top">Generate short (6-char) labels (Default is 8 chars)
+                  (Obsolete see <span class="command"><strong>"ll"</strong></span> below.)
+                </td></tr><tr><td valign="top"><span class="command"><strong>ll[=]&lt;length&gt;</strong></span></td><td valign="top">Generate labels with &lt;length&gt; max length.
+                  (Default is 8 chars).
+                </td></tr><tr><td valign="top"><span class="command"><strong>u</strong></span></td><td valign="top">Fold output to upper-case</td></tr><tr><td valign="top"><span class="command"><strong>g</strong></span></td><td valign="top">Output <span class="command"><strong>Listing</strong></span> using a <span class="command"><strong>tab
+                  </strong></span> rather than spaces to separate fields.  This is
+                  not an ideal mode for printouts but is included for use by
+                  <span class="command"><strong>G09Dis</strong></span>.  See <a class="xref" href="ar01s04.html#gmode" title='Option "g" not good for general printouts'>the section called &#8220;Option "g" not good for general printouts&#8221;</a> for further details.
+                </td></tr><tr><td valign="top"><span class="command"><strong>z</strong></span></td><td valign="top">Display zero register offsets.  Normally, if the
+                  offset from a register is zero, it's simply output as
+                  <code class="filename">,R</code>, but this option causes these
+                  offsets to be printed as <code class="filename">0,R</code>.  This
+                  is useful if trying to match code compiled with the C
+                  compiler, for example, and is strictly aesthetic.
+                </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="cmdpgspec"></a>Page specifications</h5></div></div></div><div class="informaltable"><table class="informaltable" border="0"><colgroup><col width="1.0in"><col></colgroup><tbody valign="top"><tr><td valign="top"><span class="command"><strong>pw[=]&lt;pagewidth&gt;</strong></span>
+                </td><td valign="top">Set page width for listing output (Default=80)</td></tr><tr><td valign="top"><span class="command"><strong>pd[=]&lt;pagedepth&gt;</strong></span>
+                </td><td valign="top">Set page depth for listing output (Default=66).
+                  A value of <span class="command"><strong>0</strong></span> disables
+                  pagination.
+                </td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="cmdcpu"></a>CPU specifications</h5></div></div></div><div class="informaltable"><table class="informaltable" border="0"><colgroup><col width="1.0in"><col></colgroup><tbody valign="top"><tr><td valign="top"><span class="command"><strong>x[=]&lt;OS&gt;</strong></span></td><td valign="top">Program is for &lt;OS&gt;.  By default, <span class="command"><strong>OS9Disasm</strong></span> assumes
+                  the file to be an OS9 Module.  Currently the only option is
+                  "C" (Coco RSDOS).
+                </td></tr><tr><td valign="top"><span class="command"><strong>3</strong></span></td><td valign="top">Disassemble for 6309 CPU.  By default, <span class="command"><strong>OS9Disasm</strong></span> assumes
+                  6809 code and ignores 6309 mnemonics, usually generating
+                  <span class="command"><strong>fcb</strong></span>'s for these commands.
+                </td></tr><tr><td valign="top"><span class="command"><strong>?</strong></span></td><td valign="top">Print a brief help screen.</td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="srcspec"></a>Source File Specification</h5></div></div></div><div class="informaltable"><table class="informaltable" border="0"><colgroup><col width="1.0in"><col></colgroup><tbody valign="top"><tr><td valign="top"><span class="command"><strong>m</strong></span></td><td valign="top">
+                  Generate rma-style output, with initialized data and
+                  references specified.
+                  with <span class="command"><strong>rmb</strong></span> and <span class="command"><strong>fcb</strong></span>.
+                  The initialized data, labels within the data area, and
+                  labels that are referenced by the initialized data are
+                  automatically generated, so these need not be specified
+                  in a command or label file.
+                </td></tr><tr><td valign="top"><span class="command"><strong>r</strong></span></td><td valign="top"><p>
+                    Disassemble a <code class="computeroutput">ROF</code> file.
+                  </p>
+                  <div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>This option should not be needed since <span class="command"><strong>OS9Disasm</strong></span>
+                    should automatically detect ROF files.
+                  </div>
+                </td></tr></tbody></table></div></div><p>Most of the above command options are self-explanatory. Briefly,
+        you can (and ought to) use a single <code class="filename">command file</code>.
+        This file provides all the disassembly details.  Any of the above
+        commands (except for the <span class="command"><strong>-c</strong></span> option can be embedded
+        in the <code class="filename">command file</code>.  It defines the class by
+        which a label is defined at a given location, it defines data
+        (non-code) regions in the program, and also can specify command-line
+        options whereby you are not required to insert them on the command line
+        each time you run <span class="command"><strong>OS9Disasm</strong></span> on that particular program.
+      </p><p>You can use one or more <code class="filename">label files</code> (up to 16)
+        where you can specify the name of labels generated during the
+        disassembly.  There are some label files used by default, where some
+        standard labels are defined. The default label files used are dependent
+        upon what OS the module was designed for.
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="gmode"></a>Option "g" not good for general printouts</h4></div></div></div><p>
+        It should be noted that the option <span class="command"><strong>-g</strong></span> is not
+        really ideal for general printouts.  It uses tabs and there are
+        disadvantages for this.
+        </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">Tabs are not uniform between all systems.</li><li class="listitem">A field where the element is longer than the tab will cause
+            the columns to not align properly.</li></ul></div><p>
+      </p><p>The real purpose for this option is to output a listing that
+        can be interpreted by <span class="command"><strong>g09dis</strong></span>.  It was decided that
+        <span class="command"><strong>g09dis</strong></span> would use tabs to be the field delimiter
+        rather than trying to keep up with column widths in the listing
+        printout.  Therefore, <span class="command"><strong>g09dis</strong></span> <span class="emphasis"><em>
+        must</em></span> use this specially formatted file.  It cannot even load
+        a standard space-formatted listing.
+      </p><p><span class="command"><strong>G09dis</strong></span> can load files in one of two ways,
+        either by running <span class="command"><strong>OS9Disasm</strong></span> separately with the <span class="command"><strong>-g</strong></span>
+        option and loading that file, or by generating the file directly
+        from within <span class="command"><strong>g09dis</strong></span> itself.
+      </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Actually there is no really good reason to load the listing
+          from a file.  It takes only a moment for <span class="command"><strong>OS9Disasm</strong></span> to disassemble
+          even a fairly large file, and the listing obtained should be
+          most up-to-date.
+        </p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="pathresolution"></a>How <span class="command"><strong>OS9Disasm</strong></span> resolves paths</h3></div></div></div><p><span class="command"><strong>OS9Disasm</strong></span> tries to resolve paths to files in a logical manner.  It
+      attempts to come up with meaningful schemes to try to find the file.
+      Thus, it is not always necessary to specify a full pathname for a
+      file.  This is particularly helpful for label files and the standard
+      label files.
+    </p><p>The order in which <span class="command"><strong>OS9Disasm</strong></span> tries to resolve paths is as follows:
+    </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">The first location to search is exactly as the filename is
+        written.  This will work if the pathname as written is relative
+        to the current <code class="filename">$PWD</code>, or if it is an absolute
+        path specification.
+      </li><li class="listitem">Next, the user's <code class="filename">$HOME</code> directory it
+        tried.  (Actually, this might ought to be tried later, but it is
+        in this position for now.)
+      </li><li class="listitem">If a command file has already been specified, the path to
+        this directory is attempted.
+      </li><li class="listitem">Finally, the directory where <span class="command"><strong>OS9Disasm</strong></span> believes the
+        <code class="filename">DEFS</code> files are stored (see
+        <a class="link" href="ar01s04.html#defspath">Defs Path Option</a>).  You probably won't
+        have any user-defined labels stored here, but this is especially
+        helpful for the standard label files.  You can simply write a filename
+        for the standard label file and don't have to include the full path to
+        this file.
+      </li><li class="listitem">If all the above fails, a message reporting that the search
+        failed is printed to <code class="filename">stderr</code> and this file is
+        skipped.
+      </li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="cmdfile"></a>The command file</h3></div></div></div><p>If you simply issue the command <span class="command"><strong>os9disasm
+       &lt;programfile&gt;</strong></span> on a program file, the resultant
+       code that it would generate <span class="emphasis"><em>should</em></span> assemble back
+       into an identical module or program file as that from which it was
+       disassembled.
+     </p><p>However, in this form, the source might not be very intelligible in
+       places. Without some direction, <span class="command"><strong>OS9Disasm</strong></span> blindly disassembles all byte
+       sequences as machine code.  Most programs have non-code areas - string
+       data, lookup tables, and other data - which, if parsed as machine code,
+       produces nothing but gibberish from an assembly perspective.
+     </p><p>  <span class="command"><strong>OS9Disasm</strong></span> will attempt to disassemble this area as assembly code -
+       which should be <span class="command"><strong>fcb</strong></span>, <span class="command"><strong>fdb</strong></span>,
+       <span class="command"><strong>fcc</strong></span>, or the like.  In most cases the data being
+       disassembled in this way will not work out to end at the actual end of
+       the data area, and will run on into the following genuine machine code
+       for several bytes until it happens to get back into sync, thus
+       obliterating several commands.  This is where the
+       <code class="filename">command file</code> comes into play.
+     </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="databounds"></a>Data bounds</h4></div></div></div><p>Data areas can be specified in different ways. These areas are,
+         as previously mentioned, areas of data storage which are not
+         assembler code, but rather are constant values that the program
+         might use. These can be string constants, lookup tables, or simply
+         numeric constants. These blocks of data code can be specified in one
+         of six ways
+       </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col width="1.5in"><col></colgroup><thead><tr><th>Type</th><th>Result</th></tr></thead><tbody valign="top"><tr><td align="center" valign="top"><a name="asciis"></a><span class="command"><strong>A</strong></span></td><td valign="top"><span class="command"><strong>ASCII data</strong></span>
+                 <p>
+                   will generate <code class="computeroutput">FCB</code>,
+                   <code class="computeroutput">FCC</code>, or
+                   <code class="computeroutput">FCS</code> (if appliable)
+                   statements with strings automatically delimited, and ASCII
+                   control characters delimited by their standard names.
+                 </p>
+                 <p>In OS9 mode, <code class="computeroutput">fcs</code>
+                   statements will be generated if a character with the MSB set
+                   is encountered.
+                 </p>
+               </td></tr><tr><td align="center" valign="top"><span class="command"><strong>=</strong></span></td><td valign="top"><span class="command"><strong>ROF Data ASCII specification</strong></span>
+                 <p>This is for use only with ROF disassemblies, and
+                   is for Initialized data.  Its usage is similar to the
+                   <span class="command"><strong>A</strong></span> specification, except that it is
+                   restricted to initialized vsects.  See
+                   <a class="link" href="ar01s04.html#asciis">ASCII Data</a> above.
+                 </p>
+               </td></tr><tr><td align="center" valign="top"><span class="command"><strong>W</strong></span></td><td valign="top"><span class="command"><strong>Word data</strong></span>
+                 <p>will produce <code class="computeroutput">FDB</code>'s
+                   of hex data double bytes.  This is equivalent to
+                   <span class="command"><strong>Long Labels</strong></span> of label class
+                   <code class="computeroutput">&amp;</code>.
+                 </p>
+               </td></tr><tr><td align="center" valign="top"><span class="command"><strong>B</strong></span></td><td valign="top"><span class="command"><strong>Byte data</strong></span>
+                 <p>will produce <code class="computeroutput">FCB</code>'s
+                   of hex data byte.  This is equivalent to <span class="command"><strong>Short
+                   </strong></span> labels of label class
+                   <code class="computeroutput">&amp;</code>.
+                 </p>
+               </td></tr><tr><td align="center" valign="top"><span class="command"><strong>L</strong></span></td><td valign="top"><span class="command"><strong>Long Label Data</strong></span>
+                 <p>will produce <code class="computeroutput">FDB</code>'s
+                   of label references to the program.  Many programs have
+                   data tables in them which are used for indirect addressing
+                   or for performing multi-direction jumps. Such tables are
+                   best disassembled as a series of labels.
+                 </p>
+               </td></tr><tr><td align="center" valign="top"><span class="command"><strong>S</strong></span></td><td valign="top"><span class="command"><strong>Short label</strong></span>
+                 <p>data areas are the 8-bit equivalent of <span class="command"><strong>Long
+                   labels</strong></span>.  These will produce
+                   <code class="computeroutput">FCB</code>'s with labels as the
+                   operand.
+                 </p>
+               </td></tr></tbody></table></div><p>These Data bounds are further described in <a class="xref" href="ar01s04.html#datadescr" title="Data Areas">the section called &#8220;Data Areas&#8221;</a>
+       </p><p><b>The generation of labels in operands can be completely
+           controlled.
+         . </b> Whenever a label might conceivably be generated in an
+           instruction, you can specify whether a data value or a label should
+           be used.  Further, it is possible to specify labels in several label
+           classes.
+         With this ability, the address $10 in the direct page instruction
+           <code class="computeroutput">LDA &lt;$10</code> can be given a different
+           label than that given the address $10 in the extended instruction
+           <code class="computeroutput">LDB &gt;$0010</code>.
+         </p><p>All calls to the OS/9 operating system via the
+        '<span class="command"><strong>OS9</strong></span>' opcode can be automatically disassembled using
+        the standard system names. This automatic generation of
+        '<span class="command"><strong>OS9</strong></span>' calls can be turned off if desired.
+       </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm691"></a>CONCEPTS</h3></div></div></div><p>Before discussing the actual commands used to instruct <span class="command"><strong>OS9Disasm</strong></span> to
+      disassemble an object file, it is perhaps wise to study the various ways
+      in which a file can be disassembled. In particular, it is important that
+      the concepts of label classes, standard labels, offsets, and data areas
+      be understood.
+    </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="lblclass"></a>Label Class</h4></div></div></div><p>One of the more important jobs in disassembling a program is the
+          proper generation of labels. <span class="command"><strong>OS9Disasm</strong></span> creates label name from an
+          address, usually by preceding the address with a letter (e.g.
+          address <span class="command"><strong>$1234</strong></span> becomes
+          <code class="computeroutput">L1234</code>).
+        </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Our definition of a Label</h3><p>In this manual, 'label' refers to an assembler symbol,
+            that is, a name beginning with an alphabetic character. This is not
+            the same as the standard usage of the word in conjunction with
+            assemblers.)
+          </p></div><p>At its simplest, it would appear that a disassembler should
+          generate a label whenever a memory reference is implied by an
+          instruction, as in the instruction <code class="computeroutput">LDA
+          L1234</code>. A little study, though, quickly shows how
+          much more complicated the situation really is.
+        </p><p>For instance, in an OS/9 program, consider the three
+          instructions
+        </p><pre class="programlisting">
+          LDA &lt;$10     (direct)
+          LDA &gt;$0010   (extended)
+          BRA $0010    (relative),
+        </pre><p>All seem to refer to the same address <span class="command"><strong>$0010</strong></span>,
+          but in fact refer to three different memory locations. The direct
+          reference is to an address in the module data area, the extended
+          reference is to an absolute address in page 0 of memory, and the
+          relative reference is to an address actually within the module.
+          Obviously, a disassembler assigning the same label (e.g.
+          <code class="computeroutput">L0010</code>) to all three instructions is
+          quite limited in usefulness.
+        </p><p>In order to allow a different label to be assigned in such
+          cases, <span class="command"><strong>OS9Disasm</strong></span> uses the concept of <span class="command"><strong>label classes</strong></span>.
+        </p><p>
+          Basically, a label class is simply the letter used as the first
+          character in a generated label name.  Thus, if <span class="command"><strong>direct
+          </strong></span>references are assigned to the label class
+          <code class="computeroutput">D</code>, <span class="command"><strong>extended</strong></span>
+          references to class <code class="computeroutput">X</code>, and
+          <span class="command"><strong>program</strong></span> (relative) references to class
+          <code class="computeroutput">L</code>, then the three instructions above
+          could be disassembled as <code class="computeroutput">LDA X0010</code>,
+          and <code class="computeroutput">BRA L0010</code>. <span class="command"><strong>OS9Disasm</strong></span> expands the
+          use of label classes beyond the 26 basic classes
+          <code class="computeroutput">A</code> to
+          <code class="computeroutput">Z</code> to include the generation of
+          various forms of data values or standard system defined names. There
+          are 5 additional label classes, denoted by the special characters
+          <span class="command"><strong>'$', '&amp;', '@', '^',</strong></span>, '<span class="command"><strong>!</strong></span>',
+          and '<span class="command"><strong>%</strong></span>. With these forms, operands may be
+          disassembled as hexadecimal or decimal data, or as ASCII characters,
+          or as the standard names, used by the OS/9 operating system in the
+          OS9 opcode, or binary:
+        </p><div class="widetab"><table class="widetab" border="0"><colgroup><col width="2.0in"><col></colgroup><thead><tr><th>Class</th><th>Result</th></tr></thead><tbody valign="top"><tr><td valign="top"> </td><td class="auto-generated"> </td></tr><tr><td align="center" valign="top"><span class="command"><strong>$</strong></span></td><td valign="top"><span class="command"><strong>Generates a hexadecimal constant </strong></span>
+              <span class="command"><strong>OS9Disasm</strong></span> will generate a data value consisting of a dollar sign,
+              '$', followed by either a four digit or a two digit hexadecimal
+              number.The two digit form will be used, when possible, in
+              operands which are one byte long (for instance, <code class="computeroutput">
+              LDA #$12)</code>.
+            </td></tr><tr><td align="center" valign="top"><span class="command"><strong>&amp;</strong></span></td><td valign="top"><span class="command"><strong>Generates a decimal constant.</strong></span>
+              <span class="command"><strong>OS9Disasm</strong></span> will generate a signed decimal number. Only full 16 bit
+              values with the highest bit set will be generated as negative
+              numbers (negative indexed offsets will be sign extended).
+            </td></tr><tr><td align="center" valign="top"><span class="command"><strong>@</strong></span></td><td valign="top"><span class="command"><strong>Generates a decimal or hex constant </strong></span> If
+              the value is between -9 and 9, then <span class="command"><strong>OS9Disasm</strong></span> will generate a
+              decimal constant, otherwise, it will generate a hexadecimal
+              constant.  Note that this differs from the original
+              <code class="filename">dynamite+</code> in that with it, only positive
+              values between 0 and 9 would generate a decimal constant.
+              However, it seems more logical to include the same range of
+              negative values in the same class.  </td></tr><tr><td align="center" valign="top"><span class="command"><strong>^</strong></span></td><td valign="top"><span class="command"><strong>Generates an ASCII constant. </strong></span> The
+              particular form which <span class="command"><strong>OS9Disasm</strong></span> will generate depends upon the value
+              of the constant.
+              <div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">For a one byte value from $00 to $20, or $7F, <span class="command"><strong>OS9Disasm</strong></span>
+                    will generate the standard name of the control character
+                    (<code class="computeroutput">SPACE</code> for $20,
+                    <code class="computeroutput">DEL</code> for $7f).  </li><li class="listitem">For a one byte value from $21
+                    to $7E, <span class="command"><strong>OS9Disasm</strong></span> will generate an ASCII constant consisting of
+                    an apostrophe (') followed by the ASCII graphic for that
+                    particular code value.
+                  </li><li class="listitem"><p class="simpara">For a one byte value from $80 to $FF, <span class="command"><strong>OS9Disasm</strong></span>
+                    will generate the proper form for the value without the high
+                    bit set, appending an offset of +$80.
+                  </p><p class="simpara"><code class="computeroutput">LDA #$C1</code>
+                    disassembles as <code class="computeroutput">LDA
+                      #'A+$80</code>.
+                  </p></li><li class="listitem"><p class="simpara">For two byte values to be disassembled as an
+                    ASCII constant, <span class="command"><strong>OS9Disasm</strong></span> will break the value apart into the
+                    two separate bytes, and generate each as a one byte ASCII
+                    constant, taking into account the possible presence of a
+                    parity bit on each byte.
+                  </p><p class="simpara">As an option, if both bytes are the codes for ASCII
+                    graphic characters, <span class="command"><strong>OS9Disasm</strong></span> can generate a double ASCII
+                    constant consisting of a double quote (") followed by the
+                    two characters.  </p><p class="simpara">Some examples:
+                  </p><table border="0" summary="Simple list" class="simplelist"><tr><td> <code class="computeroutput">LDD #$8D3F</code> is
+                      disassembled as <code class="computeroutput">LDD
+                      #CR*256+'?+$8000</code>
+                    </td></tr><tr><td><code class="computeroutput">LDD #$4142</code> is
+                      disassembled as <code class="computeroutput">LDD #"AB</code>
+                      (double ASCII enabled) or:
+                    </td></tr><tr><td><code class="computeroutput">LDD #'A*256+'B</code>
+                      (double ASCII disabled).
+                    </td></tr></table></li></ul></div>
+            </td></tr><tr><td align="center" valign="top"><span class="command"><strong>!</strong></span></td><td valign="top"><span class="command"><strong>Generates a system function name. </strong></span> When
+              disassembling OS/9 code, <span class="command"><strong>OS9Disasm</strong></span> will automatically use a standard
+              name in the OS9 opcode. Thus, <span class="command"><strong>SWI2</strong></span>,
+              <span class="command"><strong>FCB $06</strong></span> is disassembled as <span class="command"><strong>OS9
+                F$Exit</strong></span>. With the '<span class="command"><strong>!</strong></span>' label class,
+              odis will generate this standard system name (e.g.
+              <span class="command"><strong>F$Exit</strong></span> for $06) if such a standard name
+              exists.  If no standard system function name exists, then <span class="command"><strong>OS9Disasm</strong></span>
+              will generate a hexadecimal constant for the value.
+            </td></tr><tr><td align="center" valign="top"><span class="command"><strong>%</strong></span></td><td valign="top"><span class="command"><strong>Generate a binary representation.</strong></span>  This
+              will generate a binary representation of the value of the
+              operand.  For example,<pre class="programlisting">lda #$f3</pre>
+              would generate <pre class="programlisting">lda #%11110011</pre>
+              It works with either 8-bit or 16-bit numbers.
+            </td></tr></tbody></table></div><p>As a further example of the use of label classes, consider the
+        instruction <code class="computeroutput">LDA #$30</code>. Under label
+        classes <code class="filename">'A', '$', '&amp;', '@'</code>, and
+        '<code class="filename">!</code>', the value $30 would be disassembled as
+        <code class="computeroutput">A0030</code>,
+        <code class="computeroutput">$30</code>,
+        <code class="computeroutput">48</code>,
+        <code class="computeroutput">$30</code>,
+        <code class="computeroutput">'0</code>, and
+        <code class="computeroutput">F$All64</code> respectively.
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="lclassdefined"></a>Label Classes Defined</h4></div></div></div><p>Given these 31 different label classes, you must have some way to
+        specify which instructions are to use which label classes. <span class="command"><strong>OS9Disasm</strong></span>
+        accomplishes this by assigning label classes based on the addressing
+        mode of the instructions in which they are to be used.
+      </p><p>For instance, in the default OS/9 configuration
+        </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">direct page instructions are disassembled using
+            label class <code class="filename">D</code></li><li class="listitem">extended instructions are disassembled using label
+            class <code class="filename">X</code></li></ul></div><p>
+        <span class="command"><strong>OS9Disasm</strong></span> recognizes 13 different addressing modes which have an
+        operand consisting of a value, and therefore require a label
+        class assignment to specify the proper form of label or data value to
+        generate.
+      </p><p>These 13 addressing modes are (with examples of each):
+      </p><div class="widetab"><table class="widetab" border="0"><colgroup><col><col></colgroup><thead><tr><th>Addressing Mode</th><th>Example</th></tr></thead><tbody><tr><td> </td><td class="auto-generated"> </td></tr><tr><td align="right"><span class="command"><strong>1 byte immediate</strong></span></td><td><code class="computeroutput">LDA #$12; ORCC #$FE</code>
+              </td></tr><tr><td align="right"><span class="command"><strong>D immediate</strong></span></td><td><code class="computeroutput">ADDD #$1234</code></td></tr><tr><td align="right"><span class="command"><strong>X immediate</strong></span></td><td><code class="computeroutput">LDX #$0000</code></td></tr><tr><td align="right"><span class="command"><strong>Y immediate</strong></span></td><td><code class="computeroutput">CMPY #$A5A5</code></td></tr><tr><td align="right"><span class="command"><strong>U immediate</strong></span></td><td><code class="computeroutput">CMPU #$5678</code></td></tr><tr><td align="right"><span class="command"><strong>S immediate</strong></span></td><td><code class="computeroutput">LDS #$C000</code></td></tr><tr><td align="right"><span class="command"><strong>X indexed</strong></span></td><td><code class="computeroutput">STA 5,X; CLR ,X</code></td></tr><tr><td align="right"><span class="command"><strong>Y indexed</strong></span></td><td><code class="computeroutput">LDB $1234,Y</code></td></tr><tr><td align="right"><span class="command"><strong>U indexed</strong></span></td><td><code class="computeroutput">CMPD -52,U</code></td></tr><tr><td align="right"><span class="command"><strong>S indexed</strong></span></td><td><code class="computeroutput">LEAS -20,S</code></td></tr><tr><td align="right"><span class="command"><strong>direct page</strong></span></td><td><code class="computeroutput">STX $20</code></td></tr><tr><td align="right"><span class="command"><strong>extended</strong></span></td><td><code class="computeroutput">LDY $1234; JMP [$0030]</code>
+             </td></tr><tr><td align="right"><span class="command"><strong>relative</strong></span></td><td><code class="computeroutput">LBRA $1000; LEAX $0FF0,PCR
+               </code>
+             </td></tr></tbody></table></div><p>For the syntax for the above modes, please refer to
+        <a class="xref" href="ar01s05.html#laddrmod" title="Label Addressing Mode Specification Command Line">the section called &#8220;Label Addressing Mode Specification Command Line&#8221;</a>
+      </p><p>Note that the relative addressing mode, for purposes of label
+        generation, includes both branch instructions (<span class="command"><strong>BRA</strong></span>,
+        <span class="command"><strong>LBSR</strong></span>, etc.) and <span class="command"><strong>PC</strong></span> relative
+        references. both of these forms usually refer to code within a single
+        program or module, and are thus grouped together.
+      </p><p>Note further the example, under the <span class="command"><strong>X</strong></span> indexed
+        addressing mode, of a zero offset indexed instruction.  Normally, no
+        offset is not printed in such an instruction.  However, this zero
+        offset <span class="emphasis"><em>can</em></span> be printed if the
+        <span class="command"><strong>-z</strong></span> option is specified.
+      </p><p>There are occasions, though, in which you might want a named
+        offset, which is assembled to the zero offset form. For instance,
+        suppose an index register points to the start of a data structure,
+        each part of which should be given a label name. In that case, <span class="command"><strong>OS9Disasm</strong></span>
+        should generate a label name for a reference to the zero entry in the
+        structure.  To take care of this problem, <span class="command"><strong>OS9Disasm</strong></span> will automatically
+        generate a label name for zero offset indexing if the label class for
+        the instruction is one which generates a label ('A' to 'Z', '^', '!'),
+        and will generate no offset if the label class is one which generates
+        a data value ('$', '&amp;', '@').
+      </p><p>The assignment of label classes to addressing modes is
+        allowed by <span class="command"><strong>OS9Disasm</strong></span> in three forms.
+        </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">The assignment can be made globally, so that all
+            instructions with a particular addressing mode encountered in the
+            object code are disassembled with one label class.  This is done
+            by assigning a label class to an addressing mode with no address
+            or address range..
+          </li><li class="listitem">The assignment can be made for a range of program
+            addresses. This is especially useful for indexed addressing
+            modes. Often, an index register will point to a particular data
+            structure only within a certain subroutine in a program, and
+            the assignment of a label class for that structure should only
+            be made for that subroutine.
+          </li><li class="listitem">The assignment can be made for a single instruction in
+            the object code. This will often be used with the 1 byte
+            immediate addressing mode, in which a single instruction refers
+            to an ASCII value or some mask value (as in the <span class="command"><strong>ORCC
+            </strong></span> instruction). The actual method used to specify label
+            classes by addressing modes is taken up under the discussion of
+            the command file later in this manual.  See <a class="xref" href="ar01s05.html#laddrmod" title="Label Addressing Mode Specification Command Line">the section called &#8220;Label Addressing Mode Specification Command Line&#8221;</a>.
+          </li></ol></div><p>
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm931"></a>Standard Labels</h4></div></div></div><p>
+       As can be seen in the above section, <span class="command"><strong>OS9Disasm</strong></span> can generate many labels
+       within a program. These labels, though, formed by appending a label
+       class letter to a four digit hexadecimal value, do not produce
+       particularly meaningful names. It is possible, of course, to edit the
+       output from <span class="command"><strong>OS9Disasm</strong></span>, and globally change some default label name to
+       something more meaningful, but this can be difficult if the program is
+       very large, and is an error-prone process in any case.
+     </p><p>Instead, it is more useful to specify to <span class="command"><strong>OS9Disasm</strong></span>, before the
+       disassembly, that all
+       references to a certain label are to be output using some standard
+       name.  This way, there is no need to do a later edit, and there is no
+       chance of
+       accidentally missing a reference to a label in the program.
+     </p><p>You have already encountered, in the previous section, this
+       substitution of standard names for labels. When the ASCII label class is
+       specified for a value or $20, for instance, the name
+       '<code class="computeroutput">SPACE</code>' is generated. Also, the system
+       function name label class, '!', will generate standard names for certain
+       values, e.g.  F$Link for $00.
+     </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm940"></a>Generating your own Label names</h5></div></div></div><p>With the standard label abilities of <span class="command"><strong>OS9Disasm</strong></span>, you can generate
+         your own standard names (in fact, it is possible to use your own
+         standard names for ASCII control characters of system functions).
+       </p><p>One use of standard labels is simply giving meaningful names to
+         references to program lines or data area variables.  For instance,
+         it is possible to take the <code class="computeroutput">MOD</code>
+         statement at the start of an OS/9 module, which might, without
+         standard labels, look like
+       </p><p>
+        </p><pre class="programlisting">MOD L1000,L000D,$C1,$81,L0050,D0200</pre><p>
+       </p><p>and, by assigning standard labels, give it the much more
+        readable form
+       </p><p>
+        </p><pre class="programlisting">MOD LENGTH,NAMEPTR,$C1,$81,ENTRY,DATASIZE
+        </pre><p>
+       </p><p>
+         Another use of standard labels is to give useful names to such values
+         as bit masks or code values in immediate addressing mode instructions.
+       </p><p> By assigning the standard name <code class="computeroutput">CARRY
+         </code> to the value $01, label class
+         <code class="computeroutput">C</code>, and then assigning label class
+         <code class="computeroutput">C</code> to a single 1 byte immediate
+         instruction <code class="computeroutput">ORCC #1</code>, the instruction
+         would be disassembled as <code class="computeroutput">ORCC #CARRY</code>,
+         obviously a much clearer form.
+       </p><p>As can be seen in the above examples, there are two things which
+         must be specified when giving a label a standard name. A standard
+         label has both a value and a label class.  Thus, in the
+         <code class="computeroutput">MOD</code> statement, the name
+         <code class="computeroutput">LENGTH</code> is assigned to the value $1000
+         and the label class <code class="computeroutput">L</code>. The actual
+         specification of standard labels is detailed in the section on label
+         files - <a class="xref" href="ar01s05.html#labelfile" title="The Label File">the section called &#8220;The Label File&#8221;</a>.
+       </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="offsets"></a>Offsets</h4></div></div></div><p> 
+        Occasionally, when a routine searches through a data table, it will
+        start the search by loading an index register with an address which is
+        less than the address of the actual table. For instance, a search of a
+        table at address $1000 might start by loading <span class="command"><strong>X</strong></span> with
+        the address $0FFF. When this is disassembled, you want a label to be
+        generated for the value $1000 instead of the value $0FFF. To do this,
+        <span class="command"><strong>OS9Disasm</strong></span> allows the use of offsets, so that an instruction may be
+        disassembled as, say <code class="computeroutput">LEAX L1000-1,PCR</code>
+        instead of <code class="computeroutput">LEAX L0FFF,PCR</code>.  Of course
+        this has no effect whatsoever on the program function, but it can
+        make it much clearer to anyone reading the program what is being done.
+      </p><p>
+        There are times when a positive offset is also useful. Suppose a two
+        byte variable is declared within the data area of an OS/9 module. That
+        the variable is two bytes long might be obvious by the use of
+        <code class="computeroutput">LDD</code> or
+        <code class="computeroutput">STX</code> instructions in referring to it.
+        The program may, though, sometimes refer to only the second byte of the
+        variable. Rather than assigning a separate label to this second byte,
+        the program is much cleaner and clearer if the second byte is referred
+        to by the name given the first byte with an offset of 1, e.g.
+        <code class="computeroutput">D0020+1</code> instead of
+        <code class="computeroutput">D0021</code>.
+      </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm975"></a>More complex offsets</h5></div></div></div><p>While most offsets are one of these simple forms, a small offset
+          to be printed as plus or minus some decimal value, <span class="command"><strong>OS9Disasm</strong></span> also
+          allows more complicated variations.
+        </p><p>When specifying an offset to be used in an instruction, <span class="command"><strong>OS9Disasm</strong></span>
+          allows you to specify both the value
+          of the offset, whether it is to be added or subtracted, and the label
+          class to be assigned to the offset. As an example, take the
+          instruction <code class="computeroutput">ORCC #$50</code>. Assign class
+          <span class="command"><strong>C</strong></span> standard names <span class="command"><strong>FIRQM</strong></span> to $40,
+          <span class="command"><strong>IRQM</strong></span> to $10, and assign class <span class="command"><strong>C</strong></span>
+          label generation for the instruction.  Finally, specify an offset of
+          <span class="command"><strong>+$10</strong></span> for the instruction, with class
+          <span class="command"><strong>C</strong></span> for the offset value. The resultant disassembled
+          instruction would be <code class="computeroutput">ORCC
+          #FIRQM+IRQM</code>.
+        </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>The label class of the operand value and that of the
+          offset need not be the same. Thus, it is possible to disassemble the
+          instruction <code class="computeroutput">LDA #40</code> as
+          <code class="computeroutput">LDA #'A-1</code> by specifying an operand
+          label class of <span class="command"><strong>^</strong></span> (ASCII), and a subtracted offset
+          of 1 with a label class of <span class="command"><strong>&amp;</strong></span> (decimal).</p></div><p>There is one further offset form which you can instruct <span class="command"><strong>OS9Disasm</strong></span>
+          to use. This
+          is program counter offset. By using
+          <code class="computeroutput">PC</code> offset, instructions can be
+          disassembled with the form <code class="computeroutput">LEAX
+          L1000-*,Y</code>. A <span class="command"><strong>PC</strong></span> offset is always
+          subtracted from the operand, and may be mixed with a constant offset.
+          This is most useful in data areas (<a class="xref" href="ar01s05.html#dataaddr" title="Data Area Boundary Specification Command Line">the section called &#8220;Data Area Boundary Specification Command Line&#8221;</a>).
+        </p><p>For instance, when using the OS/9 system calls <span class="command"><strong>F$SSvc
+          </strong></span>, a data table is
+          required which includes an entry giving the offset of a service
+          routine from the byte following the entry. This is best disassembled
+          as, say <code class="computeroutput">FDB L1000-*-2</code>, which is
+          simply a long label data element, class <span class="command"><strong>L</strong></span>, with
+          <span class="command"><strong>PC</strong></span> offset and a decimal class negative offset of
+          2. The specification of offsets to be used in executable code is
+          explained in the section on the command file. This specification is
+          done as part of the assignment of label classes to addressing modes.
+          Offsetting is also possible within data areas, and is discussed in
+          the next section, as well as in <a class="xref" href="ar01s05.html" title="The Command File in Detail">the section called &#8220;The Command File in Detail&#8221;</a>.
+        </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="datadescr"></a>Data Areas</h4></div></div></div><p>Few programs to be disassembled consist entirely of executable
+        code.  Most programs will include some areas which are to be
+        disassembled as data.
+      </p><p>For instance, there may be ASCII strings or tables of bytes
+        within a program. <span class="command"><strong>OS9Disasm</strong></span> gives you complete control over the
+        specification of data areas within the program.
+      </p><p>Five basic data area types lie at the heart of this control.
+        These types are also discussed at <a class="xref" href="ar01s04.html#databounds" title="Data bounds">the section called &#8220;Data bounds&#8221;</a>. In
+        addition, to these basic types, you may specify both PC and constant
+        offsets to be applied to the data.
+      </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p><span class="command"><strong>ASCII data areas</strong></span> are those which contain
+            ASCII characters, and should be disassembled using
+            <code class="computeroutput">FCC</code> or
+            <code class="computeroutput">FCS</code> statements, if possible.
+            Graphic ASCII characters are collected together and output in
+            <code class="computeroutput">FCC</code> or
+            <code class="computeroutput">FCS</code> statements, with a double
+            quote (") delimiter as the preferred delimiter, but <span class="command"><strong>OS9Disasm</strong></span> will
+            choose a delimiter such that it does not occur in the string.  The
+            <span class="command"><strong>FCS</strong></span> statement will be used, if enabled (it can
+            be optionally disabled), whenever a character with the high bit
+            set.  Nongraphic ASCII characters, which include the control
+            characters, <code class="computeroutput">DEL</code> ($7F), and
+            characters with the high bit set (if
+            <code class="computeroutput">FCS</code> is disabled), will be output
+            in <code class="computeroutput">FCB</code> statements, with the same
+            format as that described in the ASCII label class.
+          </p></li><li class="listitem"><p><span class="command"><strong>Long label data areas</strong></span> are disassembled
+            using <code class="computeroutput">FDB </code> statements, with
+            operands whose form depends on the label class to be used.  Thus,
+            when specifying long label areas, you must also specify which of
+            the 31 label classes is desired. Long label data is often used,
+            with class <span class="command"><strong>L</strong></span>, to hold addresses of routines
+            within a program, for multiple direction jumps. These tables will
+            also often use PC offsets or a constant class <span class="command"><strong>L</strong></span>
+            offset (<code class="computeroutput">FDB L1234-*</code> or
+            <code class="computeroutput">FDB L1234-L1000</code>).
+          </p></li><li class="listitem"><p><span class="command"><strong>Short label data areas</strong></span> are disassembled
+            using <code class="computeroutput">FCB </code> statements, and also
+            require a label class to be specified.  Short labels are less often
+            used for program labels, but are often used for direct page labels,
+            code values, or bit masks. It is also possible, using the ASCII
+            label class, to set up ASCII constants separated out letter by
+            letter.  For instance, a four byte long ASCII data area may be
+            disassembled as <code class="computeroutput">FCS "ABCD"</code>, while
+            the same four bytes disassembled as short labels with label class
+            ASCII would be disassembled as <code class="computeroutput">FCB 'A, 'B, 'C,
+            'D+$80</code>. This is occasionally useful.
+          </p></li><li class="listitem"><p><span class="command"><strong>Word data areas</strong></span> are disassembled using
+            <code class="computeroutput">FDB</code> statements, with four digit
+            hexadecimal operands.
+          </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Word data areas are equivalent to long label data areas
+            with a label class or '<span class="command"><strong>$</strong></span>' (hexadecimal).
+          </p></div></li><li class="listitem"><p><span class="command"><strong>Byte data areas</strong></span> are disassembled using
+            <code class="computeroutput">FCB</code> statements, with two digit
+            hexadecimal operands.
+          </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Byte data areas are equivalent to short label data areas
+            with a label class of '<span class="command"><strong>$</strong></span>' (hexadecimal).
+          </p></div></li></ol></div><p>Obviously, the proper selection of all the many forms of label
+        classes, standard labels, offsets, and data areas can be quite
+        difficult.  It requires a careful examination of the disassembled
+        output, so that at least two complete disassemblies are required (often
+        many, many more). In return, though, it is possible to disassemble a
+        large program, and have as output a file requiring no extensive
+        editing . A thorough use of standard labels and label class
+        specifications along with adequate commenting will result in output
+        filled with meaningful operands, so that the real work of understanding
+        a disassembled program, that of deciphering the algorithms used instead
+        of the opcodes used, is much easier.
+      </p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s03.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Installation </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> The Command File in Detail</td></tr></table></div></body></html>

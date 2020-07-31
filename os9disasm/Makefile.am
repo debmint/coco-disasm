@@ -3,9 +3,9 @@
 #include ../Makefile.rules
 SUBDIRS=
 
-if BUILD_DOCS
-SUBDIRS += doc
-endif
+#if BUILD_DOCS
+#SUBDIRS += doc
+#endif
 
 ##EXTRA_DIST = doc/html/*.html doc/README doc/*.xml doc/Makefile doc/html/images/*
 

@@ -2,7 +2,6 @@ aclocal.m4
 autom4te.cache
 config.*
 .deps
-*.html
 stamp*
 autoscan.log
 configure.scan
