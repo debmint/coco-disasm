@@ -201,7 +201,8 @@
          </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm367"></a>The Documentation files</h4></div></div></div><p>Due to all the differences in systems, it has been decided at
        this time to not do an install of the documentation with a
        <span class="command"><strong>make install</strong></span> command from a higher directory.
-         The html files are already built and are
+       In fact, at this time, nothing is done with the documentation by
+       makes from a higher level.  The html files are already built and are
        located in the <span class="command"><strong>doc/html</strong></span> directory.  These can be
        manually copied to any location you desire.  In addition, the xml source
        is available in the <span class="command"><strong>doc</strong></span> directory, and fresh html
@@ -233,8 +234,9 @@
     </p><p>On Windows, if you operate under MinGW, the simplest way is to
       create a directory <code class="filename">/dd</code> in the root directory.  Note
       that symbolic links are not available under Windows.
-    </p><p>In addition to these options, there is an option in <span class="command"><strong>OS9Disasm</strong></span>
-      <code class="filename">-d</code> which allows you to specify an alternate
+    </p><p>In addition to these options, if you install the defs in an
+      alternate location there is an option in <span class="command"><strong>OS9Disasm</strong></span>
+      (<code class="filename">-d</code>) which allows you to specify an alternate
       directory where the defs files are found.  This can be embedded in
       your <code class="filename">command</code> file for each disassembly you are
       doing.

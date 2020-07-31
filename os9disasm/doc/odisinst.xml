@@ -318,8 +318,8 @@
      <para>Due to all the differences in systems, it has been decided at
        this time to not do an install of the documentation with a
        <command>make install</command> command from a higher directory.
-       <!--       In fact, at this time, nothing is done with the documentation by
-       makes from a higher level.-->  The html files are already built and are
+       In fact, at this time, nothing is done with the documentation by
+       makes from a higher level.  The html files are already built and are
        located in the <command>doc/html</command> directory.  These can be
        manually copied to any location you desire.  In addition, the xml source
        is available in the <command>doc</command> directory, and fresh html
@@ -361,8 +361,9 @@
       create a directory <filename>/dd</filename> in the root directory.  Note
       that symbolic links are not available under Windows.
     </para>
-    <para>In addition to these options, there is an option in &odis;
-      <filename>-d</filename> which allows you to specify an alternate
+    <para>In addition to these options, if you install the defs in an
+      alternate location there is an option in &odis;
+      (<filename>-d</filename>) which allows you to specify an alternate
       directory where the defs files are found.  This can be embedded in
       your <filename>command</filename> file for each disassembly you are
       doing.

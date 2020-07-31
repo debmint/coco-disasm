@@ -10,6 +10,11 @@ stylesheet, you may use any docbook tools you have and compile them to your
 preferrred format.  Any tools that will process xml or xsl language should
 work.
 
+This directory is not built by default in order to eliminate the requirement
+to have docbook processing installed on the system.  The html documentation
+is prebuilt and unless there is a need or desire to have the documentation
+in a different format than html, there is no need to rebuild it.
+
 NOTE: It will probably be necessary to manually edit the Makefile in this
-directory pointing to the desired stylesheet, as systems differ so greatly
-in the layout.  This is the "STYLSHEET" variable.
+directory pointing to the correct stylesheet, as systems differ so greatly
+in the layout.  The variable to edit is the "STYLSHEET" variable.
