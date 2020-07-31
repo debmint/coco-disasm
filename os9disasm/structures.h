@@ -149,7 +149,7 @@ struct commenttree {
 
 /* ROF header structure */
 
-struct rof_hdr {
+typedef struct rof_hdr {
             int   sync[2],
                   ty_lan;
             char  valid,

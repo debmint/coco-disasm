@@ -8,6 +8,8 @@ if WITHWIN09DIS
  SUBDIRS += win09dis
 endif
 
+README: README.md
+
 #os9disasm:
 #	cd os9disasm && $(MAKE) all
 #
