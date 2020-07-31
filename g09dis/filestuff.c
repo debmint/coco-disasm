@@ -1328,10 +1328,12 @@ opts_save (GtkMenuItem *mi, glbls *hbuf)
     
     free_filename_to_return ( &(hbuf->filename_to_return));
 
-    opt_put ((gboolean)prog_wdg->fname, prog_wdg->fname, OPT_BIN, optfile);
-    opt_put ((gboolean)cmd_wdg->fname, cmd_wdg->fname, OPT_CMD, optfile);
-    opt_put ((gboolean)hbuf->lblfile.fname, hbuf->lblfile.fname, OPT_LBL,
-            optfile);
+    opt_put (prog_wdg->fname && (strlen(prog_wdg->fname) > 0),
+            prog_wdg->fname, OPT_BIN, optfile);
+    opt_put (cmd_wdg->fname && (strlen(cmd_wdg->fname) > 0),
+            cmd_wdg->fname, OPT_CMD, optfile);
+    opt_put (hbuf->lblfile.fname && (strlen(hbuf->lblfile.fname) > 0),
+            hbuf->lblfile.fname, OPT_LBL, optfile);
     opt_put (alt_defs, defs_wdg->fname, OPT_DEF, optfile);
     opt_put (write_obj, asmout_wdg->fname, OPT_OBJ, optfile);
     fprintf (optfile, "%s%d\n", OPT_RS, (int)isrsdos);
