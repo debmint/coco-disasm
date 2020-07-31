@@ -1,0 +1,241 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Installation</title><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="up" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="prev" href="ar01s02.html" title="A quick reference of OS9Disasm Operation"><link rel="next" href="ar01s04.html" title="Invoking and Running OS9Disasm"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Installation</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ar01s02.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s04.html">Next</a></td></tr></table><hr></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ssetup"></a>Installation</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm179"></a>GIT Clone</h3></div></div></div><p>This package can be cloned from its Github repository.  The
+     address is <a class="ulink" href="https://github.com/debmint/coco-disasm" target="_top">https://github.com/debmint/coco-disasm</a>
+     The commandline command is
+   </p><pre class="screen"># git clone https://github.com/debmint/coco-disasm.git</pre><p>This will clone the project into the directory <code class="filename">coco-disasm
+     </code>.  You can specify a different directory name by appending
+     this name to the end of the command to clone the project.
+   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm186"></a>Tarfile extraction</h3></div></div></div><p>If the package was downloaded as a tarfile, it should have
+   the extension of <code class="filename">tar.bz2</code> or
+   <code class="filename">tar.gz</code>.  For either case, <span class="command"><strong>cd</strong></span>
+   into the directory in which you will install the directory tree and
+   issue the command
+  </p><p> for the <code class="filename">tar.bz2</code> extension </p><pre class="screen"># tar -xjf &lt;path&gt;/.tar.bz2</pre><p>OR, for the <code class="filename">tar.gz</code> extension.</p><pre class="screen"># tar -xzf &lt;path&gt;/os9disasm.tar.gz</pre><p>In either case, a directory named
+    <code class="filename">cocodis<span class="emphasis"><em>x.x</em></span></code> will be created in
+    the current location, and all files will be created under that directory.
+  </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm201"></a>Building and Installing the Package</h3></div></div></div><p>The packages now comes configured with <span class="command"><strong>autotools</strong></span>.
+     This means that the configure process should be able to detect the
+     operating system under which the process is running and set some compile
+     parameters to suit your situation.  This should make it easier for the
+     programs to be compiled under differing systems.
+   </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm205"></a>Running the <span class="command"><strong>configure</strong></span> script</h4></div></div></div><p>The first thing you need to do after cd'ing into the top level
+       of the distributions directory is to issue the command
+       <span class="command"><strong>./configure</strong></span>.  This will inspect the system under
+       which it is running and create various files, and especially the
+       <span class="command"><strong>Makefiles</strong></span> that will handle the actual building
+       of the system.
+     </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Don't mess with the configuration files!</h3><p>Unless you know what you're doing and see that something in
+         the configure setup needs to be fixed, please heed the following.
+       </p><p>There are a few files that you should never touch unless you
+         have the autotools package.  If the timestamp of any of these
+         are not as they should be, a complete reconfigure may be required.
+         If you do not have the autotools utilities, you cannot do this, and
+         even if you do, if it's version is not at least that of the one which
+         originally built the configure scripts, then a complete reconfigure
+         might be required.
+       </p><p><span class="command"><strong>
+         <div class="itemizedlist"><p class="title"><b>The files that should not be touched are as follows:</b></p><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">Makefile.am</li><li class="listitem">Makefile.in</li><li class="listitem">configure.ac</li><li class="listitem">configure.in</li><li class="listitem">aclocal.m4</li></ul></div></strong></span>
+       </p><p>If you do find that the system is trying to do a reconfigure and
+         you are stuck, you can always remove your install of the package and
+         re-extract it from the original tarfile or do
+       </p><pre class="screen"># git checkout master</pre></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm226"></a>Options passed to <code class="computeroutput">configure</code></h4></div></div></div><p>You can review the options accepted by <span class="command"><strong>configure</strong></span>
+       by issuing the command <span class="command"><strong>./configure --help</strong></span>.  Most
+       are the standard options that all <span class="command"><strong>configure</strong></span> scripts
+       accept, but there are a few specific to this build.
+     </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><span class="command"><strong>--with-g09dis</strong></span></span></dt><dd><p><span class="command"><strong>G09Dis</strong></span> by default is not compiled with
+             <span class="command"><strong>OS9Disasm</strong></span>.  The reason for this is that <span class="command"><strong>G09Dis</strong></span> requires the <span class="command"><strong>GTK</strong></span>
+             package to build and run.  In order to compile <span class="command"><strong>G09Dis</strong></span>,
+             <span class="command"><strong>pkg-config</strong></span> must be installed on the system.
+             Since some systems might not have this, the configure process
+             does not include <span class="command"><strong>g09dis</strong></span> in the compilation.
+             If this option is not included, the Makefile for <span class="command"><strong>G09Dis</strong></span> will
+             be made, but will not be correct, and the
+             <span class="command"><strong>g09dis</strong></span> directory will not be processed when
+             the <span class="command"><strong>make</strong></span> command is issued.
+           </p></dd><dt><span class="term"><span class="command"><strong>--with-windis</strong></span></span></dt><dd><p><span class="command"><strong>WinDis</strong></span>, as the above, by default, is not compiled with
+             <span class="command"><strong>OS9Disasm</strong></span>. If building on a Linux system, the necessary libraries
+             are likely not installed and would produce errors if attempting
+             to build.
+           </p><p>
+             If this option is not included, the Makefile for <span class="command"><strong>WinDis</strong></span> will
+             be made, but will not be correct, and the
+             <span class="command"><strong>windis</strong></span> directory will not be processed when
+             the <span class="command"><strong>make</strong></span> command is issued.
+           </p></dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="buildprogs"></a>Building the program(s)</h4></div></div></div><p>After running <span class="command"><strong>configure</strong></span> you are now ready to
+       build your program(s).  You build the programs by issuing the command
+       <span class="command"><strong>make</strong></span>.  This will build your program, but won't
+       install it.
+     </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>You are not required to build from the top-level directory.
+         The system is designed such that you can <span class="command"><strong>cd</strong></span>
+         into any subdirectory and run <span class="command"><strong>make</strong></span> on just
+         that directory.  It will, of course, recurse into any
+         subdirectories below that level, but won't bother anything in a
+         sibling or higher directory outside that particular level.
+       </p><p>This holds true for any of the <span class="command"><strong>make
+         </strong></span> commands.  The command will apply over only
+         that directory and any directories below it.  No higher directory
+         or any outside this directory will be involved.
+       </p><p>In addition, you can also issue the command
+         <span class="command"><strong>make &lt;component&gt;</strong></span> to build a single
+         aspect of the suite.
+       </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm273"></a>Packages needed to build the programs</h4></div></div></div><p>On a Linux system, most packages needed to build <span class="command"><strong>OS9Disasm</strong></span> will
+       likely already be installed.  If not, with most distros, they will
+       be readily available.  If any needed packages are not installed,
+       it should be seen when <span class="command"><strong>configure</strong></span> is run.
+     </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm278"></a>Packages needed by G09dis</h5></div></div></div><p>To build and run <span class="command"><strong>g09dis</strong></span>, several packages
+         are needed.  Even if running a precompiled package, several <span class="command"><strong>GTK</strong></span>
+         runtime packages will be needed.
+       </p><p>In addition to the runtime packages, the corresponding -dev
+         packages will be required to build the system.  Some of the packages
+         needed are:
+         </p><table border="0" summary="Simple list" class="simplelist"><tr><td><span class="command"><strong>gtk+</strong></span></td></tr><tr><td><span class="command"><strong>glib</strong></span></td></tr><tr><td><span class="command"><strong>pango</strong></span> (possibly)</td></tr></table><p>
+       </p><p>In addition, to compile, <span class="command"><strong>pkgconfig</strong></span> is
+         essential.
+       </p><p>Note that these package names will be accompanied with a version
+         number, also.  <span class="command"><strong>GTK</strong></span> and <span class="command"><strong>glib</strong></span> should be version 2
+         or greater.  Also remember that each of the above runtime packages
+         (except for <span class="command"><strong>pkgconfig</strong></span>) will have a "-dev"
+         counterpart that will be needed for compiling ( but not for running).
+       </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm297"></a>Building and/or running on Windows</h4></div></div></div><p>These packages can be built and run on Windows systems.  The
+       first requirement, and this applies to both <span class="command"><strong>OS9Disasm</strong></span> and <span class="command"><strong>GTK</strong></span>,
+       is the linux interface by which you can compile the programs.
+       The easiest setup for building under Windows is to have the
+       <span class="command"><strong>msys2</strong></span> installed.  All the packages needed to
+       build are available and it should be pretty straightforward to
+       do a successful build.
+     </p><p>
+       it should be possible to build under <span class="command"><strong>CygWin</strong></span>, but
+       the configuration files for this package would probably need to be
+       altered.
+     </p><p>The <span class="command"><strong>GTK</strong></span> interface is available for Windows, and <span class="command"><strong>OS9Disasm</strong></span>, of
+       course, can be run from the command line without <span class="command"><strong>GTK</strong></span> if you do
+       not wish to bother with <span class="command"><strong>GTK</strong></span>.
+     </p><p>The <span class="command"><strong>GTK</strong></span> interface is available by several means.  There are
+       at least two executable install systems available (cannot recall
+       the sources at the present), or the various modules can be
+       installed piece by piece.
+     </p><p>
+       In my opinion, the piece-by-piece installation is better in that,
+       if one particular package is upgraded, you can simply overwrite
+       the existing package and not have to do a complete reinstall.
+       Tor Lillqvist maintains a pretty good and web page for this,
+       accessible through either the gtk.org or the gimp.org website,
+       following the links for Windows packages.  These are zip files,
+       and you can begin by installing only the ones you think you will
+       need, and, if you need something else, go back and install it in
+       addition.
+     </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm313"></a>Installing the program(s)</h4></div></div></div><p>To install the program, you can issue the command <span class="command"><strong>make
+       install</strong></span> (at any directory level you choose).  This can be done
+       whether the program has already been built or not.  If it hasn't been
+       built, issuing this command will cause anything that would need to be
+       done before installing to be done before attempting to do the install.
+       By default, this will install the <span class="command"><strong>OS9Disasm</strong></span> binary in the directory
+       <code class="filename">/usr/local/bin/</code>.
+     </p><p>Note that on most systems, to install to a standard location, such
+       as <span class="emphasis"><em>/usr/local/bin/</em></span>, you need superuser priviledges.
+     </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm321"></a>Installing in an alternate location</h5></div></div></div><p>
+         If you wish to install it elsewhere, then you can either simply copy
+         the binary files to whatever destination you want after running the
+         command <span class="command"><strong>make</strong></span>, or, if you wish to install the
+         program(s) at a different location using <span class="command"><strong>make
+         install</strong></span>, then you can include the option
+         <span class="command"><strong>--prefix=&lt;alternate-location&gt; </strong></span> when you run
+         <span class="command"><strong>configure</strong></span>.
+       </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="installwhere"></a>Install the binaries where the system can find them</h5></div></div></div><p>It may be very advisable to carefully contemplate the location
+         where you will install the binaries.  This is especially true for
+         <span class="command"><strong>OS9Disasm</strong></span> if you are planning on calling it from within <code class="computeroutput">
+         g09dis</code>.  If you disassemble a binary from the menu
+         in <code class="computeroutput">g09dis</code>, a shell will be issued
+         which will call up <span class="command"><strong>OS9Disasm</strong></span> to do the work.  The call will be of the
+         form </p><pre class="programlisting">"os9disasm program &lt;etc&gt;"</pre><p>
+       </p><p>It would be a bit difficult - and harsh - to hardcode a specific
+         location into the program whereby everyone would be required to
+         install <span class="command"><strong>OS9Disasm</strong></span> at some specific location.  There are just too many
+         differences between the various systems and people have preferences
+         as to their install locations.  Therefore the call is called up in
+         somthing of an open manner, and it's left up to the operating system
+         to find <span class="command"><strong>OS9Disasm</strong></span>.  The following gives some insight in how this can
+         be assured.
+       </p><p><b>Linux and Unix-type systems. </b>
+           To find the directories searched in locating an executable program,
+           from the shell prompt, issue the command
+           </p><pre class="programlisting">echo $PATH</pre><p>  This will give a list
+           of directories, separated by a colon, searched when looking for a
+           command.  They are searched in the order in which they appear.
+           </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>For security reasons, be aware that most Linux/Unix systems
+             don't include the current working directory in the search path.
+           </div><p>
+         </p><p><b>Windows Command prompts. </b>If you're running from a POSIX shell, (msys, cygwin, or
+           sh/bash/etc from an MS window, you can view the search PATH
+           with the command as above,
+           </p><pre class="programlisting">echo $PATH</pre><p>
+           or, if from the MS command,
+           </p><pre class="programlisting">echo %PATH%</pre><p>
+           In msys/cygwin, you can add more search directories by editing
+           one of the configure files.  Please see the documentation for the
+           system for details.
+         To alter the windows PATH, you will need to edit the
+           <span class="command"><strong>autoexec.bat</strong></span> file.  To do this, you can
+           either add your new directory to an existing PATH statement or add
+           a line such as
+           </p><pre class="programlisting">set PATH=%PATH%;your-new-directory</pre><p>
+           Note that on most systems in Windows, the current working directory
+           is normally included in the search path.  Therefore, you should
+           be able to call <span class="command"><strong>OS9Disasm</strong></span> successfully if <span class="command"><strong>OS9Disasm</strong></span> is in the directory
+           you are in <span class="emphasis"><em>when you call <span class="command"><strong>OS9Disasm</strong></span></em></span>.  In other
+           words, if the command
+           </p><pre class="programlisting">ls os9disasm</pre><p>
+           or
+           </p><pre class="programlisting">dir os9disasm</pre><p>
+           if you are at a DOS prompt
+         succeeds, then you should be OK if you call <span class="command"><strong>g09dis
+           </strong></span> as long as you don't <span class="command"><strong>cd</strong></span> somewhere
+           else before doing so.
+           </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>You can alter the PATH variable at any time by by
+             issuing the above command in an MS window, but this change
+             will be lost when the window is shut down and won't be in effect
+             when starting a new window, or won't be available to the global
+             Windows system.</p></div><p>
+         </p><p><b>Running g09dis from the Explorer Window. </b>I'm not entirely familiar with how this will work.  If you
+           do this, probably the safest route would be to make certain
+           that <span class="command"><strong>OS9Disasm</strong></span> is in a directory listed in PATH.
+         </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm367"></a>The Documentation files</h4></div></div></div><p>Due to all the differences in systems, it has been decided at
+       this time to not do an install of the documentation with a
+       <span class="command"><strong>make install</strong></span> command from a higher directory.
+         The html files are already built and are
+       located in the <span class="command"><strong>doc/html</strong></span> directory.  These can be
+       manually copied to any location you desire.  In addition, the xml source
+       is available in the <span class="command"><strong>doc</strong></span> directory, and fresh html
+       documentation can be created by issuing the command
+       <span class="command"><strong>make</strong></span> in the <span class="command"><strong>doc</strong></span> directory itself.
+     </p><p><b>Building your own documentation. </b>Since the source is available in the <span class="command"><strong>doc</strong></span>
+         directory, you have the option of building the documentation in any
+         format you desire.  Just run any docbook compiler on
+         <span class="command"><strong>os9disasm.xml</strong></span> and create any output you wish.  The
+         file <span class="command"><strong>os9disasm.xml</strong></span> will include all the rest of
+         the files.
+       </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm381"></a>Installing the Standard Label Files</h4></div></div></div><p>In the top level directory, there is a directory named <code class="filename">
+      defs</code>.  In this directory, you will find several files ending
+      in "lbl".  These are the <span class="command"><strong>standard label files</strong></span>.
+    </p><p>Copy all these files into whatever directory you wish your DEFS files
+      to reside.  The default is <code class="filename">/dd/defs</code>.  wish your
+      "defs" directory to reside.  <code class="filename">/dd/defs</code> is the default
+      location, but you can specify any path with the <span class="command"><strong>-d</strong></span>
+      command-line option.
+    </p><p><a name="dd-dir"></a><b>Getting /dd on a unix-style system. </b>
+      There are a couple of ways to get <code class="filename">/dd</code> to exist on
+      a unix-style system.  The first is simply to create a directory named
+      <code class="filename">dd</code> in the root directory and place all the files
+      there.  However, I preferred to have my coco files in my
+      <code class="filename">$HOME</code> directory.  This way, I did not have to worry
+      about getting root permissions to modify files in this directory, so I
+      created a <code class="filename">coco</code> directory there and created a
+      symbolic link to that directory in the root directory.
+    </p><p>On Windows, if you operate under MinGW, the simplest way is to
+      create a directory <code class="filename">/dd</code> in the root directory.  Note
+      that symbolic links are not available under Windows.
+    </p><p>In addition to these options, there is an option in <span class="command"><strong>OS9Disasm</strong></span>
+      <code class="filename">-d</code> which allows you to specify an alternate
+      directory where the defs files are found.  This can be embedded in
+      your <code class="filename">command</code> file for each disassembly you are
+      doing.
+    </p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s02.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">A quick reference of <span class="command"><strong>OS9Disasm</strong></span> Operation </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Invoking and Running <span class="command"><strong>OS9Disasm</strong></span></td></tr></table></div></body></html>

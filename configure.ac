@@ -9,8 +9,8 @@ AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CC
-AC_CHECK_PROG([have_xsltproc],[xsltproc],[yes],[no])
-AM_CONDITIONAL(BUILD_DOCS, test x$have_xsltproc = xyes)
+#AC_CHECK_PROG([have_xsltproc],[xsltproc],[yes],[no])
+#AM_CONDITIONAL(BUILD_DOCS, test x$have_xsltproc = xyes)
 # Checks for libraries.
 
 # Checks for header files.

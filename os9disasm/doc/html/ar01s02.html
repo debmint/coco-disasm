@@ -1,0 +1,147 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>A quick reference of OS9Disasm Operation</title><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="up" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="prev" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="next" href="ar01s03.html" title="Installation"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">A quick reference of <span class="command"><strong>OS9Disasm</strong></span> Operation</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s03.html">Next</a></td></tr></table><hr></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="quickref"></a>A quick reference of <span class="command"><strong>OS9Disasm</strong></span> Operation</h2></div></div></div><p>In this section, we'll try to give a quick and brief rundown of
+    the operation of <span class="command"><strong>OS9Disasm</strong></span>
+  </p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm82"></a>Using the command file</h3></div></div></div><p>A <span class="emphasis"><em>command file</em></span> (specified by the
+      <code class="computeroutput">"-c"</code> option) is practically mandatory
+      for useful disassembly.  The <span class="emphasis"><em>command file</em></span> is
+      explained in more detail in <a class="xref" href="ar01s05.html" title="The Command File in Detail">the section called &#8220;The Command File in Detail&#8221;</a>.  Briefly,
+      the <span class="emphasis"><em>command file</em></span> can be used for three things.
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><b>Specify commandline options to pass to <span class="command"><strong>OS9Disasm</strong></span>. </b>During
+          the process of disassembling a program, you will undoubtedly have to
+          run the disassembly several times.  To avoid the necessity of having
+          to repeatedly type out the options to <span class="command"><strong>OS9Disasm</strong></span> each time, commandline
+          options which you wish to pass to <span class="command"><strong>OS9Disasm</strong></span> can be specified by
+          including a <span class="command"><strong>"+"</strong></span> as the first character on the
+          line.  (See <a class="xref" href="ar01s04.html#cmdoptions" title="Options Used by OS9Disasm">the section called &#8220;Options Used by <span class="command"><strong>OS9Disasm</strong></span>&#8221;</a> for a description of the
+          options.)
+        </p></li><li class="listitem"><p><b>Specify Data boundaries. </b>You can specify
+          sections of code as being data instead of code.  This cause <span class="command"><strong>OS9Disasm</strong></span>
+          to not attempt to disassemble these areas as code, but rather as
+          either ASCII data, or constants.  These constants can be specified
+          as either numeric data, either hexadecimal or decimal, or as
+          labels.  This is explained further in <a class="xref" href="ar01s04.html#databounds" title="Data bounds">the section called &#8220;Data bounds&#8221;</a>.
+        </p></li><li class="listitem"><p><b>Specify an alternate label class. </b>
+          You can specify that the label reference for a line or range of
+          lines is different than the default.  This is a rather complex
+          concept and is explained more fully in <a class="xref" href="ar01s05.html#laddrmod" title="Label Addressing Mode Specification Command Line">the section called &#8220;Label Addressing Mode Specification Command Line&#8221;</a></p></li><li class="listitem"><p><b>Specify Comments to insert into source code. </b>
+          You can specify comments to be placed into the source listing and
+          source file.  Comments can be beneficial to you during disassembly
+          and also for later reference.  As you come up with comments, you
+          can add them as needed.  See <a class="xref" href="ar01s05.html#asmcomments"><span class="command"><strong>Assembler Comment Lines</strong></span></a> for
+          details.
+        </p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm112"></a>Data (noncode) Areas</h3></div></div></div><p>Some sections of the module will not be code.  There may be strings
+      of text, or constants, which may be lookup tables or or other constants
+      of any sort.  To specify a <span class="emphasis"><em>Data area</em></span>, the command
+      is preceded by a letter corresponding to the type of data.  Please
+      see <a class="xref" href="ar01s05.html#dataaddr" title="Data Area Boundary Specification Command Line">the section called &#8220;Data Area Boundary Specification Command Line&#8221;</a> for a fuller explanation.
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm117"></a>Addressing Mode Specification</h3></div></div></div><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>For a full description of <span class="emphasis"><em>Label Class</em></span> please
+        refer to <a class="xref" href="ar01s04.html#lblclass" title="Label Class">the section called &#8220;Label Class&#8221;</a>
+      </p></div><p>When disassembling code, <span class="command"><strong>OS9Disasm</strong></span> will determine a reference in
+      the operand to be a certain type based upon the <span class="emphasis"><em>mode</em></span>
+      of the assembler command.  <span class="command"><strong>OS9Disasm</strong></span> has a default label class to assign
+      a certain addressing mode, depending upon the target system.  For
+      code in an OS9 program module, for example, <span class="command"><strong>OS9Disasm</strong></span> will assume that, since
+      register <span class="emphasis"><em>U</em></span> usually points to the base of the
+      data area,
+      <a href="#ftn.idm129" class="footnote" name="idm129"><sup class="footnote">[2]</sup></a>
+      that something indexed by <span class="emphasis"><em>U</em></span> refers
+      to data, and will assign a label in this operand class
+      <span class="emphasis"><em>"D"</em></span> (the default class for <span class="command"><strong>D</strong></span>ata).
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="comments"></a>Adding comments to the Source</h3></div></div></div><p>Source code by itself is rather difficult to interpret.  Adding
+      comments make things much easier to understand, especially for others
+      who later view the code.  In addition, after a period of time, it's
+      often easy to forget exactly what you had done several months, or even
+      years later.  Also, while disassembling a program, comments can be useful
+      in understanding just what is going on.
+    </p><p>To this end, comments can be permanently added (in that they
+      appear in every disassembly) in two ways.
+    </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="inlinecmnt"></a>Inline Comments</h4></div></div></div><p><a name="appendcmpt"></a>First, short notes can be appended to the end of the
+        command line (inline commenting).  This is done by inserting a line in
+        the command file in the following format:
+      </p><div class="section"><div class="titlepage"></div><p>
+          <code class="computeroutput">' &lt;class&gt; &lt;hexadecimal address&gt;
+            &lt;text&gt;</code>
+        </p></div><p>
+        Note that the first character is a <span class="emphasis"><em>single quote</em></span>.
+        It must be the first character on the line.
+      </p><p>The <span class="emphasis"><em>class </em></span> is the label class.  This
+        determines the area in the source output where the comment will be
+        placed, and would normally be either <span class="emphasis"><em>L</em></span> or any of
+        the data classes used.  The data class for a regular program module
+        would be <span class="emphasis"><em>D</em></span>, but for an <span class="emphasis"><em>ROF</em></span>
+        module, it would be one of the four classes used.
+      </p><p>The address, like all addresses in the command file, is in
+        hexadecimal.  The text is any text of any length.  No delimiter is used
+        for this type of comment.
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="alonecmnt"></a>Multiline Comments</h4></div></div></div><p>More detailed comments can be placed on their own lines.  This is
+        done by placing a <span class="emphasis"><em>double quote</em></span> as the first
+        character on the line.  The format for this type comment is identical
+        to the appended comment, except that delimiters are used.  </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>
+          The address for inline comments must be specified as the entry
+          address for the line on which the comment is to appear.  For the
+          standalone comments, this address can be specified for any address
+          that is within the range of that command.
+      </div><p>
+        Any character is permissible to use as a delimiter, and this delimiter
+        can be used anywhere in the text as long as it is not the
+        <span class="emphasis"><em>final</em></span> character on a line.  The comments will
+        continue and include all text in the command file until the specified
+        delimiter is found as the <span class="emphasis"><em>last</em></span> character on a
+        line.  To end the commenting, this delimiter must be
+        <span class="emphasis"><em>immediately </em></span> followed by a newline character.  Any
+        linebreak within the comment span will generate a new line in the
+        listing or source file.
+      </p><p>
+        There is no way to generate a strictly blank line, but lines composed
+        of a single asterisk can be generated.  To generate an asterisk as
+        the first line of the comment, simply enter the double quote, class,
+        address, and delimiter immediately followed by a carriage return on
+        the first line.  To end with a line containing an asterisk, insert a
+        line with only the delimiter.  Blank lines within the comment range,
+        containing only an asterisk can be generated with a completely blank
+        (zero-length) line.
+      </p><p>
+        With standalone comments, after a comment has been created for a
+        particular address, additional lines can be created at a later place
+        in the command file.  If the addresses specified are the same, they
+        will be printed in the order they appear in the command file.  If
+        you first specify a comment for, say, the second byte of the command,
+        then later specify a comment with an address at the first byte, then,
+        of course, the later specification will appear first.
+      </p><p>For inline comments, if you specify one comment for an address,
+        and later specify a different comment for that address, the second
+        will simply overwrite the first.
+      </p><p>Inline comments are pretty straightforward, but an example for
+        standalone comments might be useful.
+      </p><p>Suppose you have the following lines in the command file
+        </p><pre class="screen">
+          " L 246b '
+          This is a line of comment
+
+          This is another'
+        </pre><p>
+        And later you insert this line
+        </p><pre class="screen">
+          " L 246b e-----
+          Also we need to say this
+          e
+        </pre><p>
+      </p><p>
+        Then you will get the following lines in the code
+        </p><pre class="screen">
+          *
+          * This is a line of comment
+          *
+          * This is another
+          * -----
+          * Also we need to say this
+          *
+        </pre><p>
+      </p><p>Note in the second comment, we use the letter "e" to denote a
+        delimiter.  Normally, you would probably want to use something else,
+        but this is just to display that the delimiter character is strictly
+        optional.
+      </p></div></div><div class="footnotes"><br><hr style="width:100; text-align:left;margin-left: 0"><div id="ftn.idm129" class="footnote"><p><a href="#idm129" class="para"><sup class="para">[2] </sup></a>For code compiled from <span class="emphasis"><em>C</em></span> source, register
+          <span class="emphasis"><em>Y</em></span> is the data pointer, rather than register
+          <span class="emphasis"><em>U&gt;</em></span>.  For disassembling <span class="emphasis"><em>C</em></span>
+          output, This default should be reassigned to register
+          <span class="emphasis"><em>Y</em></span>.  </p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Os9Disasm - A Cross Disassembler for the m6809 </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Installation</td></tr></table></div></body></html>

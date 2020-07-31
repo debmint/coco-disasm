@@ -1,0 +1,530 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>G09Dis - A graphical front-end to OS9Disasm</title><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="up" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="prev" href="ar01s05.html" title="The Command File in Detail"><link rel="next" href="ar01s07.html" title="TODO LIST"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center"><span class="command"><strong>G09Dis</strong></span> - A graphical front-end to <span class="command"><strong>OS9Disasm</strong></span></th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ar01s05.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s07.html">Next</a></td></tr></table><hr></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="idm1678"></a><span class="command"><strong>G09Dis</strong></span> - A graphical front-end to <span class="command"><strong>OS9Disasm</strong></span></h2></div></div></div><p><span class="command"><strong>OS9Disasm</strong></span> is a command-line application. It is operated from the command
+    line and uses the various files to perform its work. This is all well and
+    good, but it can become tedious trying to remember all the Addressing modes
+    and such when attempting to add entries to the <code class="filename">command
+    file</code>, especially.
+  </p><p>This is where a helper application can be beneficial. This is just what
+    <span class="command"><strong>G09Dis</strong></span> is. With it, you can add command lines to the <code class="filename">command
+      file</code> or the <code class="filename">label file</code>, depending upon
+    the content of the line upon which you are working.
+  </p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm1689"></a>Installing and Compiling <span class="command"><strong>G09Dis</strong></span></h3></div></div></div><p>The installation and compilation is in principle the same as the
+      general installation, so you are encouraged to read
+      <a class="xref" href="ar01s03.html" title="Installation">the section called &#8220;Installation&#8221;</a> for instruction on this.
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="wndwparts"></a>Components of the <span class="command"><strong>G09Dis</strong></span> Window</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="listwndw"></a>The Listing Window</h4></div></div></div><p>The Listing Window appears on the left side of the displayed
+        window.  This is a display of the formatted output produced by
+        <span class="command"><strong>OS9Disasm</strong></span>, and is equivalent to the output of an assembler when most
+        are normally given the <span class="command"><strong>-l</strong></span> option.
+      </p><p>The Listing Window is where you will need to reference your work.
+        It is from a reference to a line in the Listing where you add the
+        commands or labels.  This listing is the Listing output from <span class="command"><strong>OS9Disasm</strong></span>.
+      </p><div class="important" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Do not use a regular Listing!</h3><p>Be sure you do not try to load a regular listing.  These
+          <span class="emphasis"><em>WILL NOT LOAD</em></span>.  You MUST use a specially
+          formatted Listing!  See <a class="link" href="ar01s06.html#loadlist" title="Obtaining and Loading a compatible Listing for G09Dis">below</a>
+          for details.
+        </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="loadlist"></a>Obtaining and Loading a compatible Listing for <span class="command"><strong>G09Dis</strong></span></h5></div></div></div><p>As stated above, a normal listing will not work.  If you
+          attempt to use one of these, nothing will happen, nothing will
+          be loaded.  You must use a specially formatted listing using
+          tabs to separate the fields rather than spaces.  This can be
+          obtained in one of two ways.
+        </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">Generate a separate file externally with <span class="command"><strong>OS9Disasm</strong></span> using
+            the <span class="command"><strong>-g</strong></span> option, redirecting the output to
+            a file and then loading from
+            <span class="command"><strong>File-&gt;Load Listing</strong></span> in the main menu, or
+          </li><li class="listitem">Check the <span class="command"><strong>Disassemble to GUI</strong></span> option
+            in <span class="command"><strong>Options-&gt;Disassembler Options</strong></span> and then
+            <span class="command"><strong>Tools-&gt;Disassemble</strong></span> in the Main Menu.  This
+            will disassemble the program and load the Listing directly into
+            the GUI window.  No file will be generated in this case.
+          </li></ol></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="cmdwndw"></a>The Command File Window</h4></div></div></div><p>The command window is displayed in the top half of the right-hand
+        side of the display.  This displays the command file as used by <span class="command"><strong>OS9Disasm</strong></span>.
+        It is either loaded from an file or created here.
+      </p><p>This section is editable, either directly within the window, or
+        commands can be added from popup windows depending upon the context
+        of the line in the <a class="link" href="ar01s06.html#listwndw" title="The Listing Window">Listing Window</a>.
+        See <a class="xref" href="ar01s06.html#definebnds" title="The Define Bounds Window">the section called &#8220;The <span class="command"><strong>Define Bounds</strong></span> Window&#8221;</a> and <a class="xref" href="ar01s06.html#adrmodewndw" title="The Set Addressing Mode Window">the section called &#8220;The <span class="command"><strong>Set Addressing Mode</strong></span> Window&#8221;</a>.
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="lblwndw"></a>The Label File Window</h4></div></div></div><p>The Label file window is in the lower half of the right side
+        of the display.  This represents a label file for the program you're
+        working on.  Although <span class="command"><strong>OS9Disasm</strong></span> supports up to 16 label files,
+        <span class="command"><strong>G09Dis</strong></span> supports displaying only one label file at a time.
+        This may change in the future.
+      </p><p>This window is not editable directly, but lines can be added by
+        accessing the
+        <a class="link" href="ar01s06.html#lblnamepopup" title="The Rename Label Menu Option">"Rename Label" popup</a>.
+      </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm1737"></a>Running <span class="command"><strong>G09Dis</strong></span></h3></div></div></div><p>Operation of <span class="command"><strong>G09Dis</strong></span> is relatively straightforward.  A few notes are
+      in order.
+    </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="gdisfilesmenu"></a>The File Menu</h4></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">The <span class="command"><strong>New</strong></span> menu item</span></dt><dd><p>The <span class="command"><strong>New</strong></span> menu item clears the specified
+              window and the associated buffer of data.
+              When the <span class="command"><strong>New</strong></span> menu item is clicked, it causes
+              a popup submenu to appear.  In this menu, you can choose which
+              window you wish to clear.  Each window is handled individually.
+            </p></dd><dt><span class="term"> The <span class="command"><strong>Load</strong></span> menu item</span></dt><dd><p>Clicking on this menu item produces a submenu window similar
+              to the <span class="command"><strong>New</strong></span> to appear.  This will bring up a
+              File chooser window which will allow you to choose a file to load
+              into the corresponding buffer and it will appear in the
+              corresponding window.  If a buffer for that window is already
+              loaded, it will be cleared, and the data in the buffer and the
+              window will be replaced.
+            </p><p>No attempt is made to determine the file type of your choice.
+              If an incorrect file is chosen, in most cases, the result is that
+              the file simply will no load.
+            </p></dd><dt><a name="buffsave"></a><span class="term">The <span class="command"><strong>Save</strong></span>
+            menu item</span></dt><dd><p>This item allows you to save either the
+              <span class="command"><strong>Command File</strong></span> or the
+              <span class="command"><strong>Label File</strong></span> buffer to a file.  If the buffer
+              began as a file loaded from an already-existing file, or the
+              buffer has been previously saved to a file, the buffer is saved
+              without any prompt.  If the buffer was created from scratch, and
+              no file for that buffer has yet been accessed, you will be
+              prompted for a filename and path to which to save, in the same
+              manner as <a class="xref" href="ar01s06.html#buffsaveas">The <span class="command"><strong>Save As...</strong></span>
+            menu item</a>.
+            </p></dd><dt><a name="buffsaveas"></a><span class="term">The <span class="command"><strong>Save As...</strong></span>
+            menu item</span></dt><dd><p>This will allow you to specify a filename (and path) to which
+              you will save the <span class="command"><strong>Command File</strong></span> or the
+              <span class="command"><strong>Label File</strong></span>.  A File Chooser window will appear
+              allowing you to specify your choice.  After saving from this
+              menu, you can make further saves to this file by simply clicking
+              the <a class="link" href="ar01s06.html#buffsave">Save</a> menu choice.
+            </p><p>You can choose this option whether this buffer already has a
+              filename associated with it or not.  If you choose this option
+              for a buffer that already had a filename associated with it, this
+              new filename becomes the default name.
+            </p></dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="viewmenu"></a>The View Menu</h4></div></div></div><div class="variablelist"><dl class="variablelist"><dt><a name="view-fonts"></a><span class="term">The <span class="command"><strong>Fonts</strong></span>
+            menu item</span></dt><dd><p>Clicking on this item allows you to change the font and its
+              pointsize, and the color of the text or background for any of the
+              three display windows.  Please refer to
+              <a class="xref" href="ar01s06.html#visualprefs" title="Visual Preferences">the section called &#8220;Visual Preferences&#8221;</a> for details on this option.
+            </p></dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="gdistoolsmenu"></a>The Tools Menu</h4></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">Modify Amode List</span></dt><dd><p>This allows you to modify (temporarily for the duration of
+              the session) the list of
+              <a class="link" href="ar01s05.html#laddrmod" title="Label Addressing Mode Specification Command Line">Addressing modes</a>
+              recognized by <span class="command"><strong>G09Dis</strong></span>.  Definition modifications added through
+              this menu last only for this session, and are lost when the
+              <span class="command"><strong>G09Dis</strong></span> is closed out.  To make any changes permanent for future
+              sessions, please see<a class="xref" href="ar01s06.html#embeddedlblclass" title="Embedding Label Classes in Files">the section called &#8220;Embedding Label Classes in Files&#8221;</a>.
+            </p><p>Addressing modes can be added either one at a time through
+              the entry line or they can be added from a file containing
+              addressing mode specifications.
+            </p><p>If the amodes are loaded from a file, a file is selected, and
+              then it is read, and only lines beginning with the key
+              <span class="emphasis"><em>"*\"</em></span> are accepted. (see
+              <a class="xref" href="ar01s06.html#embeddedlblclass" title="Embedding Label Classes in Files">the section called &#8220;Embedding Label Classes in Files&#8221;</a>.  In this way, a label file
+              can be read and only the amode specifications will be loaded,
+              with all other lines ignored.
+            </p></dd><dt><span class="term">Disassemble to GUI</span></dt><dd><p>This will cause <span class="command"><strong>OS9Disasm</strong></span> to run, disassembling the currently
+              specified program and sending output to the Listing display.
+              This option is disabled unless a program has been specified by
+              either the <span class="emphasis"><em>Options</em></span> menu
+              
+              or by loading from a
+              <a class="link" href="ar01s06.html#optssave">saved options</a> file.
+            </p></dd><dt><span class="term">Disassemble to File</span></dt><dd><p>This option disassembles the program sending the formatted
+              listing output to a file.  This file is a standard
+              <span class="emphasis"><em>space-separated</em></span> listing and not one formatted
+              for <span class="command"><strong>G09Dis</strong></span> (see <a class="xref" href="ar01s06.html#loadlist" title="Obtaining and Loading a compatible Listing for G09Dis">the section called &#8220;Obtaining and Loading a compatible Listing for <span class="command"><strong>G09Dis</strong></span>&#8221;</a>).
+            </p></dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="gdisoptionmenu"></a>The Options Menu</h4></div></div></div><p>The Options menu allows you manipulate options both for the
+        disassembler and for preferences in the operation of
+        <span class="command"><strong>G09Dis</strong></span>.
+      </p><div class="variablelist"><p class="title"><b>Elements of the Options Menu</b></p><dl class="variablelist"><dt><span class="term">Disassembler Options</span></dt><dd><p>This brings up an options window allowing you to set various
+              options for the disassembly of the program.  Most of these are
+              options passed to the disassembler when disassembling the
+              program.  When Tooltips are turned on, a short description for
+              most is displayed when you hover the mouse over the title
+              momentarily.
+            </p><p>The window is broken down into two pages.  The page titled
+              <span class="emphasis"><em>Files</em></span> pertains to files <span class="command"><strong>OS9Disasm</strong></span> will use.
+              The other page, titled <span class="emphasis"><em>Appearance</em></span> deals
+              primarily with the appearance of the formatted listing that
+              <span class="command"><strong>OS9Disasm</strong></span> will output.
+            </p><p>Note that to disassemble a program, an entry
+              <span class="emphasis"><em>must</em></span> be present in "Program to Disassemble".
+              This is the only item that
+              is definitely required.  Please refer to the documentation for
+              <span class="command"><strong>OS9Disasm</strong></span> for a more in-depth explanation of the various options.
+            </p><p>
+              Most of these options (with the exception of "Program to
+              Disassemble" and the name of the
+              <span class="emphasis"><em>command file</em></span> can be specified within the
+              <span class="emphasis"><em>command file</em></span> itself, if one is used.
+            </p></dd><dt><a name="optssave"></a><span class="term">Load Options from File, </span><span class="term">Save Options to file</span></dt><dd><p>This is a convenience feature.  If you are working on a
+              larger project, you often won't complete it in one session.
+              Rather than inputting all the data each time, you can, after
+              setting the parameters, click "Save Options to File" and
+              save the settings.  Then, when you come back to work on the
+              project further, simply reload the setting with "Load Options
+              from File".
+            </p><p>Note that any of the options can still be changed during the
+              session.  Of course if you want these changes to be those you
+              wish to make permanent, you will need to resave them.
+            </p><p>Of course, any of these options that apply to disassembly
+              particulars can be embedded in the command file itself.  However,
+              the primary benefit of this feature is that this will save and
+              load the name of the Program file to disassemble and also will
+              load the <span class="emphasis"><em>command file</em></span> and the
+              <span class="emphasis"><em>label file</em></span> into the buffer for further
+              editing.
+            </p></dd><dt><span class="term">Show Tooltips</span></dt><dd><p>This is a toggle option.  If it is checked, many
+            of the items appearing in the windows will show some tips if you
+            hover the mouse over the item for a bit.  Not every item has
+            this feature, but many do have some helpful tips.</p></dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm1848"></a>The Listing popup menu</h4></div></div></div><p>Right-clicking in the Listing window will bring up the following
+        popup menu:
+      </p><div class="mediaobject" align="center"><img src="images/listmnu.png" align="middle"><div class="caption"><p>The <span class="command"><strong>List Menu</strong></span></p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm1857"></a>Search Listing</h5></div></div></div><p><span class="emphasis"><em>Search Listing</em></span> searches through the listing
+          display for a string of text.  The search will search for this text
+          in a specified column.  The choices for the column are
+          <span class="command"><strong>Address</strong></span>, <span class="command"><strong>Label</strong></span>, or
+          <span class="command"><strong>Opcode</strong></span>.  Please refer to
+          <a class="xref" href="ar01s06.html#searching" title="Performing Searches">the section called &#8220;Performing Searches&#8221;</a> for more details on searching.
+        </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm1865"></a>Open Listing</h5></div></div></div><p><span class="emphasis"><em>Open Listing</em></span> loads a specially formatted
+          listing from a file.
+        </p></div><p>What we are now interested in are the editing functions.
+      </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>In the following, the window decoration will be different,
+          depending upon the window manager or windowing system under which
+          you are running.
+        </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="lblnamepopup"></a>The <span class="command"><strong>Rename Label</strong></span> Menu Option</h5></div></div></div><p>If we click on "<span class="command"><strong>Rename Label</strong></span>", we get a
+          window similar to the following.
+        </p><div class="mediaobject" align="center"><img src="images/renamlbl.png" align="middle"><div class="caption"><p>The <span class="command"><strong>Rename Label window</strong></span></p></div></div><p>Here we see three input boxes.  The <span class="command"><strong>Label Name
+          </strong></span> box allows one to give the Label a meaningful name.
+        </p><p>The <span class="command"><strong>Label Address</strong></span> box is the Address (in
+          hexadecimal).  Note that this address <span class="emphasis"><em>MUST</em></span>
+          be given in hexadecimal.  The <span class="command"><strong>Addressing Mode</strong></span>
+          is the Addressing mode under which this address will be given
+          this name.
+        </p><p>If you are changing a Label Name for a line under which you
+          clicked, the Address should not be changed and in most cases, the
+          <span class="command"><strong>Addressing Mode</strong></span> should be correct.  However, you
+          can set up the label for <span class="command"><strong>any</strong></span> address and any mode
+          by clicking on <span class="command"><strong>any</strong></span> line and altering the address
+          and/or mode.  A new label can also be added by right clicking in the
+          <span class="command"><strong>Label File</strong></span> window and clicking on
+          "<span class="command"><strong>Insert After</strong></span>".
+        </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="definebnds"></a>The <span class="command"><strong>Define Bounds</strong></span> Window</h5></div></div></div><p>Next we have <span class="command"><strong>Define Bounds</strong></span>.  With this
+          menu option, we get a window similar to:
+        </p><div class="mediaobject" align="center"><img src="images/defbnds.png" align="middle"><div class="caption"><p>The <span class="command"><strong>Define Bounds Window</strong></span></p></div></div><p>In this window, we define a boundary range.  In the Boundary
+          type, we have a pulldown list where we can specify the type of
+          data this range represents.  Please refer to
+          <a class="xref" href="ar01s05.html#dataaddr" title="Data Area Boundary Specification Command Line">the section called &#8220;Data Area Boundary Specification Command Line&#8221;</a> for more details on data boundaries.
+        </p><p>Under this is the "Addressing Mode".  This is not applicable
+          to all Boundary types.  Again, refer to <a class="xref" href="ar01s05.html#dataaddr" title="Data Area Boundary Specification Command Line">the section called &#8220;Data Area Boundary Specification Command Line&#8221;</a>
+          for more information on this.  If the Boundary type does not
+          use an Amode, then this will be ignored when the entry is saved.
+          You can choose a mode from the pull-down menu, or enter a single
+          letter for a custom mode if you desire.  If you need information
+          on Addressing modes, you may wish to refer to <a class="xref" href="ar01s05.html#laddrmod" title="Label Addressing Mode Specification Command Line">the section called &#8220;Label Addressing Mode Specification Command Line&#8221;</a>.
+        </p><p><a name="adrbox"></a>The Address is the current address where you
+          clicked.  This can be edited.  If a range is desired, you can
+          specify the range in any format acceptable to <span class="command"><strong>OS9Disasm</strong></span>.  The above
+          link should give more details if needed.  Again, as with "Rename
+          Label", you can change this address to any other you wish.
+        </p><p><b>Saving The Data Boundary. </b>Clicking <span class="command"><strong>Save</strong></span> saves this command as an
+            <span class="command"><strong>OS9Disasm</strong></span> Data Bounds command.  Please refer to
+            <a class="xref" href="ar01s06.html#cmdsave" title="Saving the entry">Saving the entry</a> for details on how the command is saved
+            and positioned in the buffer.
+          </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="adrmodewndw"></a>The <span class="command"><strong>Set Addressing Mode</strong></span> Window</h5></div></div></div><p>This window looks like:
+        </p><div class="mediaobject" align="center"><img src="images/setamode.png" align="middle"><div class="caption"><p>The <span class="command"><strong>Set Addressing Mode</strong></span> Window</p></div></div><p>Here we set an Addressing Mode specification for an address
+          or address range.  At the top center of the window, we see a
+          single letter.  This represents the label class for the
+          instruction in the current line.  It is obvious that this is not
+          editable.
+        </p><p>In the <span class="command"><strong>Addressing Mode</strong></span> box, we can select
+          the mode in which we wish the operand to appear either by
+          choosing from the drop-down box or by typing in our own choice.
+          Label Classes are discussed in more detail in the section <a class="xref" href="ar01s05.html#laddrmod" title="Label Addressing Mode Specification Command Line">the section called &#8220;Label Addressing Mode Specification Command Line&#8221;</a>.
+        </p><p>The Address box works identical to that of <span class="command"><strong>Data
+          Bounds</strong></span> described for <a class="xref" href="ar01s06.html#definebnds" title="The Define Bounds Window">the section called &#8220;The <span class="command"><strong>Define Bounds</strong></span> Window&#8221;</a>
+        </p><p><b>The Offset from Address. </b>This allows you to specify an offset from the destination
+            address.  Please refer to the description of offset addressing
+            below <a class="xref" href="ar01s05.html#laddrmod" title="Label Addressing Mode Specification Command Line">the section called &#8220;Label Addressing Mode Specification Command Line&#8221;</a> for details on offset addressing.
+          </p><p>The Offset entry utilizes a drop-down menu along with an entry
+          box.  You can type in an offset or click the arrow to select a
+          previously-selected item.  On startup, the list is empty, except
+          for a single entry "NONE".  If this is selected, or an empty line
+          is there when you click "OK", then no offset is inserted in the
+          command line.
+        </p><p>As the editing session progresses, a history of offsets is
+          maintained.  Each time you enter a new offset, if it does not match
+          exactly an entry already present, then it is added to the list.  This
+          is a convenience feature whereby you aren't required to enter the
+          same offset repeatedly.  Note that a functionally identical entry,
+          but differing by a space will be added.  There is no harm in this
+          except that it adds a bit of "clutter" in repeated functionally
+          identical entries.
+        </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>There is no provision to save these entries.  All are lost
+          upon close of the editing session.
+        </p></div><p><a name="cmdsave"></a><b>Saving the entry. </b>Clicking <span class="command"><strong>Save</strong></span> will insert the <span class="command"><strong>OS9Disasm</strong></span> command
+            apprpriate for this entry in the Command file buffer on a
+            separate line at the position of the cursor.  If the cursor is at
+            the begin of the line, it will insert the line prior to that
+            line.  In any other event, it wll insert it after that line.
+          Clicking <span class="command"><strong>Cancel</strong></span> will close out the window
+            and abort the command.
+          </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="lblfilepopup"></a>The Label File Popup</h4></div></div></div><p>Right-clicking in the Label File window causes a popup window
+        to appear there.
+      </p><div class="mediaobject" align="center"><img src="images/lblpopup.png" align="middle"><div class="caption"><p>The <span class="command"><strong>Label File</strong></span> Popup</p></div></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm1960"></a>Search Labels</h5></div></div></div><p>The <span class="command"><strong>Search Labels</strong></span> option enables a search
+          through the Label File buffer.  You can perform a search on the
+          <span class="command"><strong>Label</strong></span> or the <span class="command"><strong>Address</strong></span> fields
+          in this list.  See <a class="xref" href="ar01s06.html#searching" title="Performing Searches">the section called &#8220;Performing Searches&#8221;</a> for details on how
+          searching works.
+        </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm1967"></a>Open Label File</h5></div></div></div><p>This option allows you to load a different (or reload the
+          same file) into the buffer.  All old data in the buffer is cleared
+          out and replaced with the new.
+        </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm1970"></a>Save LBLFILE (as)</h5></div></div></div><p>Save LBLFILE and Save LBLFILE AS.. saves the buffer data.  If
+          the data was loaded from a file, <span class="command"><strong>Save LBLFILE</strong></span>
+          saves the buffer without prompting for a filename.  If the data
+          has all been entered and no lblfile had been loaded,
+          <span class="command"><strong>Save LBLFILE</strong></span> acts as
+          <span class="command"><strong>Save LBLFILE As..</strong></span>, where it will prompt yo for
+          a filename before trying to save.
+        </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm1976"></a>Insert line after</h5></div></div></div><p>This will allow you to enter a line and insert it after the
+          selected line.
+        </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm1979"></a>Delete</h5></div></div></div><p>The <span class="command"><strong>Delete</strong></span> option removes the currently
+          selected line from the buffer.
+        </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="searching"></a>Performing Searches</h4></div></div></div><div class="mediaobject" align="center"><img src="images/search.png" align="middle"><div class="caption"><p>The <span class="command"><strong>Search</strong></span> Dialog</p></div></div><p>Searches can be made in the <span class="command"><strong>Listing</strong></span> and the
+        <span class="command"><strong>Label</strong></span> buffers.  They can be made on specific
+        columns, and the search will apply to <span class="emphasis"><em>only</em></span>
+        that column, ignoring any matches that might occur in any other
+        column.
+      </p><p><b>Selecting a column to search. </b>
+        You may specify which column in which you wish to search by clicking
+        on the desired column in the <span class="command"><strong>Column to Search</strong></span>
+        box.  The columns shown will depend upon the buffer being searched.
+      </p><p><b>Enter Search Text. </b>
+        The text for which you wish to search can be specified in the
+        text box labeled by that name.  After a search has been made in a
+        window, the last search will be remembered and be redisplayed on
+        the next search.  The memory is separated, that is, a search on
+        the <span class="command"><strong>Listing</strong></span> buffer will bring up the last text
+        searched in that buffer.  A search in the <span class="command"><strong>Labels</strong></span>
+        buffer will bring up the last search for that buffer.
+      </p><p><b>Executing the search. </b>
+        Clicking on the <span class="command"><strong>Search Backward</strong></span> or the
+        <span class="command"><strong>Search Forward</strong></span> button will execute the search.
+        Clicking on the <span class="command"><strong>Cancel</strong></span> button will abort the search.
+      </p><p>If a row is selected, the search will begin at the next row
+        according to the direction of the search.  If the end of the buffer is
+        reached, the search will jump to the opposite end of the buffer and
+        continue until it comes back to the place where the search originally
+        started.  It will stop upon the first match.  However, to continue the
+        search after a match, simply begin the search at the row of the match,
+        or any row past the match, in the direction of the search, and redo the
+        search.  The search text will already be set up for the current search
+        text.
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="embeddedlblclass"></a>Embedding Label Classes in Files</h4></div></div></div><p><span class="command"><strong>OS9Disasm</strong></span> will have several
+        <a class="link" href="ar01s05.html#laddrmod" title="Label Addressing Mode Specification Command Line">Label Classes</a> that are defined by
+        default and are inserted on startup.  However, you will find that, with
+        a project of any appreciable size, that you will probably wish to have
+        additional classes defined besides those already defined.
+      </p><p>There is a convenient way to reload these definitions into <span class="command"><strong>G09Dis</strong></span>
+        rather than having to reenter them each time you run the program.  Once
+        you have a label file started, you can embed these classes in a comment
+        line<a href="#ftn.idm2015" class="footnote" name="idm2015"><sup class="footnote">[4]</sup></a>.  All you do is begin a line
+        with "<span class="command"><strong>*\ </strong></span>" followed by the letter designating the
+        label class.  What follows does not matter.  The spacing is totally
+        irrelevant, but a recommended format is
+      </p><pre class="programlisting">*\&lt;space&gt; &lt;class&gt; &lt;space&gt; - &lt;space&gt; &lt;description&gt;</pre><p>By using embedded commands, as the label file is loaded, the
+        custom label classes are automatically added.  If the label file is
+        reloaded, they won't be reappended as long as the line remains
+        <span class="emphasis"><em> exactly</em></span> as it was.  If one of these definitions
+        is loaded and the string is <span class="emphasis"><em>exactly</em></span> identical to
+        one already present, it won't get reloaded.  However, if you should,
+        for example, load a file, edit the description for one of these defs,
+        save and then reload the file, you will get duplicate entries for that
+        class.  It won't hurt anything except you'll just have two entries in
+        the drop-down list.
+      </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>You can also write a separate file for these embedded
+          label definitions and load them from the Tools-&gt;Edit Amode
+          menu option.
+        </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm2024"></a><span class="command"><strong>G09Dis</strong></span> and Finding Files</h4></div></div></div><p>If you're not careful, you may encounter problems with <span class="command"><strong>G09Dis</strong></span>
+        that might need to be noted.
+      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>If you run <span class="command"><strong>G09Dis</strong></span> from the
+            command line, you can specify a full path to the program to get
+            it to execute.  If it is not in the PATH environment, and not in
+            the current directory, this may be necessary.
+          </p><p><b>If <span class="command"><strong>G09Dis</strong></span> is in the current directory
+            . </b>
+            If you are in MS Windows, often simply issuing the command
+            <span class="command"><strong>G09Dis</strong></span> is sufficient.  However, on any system,
+            if "." is not in the PATH environment, then you will have to
+            issue the command <span class="command"><strong>./g09dis</strong></span></p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>For Windows use, it may be difficult to operate
+            <span class="command"><strong>G09Dis</strong></span> by clicking on the icon in Explorer
+            unless this copy of <span class="command"><strong>G09Dis</strong></span> happens to be
+            in the same directory as your label files, especially.</p></div></li></ul></div><p>For greater details on locating files and possible ways to
+        avoid difficulty, please refer to <a class="xref" href="ar01s03.html#installwhere" title="Install the binaries where the system can find them">the section called &#8220;Install the binaries where the system can find them&#8221;</a>.
+      </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm2044"></a>Finding the label file specified in the command file
+        </h5></div></div></div><p>While the full path binary to be disassembled and the command
+          file can be specified in the <span class="command"><strong>Options</strong></span> menu,
+          the label file could cause some difficulty.  <span class="command"><strong>OS9Disasm</strong></span> searches
+          for the label file in the following manner:
+        </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><span class="command"><strong>OS9Disasm</strong></span> first searches in the current directory. (This
+            would be in this case the directory from which <span class="command"><strong>G09Dis</strong></span>
+            was called from).
+          </li><li class="listitem">Next the "default" directory is searched</li><li class="listitem">The path specified for the label file, if not absolute
+            (preceded by a "/" (or "\" on MS-Win), relative to the absolute
+            path to the command file is tried.
+          </li><li class="listitem">Finally the HOME directory is searched.
+          </li></ol></div><p>If the file is not found in any of these places, an error
+          message is issued.  In the case of a label file, the program
+          does not abort, but continues, but the labels defined in this
+          file will not be included.
+        </p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="visualprefs"></a>Visual Preferences</h3></div></div></div><p>The visual appearance of the windows in the display can be varied
+      according to taste. The font for the text in the windows can be changed,
+      and the color of the text and the background, also can be altered.
+      This can be done for any of the listings, command file, or the labels
+      file windows.
+    </p><p>The reason for desiring a different appearance can be simply for
+      aesthetic reasons, or it might be to make it easier to read.
+    </p><p>This can be done in two ways, either from a
+      <a class="link" href="ar01s06.html#rcfile" title="The RC file">file in the home directory</a> or at any time
+      <a class="link" href="ar01s06.html#fontmenu" title="Changing fonts and colors during program execution">during the execution of the program</a>.
+    </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="rcfile"></a>The RC file</h4></div></div></div><p>An <span class="emphasis"><em>rc file</em></span> can be used to set up certain
+        conditions each time the program is started up.  It can be used to
+        set fonts and colors for certain sections of the display.  An in-depth
+        explanation of this can be found in the <span class="command"><strong>GTK</strong></span> documentation.  We will
+        give the parts that pertain to us here.
+      </p><p>An example file as it might pertain to <span class="command"><strong>G09Dis</strong></span> might be:
+      </p><pre class="screen">
+            style "txtstyle"
+            {
+                font_name = "monospace 9"
+                text[NORMAL] = "#df1010"
+                base[NORMAL] = "#d0d0d0"
+            }
+
+            widget "*txtwin" style "txtstyle"
+
+            style "lblstyle"
+            {
+                font_name = "Newspaper 12"
+                text[NORMAL] = "blue"
+                base[NORMAL] = "#c0c0c0"
+            }
+            widget "*.lblwin" style "lblstyle"
+      </pre><p>The word <span class="emphasis"><em>"style"</em></span> is a keyword  defining a set
+        of parameters that will apply to an element, or group of elements,
+        in the display.  Following this is the name of the style which we are
+        defining.  It doesn't matter what name we use here, it will be used
+        later in the file to determine what style we are applying to a group.
+      </p><p>Following this style name is a list of settings to be applied to
+        the style.  These settings must be enclosed in a set of brackets
+        ("{" and "}").  Any number of styles can be defined and in any order.
+        The only requirement is that the style be defined before it is assigned
+        to a group.
+      </p><p>In the example above, we have defined a pair of styles.  Below
+        this, we apply the style "txtstyle" to a group.  The keyword
+        <span class="emphasis"><em>widget</em></span> and <span class="emphasis"><em>style</em></span> means that
+        the style <span class="emphasis"><em>txtstyle</em></span> should be applied to all
+        widgets with the name <span class="emphasis"><em>txtwin</em></span>.  The asterisk
+        (*) in this case is required.  For our purpose, the period (.) is
+        not necessary.  When present, it means that this style be applied only
+        elements with the name <span class="emphasis"><em>txtwin</em></span>.  If it were
+        absent, the style would be applied to all elements with names that
+        <span class="emphasis"><em>end</em></span> with <span class="emphasis"><em>txtwin</em></span>.
+      </p><p>We also define a style <span class="emphasis"><em>lblstyle</em></span>.  This
+        defines a second style, and we apply this style to all widgets
+        with the name <span class="emphasis"><em>lblwin</em></span>.
+      </p><p>We have two widget names with which we can apply styles.  The
+        first is named <span class="emphasis"><em>txtwin</em></span>, and this refers to
+        <a class="link" href="ar01s06.html#listwndw" title="The Listing Window">Listing Window</a> and
+        the <a class="link" href="ar01s06.html#cmdwndw" title="The Command File Window">Commands Window</a>.  Any style applied
+        to <span class="emphasis"><em>txtwin</em></span> will be appied to both.  Of course,
+        either can be changed during program execution.
+      </p><p>The style <span class="emphasis"><em>lblstyle</em></span> is applied to the the
+        <a class="link" href="ar01s06.html#lblwndw" title="The Label File Window">Label window</a>.  This window's properties
+        can also be altered during the running of the program (see
+        <a class="xref" href="ar01s06.html#fontmenu" title="Changing fonts and colors during program execution">the section called &#8220;Changing fonts and colors during program execution&#8221;</a>).
+      </p><p>You might not wish to preset any styles (at least the font) on the
+        <span class="emphasis"><em>Label window</em></span>, as the default
+        <span class="emphasis"><em>Sans 10</em></span> is pretty With the other windows, however,
+        especially the <a class="link" href="ar01s06.html#listwndw" title="The Listing Window">Listing Window</a>
+        one might wish to see more of the line at one time, so a smaller font
+        might be desired.  On the other hand, one might wish to see the text
+        more clearly, and desire a larger font, Therefore, one can specify a
+        default text size for these two windows.
+      </p><p><b>Styles we can alter. </b>We will not deal with an extensive list of style features,
+          although several might apply.  We will only discuss the font and
+          color features.  If more details are desired, the reader is
+          encouraged to consult the <span class="command"><strong>GTK</strong></span> documentation.  We wish to
+          alter the following features:
+        
+          </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><span class="command"><strong>font_name</strong></span></span></dt><dd><p>This determines the font the window will use.  The
+                  definition is a text string.  The best way to find out
+                  which fonts and font names are applicable, simply run
+                  the program and click on
+                  <a class="link" href="ar01s06.html#fontmenu" title="Changing fonts and colors during program execution">File-&gt;Fonts</a> and search
+                  through the various fonts.  Selecting one will display
+                  some sample text at the bottom of the window.
+                </p></dd><dt><a name="txtcolor"></a><span class="term"><span class="command"><strong>text[NORMAL]</strong></span></span></dt><dd><p>This selects the color for the text.  The keyword
+                  <span class="emphasis"><em>[NORMAL]</em></span> is necessary.  This represents
+                  the state of the text, and there are four other states,
+                  mostly referring to the condition of the mouse when and
+                  whether it is over the text.  There are four other states,
+                  but for us, NORMAL is our primary concern.
+                </p><p>The color can be defined in several ways.  In any case,
+                  the value must be enclosed in quotes, either single (') or
+                  double ("").  It doesn't matter which, but they must match on
+                  both ends of the value.
+                  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: bullet; "><li class="listitem" style="list-style-type: disc"><p><b>A color Name. </b> - The
+                        color can be defined by simply a color name, such
+                        as <span class="emphasis"><em>"blue"</em></span>,
+                        <span class="emphasis"><em>"green"</em></span>, or the like.
+                    </p></li><li class="listitem" style="list-style-type: disc"><p><b>Numeric definition for the color. </b> - The
+                        color can be defined by the use of a hexadecimal
+                        number representing the intensity of each of the
+                        three basic colors.  These colors, in order, are
+                        '<span class="emphasis"><em>RED</em></span>',
+                        '<span class="emphasis"><em>GREEN</em></span>', and
+                        '<span class="emphasis"><em>BLUE</em></span>'.
+                      </p><p>This number is preceded by a pound sign ("#"), and
+                        can be expressed as either a 24-bit number, such as
+                        <span class="emphasis"><em>'#df1010'</em></span> (a red color), or
+                        as a 72-bit value, such as
+                        <span class="emphasis"><em>'#10001000df00'</em></span> (rather blue).
+                      </p></li></ul></div><p>
+                </p></dd><dt><span class="term"><span class="command"><strong>base[NORMAL]</strong></span></span></dt><dd><p>This defines the background color for the window.  The
+                  syntax for the selection is the same as for the
+                  <a class="link" href="ar01s06.html#txtcolor">foreground</a>.
+                </p></dd></dl></div><p>
+        </p><p>It is not required that we define a style for any of the
+        widgets.  If either is not defined, the default will be black
+        text over a white background, with a Sans 10 font, which is
+        pretty much acceptable.
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="fontmenu"></a>Changing fonts and colors during program execution</h4></div></div></div><p>The font and colors for all three windows can be reset at any
+        time during the execution of the program.  This can be done by
+        clicking the <span class="emphasis"><em>File-&gt;Fonts</em></span> from the Main Menu bar.
+      </p><p>When you do this, you will see the following window pop up:
+      </p><div class="mediaobject" align="center"><img src="images/fontselect.png" align="middle"><div class="caption"><p>The Font Selection Window</p></div></div><p><b>Selecting a window to affect. </b>On the left side of the window, you see a set of radio buttons
+          with the name of the window you wish to affect.  The settings you
+          choose will apply to only one window - the one you have selected
+          here.  By default, the <span class="emphasis"><em>Listings</em></span> window will
+          always be chosen upon entry.  To affect another window, simply
+          click the button beside the name of the desired window.
+        </p><p><b>Performing the actual font/color selection. </b>To do the actual font or color selection, click on the
+            correct button in the section on the right.  The top button
+            selects the font, and the current font together with its point
+            size for the currently-selected window is displayed inside this
+            button.  Clicking this button will bring up a Font Selection
+            window.  This window is very much self explanatory so no effort
+            to describe it will be made.
+          The color selection buttons are below the font selection
+            button.  Clicking the button labeled
+            <span class="emphasis"><em>Background</em></span> or <span class="emphasis"><em>Foreground</em></span>
+            will bring up a Color Selection window, which will allow you to
+            select a color for the respective field.  Note that the current
+            color for the  currently-selected window is displayed in the
+            respective color-select button.
+          </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>Choosing a different Window on the left will cause the buttons
+            on the right to display the font or colors for
+            <span class="emphasis"><em>that</em></span> window.
+          </div><p><b>Aborting with no changes. </b>After making a font or color selection, by clicking
+            <span class="command"><strong>OK</strong></span> this change takes effect upon the window
+            immediately.  Clicking <span class="command"><strong>Cancel</strong></span> in the font
+            or color selection window will abort that choice attemt.  In
+            either case, however, the main Font/Color choice window will
+            remain up until <span class="command"><strong>OK</strong></span> or <span class="command"><strong>Cancel</strong></span>
+            is pressed.
+          Clicking <span class="command"><strong>OK</strong></span> will exit the Font choice
+            window and all changes will remain.  However, if
+            <span class="command"><strong>Cancel</strong></span> is pressed,
+            <span class="command"><strong>all changes made during that session will be undone
+            </strong></span>, and <span class="command"><strong>all</strong></span> windows will revert back to
+            the state they were in upon entry into the session.
+          </p></div></div><div class="footnotes"><br><hr style="width:100; text-align:left;margin-left: 0"><div id="ftn.idm2015" class="footnote"><p><a href="#idm2015" class="simpara"><sup class="simpara">[4] </sup></a>A comment line is  a line beginning with an
+            asterisk (*)</p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ar01s05.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ar01s07.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">The Command File in Detail </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> TODO LIST</td></tr></table></div></body></html>
