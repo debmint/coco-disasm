@@ -1,0 +1,90 @@
+@define-color main_bg_color #a8b8f8;
+
+* {
+    -GtkDialog-button-border-width: 80px;
+    -GtkDialog-button-spacing: 10px;
+}
+window, dialog, frame, box, treeview, grid, treeview header {
+    background-color: @main_bg_color;
+    color: black;
+}
+
+button.browsebtn {
+    border-radius: 10px;
+    background: #88a602;
+    color: #200000;
+}
+
+treeview button {
+    background-color: @main_bg_color;
+    border-width: 0;
+}
+
+treeview:selected {
+    background-color: #0000e0;
+    color: #e0e0e0;
+}
+
+button.ok {
+    background: #30ff30;
+    color: black;
+}
+
+button.cancel {
+    background: #dd3030;
+    color: black;
+}
+
+button.ok, button.cancel {
+    border-color: blue;
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+}
+
+button.ok label, button.cancel label {
+    border-radius: 10px;
+}
+
+entry {
+    background-color: #c3c3c0;
+    color: black;
+}
+
+menu {
+    background-color: #b0b0d0;
+}
+
+radiobutton radio, checkbutton check {
+    background: #c0c0c0;
+    color: black;
+}
+
+tooltip.background label {
+    background-color: #0000e0;
+}
+
+filechooser placessidebar {
+    background-color: #b0b0b0;
+    color: black;
+}
+
+placessidebar row label {
+    background-color: #b0b0b0;
+    color: black;
+}
+
+placessidebar row label:selected {
+    background-color: blue;
+    color:white;
+}
+
+placessidebar row image {
+    background-color: transparent;
+}
+
+/*button.sidebar-button {
+    background-color: transparent;
+    background: transparent;
+}*/

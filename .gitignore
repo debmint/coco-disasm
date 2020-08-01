@@ -1,3 +1,4 @@
+.vscode
 aclocal.m4
 autom4te.cache
 config.*
@@ -20,5 +21,5 @@ Makefile.in
 *.txt
 *~
 os9disasm/os9disasm
-win09dis
-g09dis
+win09dis/win09dis
+g09dis/g09dis

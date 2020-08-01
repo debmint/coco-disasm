@@ -301,17 +301,33 @@ GtkWidget *
 create_main_window(gchar *home)
 {
     GtkBuilder *builder;
-    gchar *gladesrc;
-    gladesrc = g_strconcat(home, home[strlen(home) - 1] == '/' ? "" : "/",
+    GtkStyleContext *ctx;
+    GtkCssProvider *prvdr = gtk_css_provider_new();
+    gchar *pathlist;
+
+    pathlist = g_strconcat(home, home[strlen(home) - 1] == '/' ? "" : "/",
             ".config/g09dis/glade/gdis.glade", NULL);
-    builder = gtk_builder_new_from_file(gladesrc);
+    builder = gtk_builder_new_from_file(pathlist);
     w_main = GTK_WIDGET(gtk_builder_get_object(builder, "w_main"));
     listPopup = GTK_WIDGET(gtk_builder_get_object(builder,"mnu_lstpopup"));
     lblPopup = GTK_WIDGET(gtk_builder_get_object(builder,"mnu_lblpopup"));
     O9Dis.mnuToolDasm = GTK_WIDGET(gtk_builder_get_object(builder,"distogui"));
-    O9Dis.mnuToolDasmFile = GTK_WIDGET(gtk_builder_get_object(builder,"distofile"));
+    O9Dis.mnuToolDasmFile = GTK_WIDGET(gtk_builder_get_object(builder,
+                "distofile"));
     gtk_builder_connect_signals(builder, &O9Dis);
-    g_free(gladesrc);
+    g_free(pathlist);
+
+    // Set up StyleContext;
+    pathlist = g_strconcat(home, home[strlen(home) - 1] == '/' ? "" : "/",
+            ".config/g09dis/gdis.css", NULL);
+
+    if (gtk_css_provider_load_from_path(prvdr, pathlist, NULL))
+    {
+        ctx = gtk_widget_get_style_context(w_main);
+        gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
+                GTK_STYLE_PROVIDER(prvdr), GTK_STYLE_PROVIDER_PRIORITY_USER);
+    }
+
     return GTK_WIDGET(gtk_builder_get_object(builder, "vbox_main"));
 }
 

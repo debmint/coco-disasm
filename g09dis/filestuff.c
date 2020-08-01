@@ -222,6 +222,7 @@ selectfile_open ( glbls *hbuf,
     gchar *title = g_strconcat ("Select a ", type, NULL);
 /*	gchar     *utf8 = g_locale_to_utf8( title, -1, NULL, NULL, NULL );*/
     gint action_type;
+    GtkWidget *widg;
 
     if (IsFile)
     {
@@ -242,10 +243,10 @@ selectfile_open ( glbls *hbuf,
                                         NULL);    /* Leak??? */
 
     g_free (title);
-/*	g_free( utf8 );*/
-
-/*	g_signal_connect (G_OBJECT (fsel), "destroy",
-			G_CALLBACK (gtk_main_quit), NULL);*/
+    widg = gtk_dialog_get_widget_for_response(GTK_DIALOG(fsel), GTK_RESPONSE_ACCEPT);
+    gtk_style_context_add_class(gtk_widget_get_style_context(widg), "ok");
+    widg = gtk_dialog_get_widget_for_response(GTK_DIALOG(fsel), GTK_RESPONSE_CANCEL);
+    gtk_style_context_add_class(gtk_widget_get_style_context(widg), "cancel");
 
     if ((fnam && strlen(fnam)))
     {

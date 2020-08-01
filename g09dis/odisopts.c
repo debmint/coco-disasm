@@ -170,6 +170,7 @@ build_browse_button(GtkWidget *entry_box,
 
     browse_button = gtk_button_new_with_label ("Browse");
     gtk_widget_set_size_request(browse_button, -1, -1);
+    gtk_style_context_add_class(gtk_widget_get_style_context(browse_button), "browsebtn");
     gtk_box_pack_end (GTK_BOX (entry_box), browse_button, FALSE, FALSE, 2);
 
     g_signal_connect(G_OBJECT(browse_button), "clicked",
@@ -244,28 +245,23 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
     gint result;
     int files_page, misc_page;  /* Save page numbers */
 
-    dialog = gtk_dialog_new_with_buttons("Command Line options for os9disasm",
-                                     GTK_WINDOW(w_main),
-                                     GTK_DIALOG_MODAL |
-                                     GTK_DIALOG_DESTROY_WITH_PARENT,
-                                     "Cancel", GTK_RESPONSE_REJECT,
-                                     "OK", GTK_RESPONSE_ACCEPT,
-                                     NULL);
-    gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
-
-    /* ********************** *
-     * Create options widgets *
-     * ********************** */
-
-    /* Create the "Files" Page entries      */
+    dialog = gtk_dialog_new();
+    gtk_window_set_title(GTK_WINDOW(dialog), "Command Line options for os9disasm");
+    gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(w_main));
+    gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), TRUE);
+    gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+    // Add buttons
+    lbl = gtk_dialog_add_button(GTK_DIALOG(dialog), "CANCEL", GTK_RESPONSE_CANCEL);
+    gtk_style_context_add_class(gtk_widget_get_style_context(lbl), "cancel");
+    lbl = gtk_dialog_add_button(GTK_DIALOG(dialog), "OK", GTK_RESPONSE_ACCEPT);
+    gtk_style_context_add_class(gtk_widget_get_style_context(lbl), "ok");
 
     notebk = gtk_notebook_new();
     gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(GTK_DIALOG(
-                        dialog))), notebk, FALSE, FALSE, 2);
+                        dialog))), notebk, FALSE, FALSE, 5);
 
     /* Create a grid into which to place two *
-     * entry boxes side by side              *
-     */
+     * entry boxes side by side              */
 
     grid = gtk_grid_new();
 
@@ -764,26 +760,6 @@ update_lists (FILEINF *inf)
     replace_gdkcolor (&(inf->bakcolor), &(style->base[0]));
 }
 
-/* **************************************************** *
- * Parses the GList of Buttons in the dialog and sets   *
- *          tooltips for them.                          *
- * **************************************************** */
-
-void
-dlg_set_tips (GtkWidget *btn, GtkDialog *dialog)
-{
-    switch (gtk_dialog_get_response_for_widget (dialog, btn))
-    {
-        case GTK_RESPONSE_OK:
-            gtk_widget_set_tooltip_text(btn,
-                    "Exit session, keeping all changes");
-            break;
-        default:    /* Cancel */
-            gtk_widget_set_tooltip_text(btn,
-                    "End session, rejecting all changes made\nduring session.\nAll windows will revert back to\ntheir state on entry into this session");
-    }
-}
-
 /* **************************************************************** *
  * Callback for main menu choice to select a different font and/or  *
  *      color for the listing, commands, or labels display(s).      *
@@ -802,7 +778,6 @@ fonts_main_dialog (GtkMenuItem *mi, glbls *globals)
               *clr_grid,
               *radiolist = NULL;
     struct fontsel_data fs_data;
-    GList *btnlist;
 
     /* Build the dialog */
 
@@ -813,10 +788,13 @@ fonts_main_dialog (GtkMenuItem *mi, glbls *globals)
                             "Cancel", GTK_RESPONSE_CANCEL,
                             "OK",     GTK_RESPONSE_OK,
                             NULL);
-    btnlist = gtk_container_get_children(GTK_CONTAINER(
-                gtk_dialog_get_action_area(
-                    GTK_DIALOG(fonts_main_dialog))));
-    g_list_foreach (btnlist, (GFunc)dlg_set_tips, fonts_main_dialog);
+
+    tmp_vbox = gtk_dialog_get_widget_for_response(GTK_DIALOG(fonts_main_dialog), GTK_RESPONSE_OK);
+    gtk_widget_set_tooltip_text(tmp_vbox,"Exit session, keeping all changes made");
+    gtk_style_context_add_class(gtk_widget_get_style_context(tmp_vbox), "ok");
+    tmp_vbox = gtk_dialog_get_widget_for_response(GTK_DIALOG(fonts_main_dialog), GTK_RESPONSE_CANCEL);
+    gtk_widget_set_tooltip_text(tmp_vbox,"End session, rejecting all changes made\nduring session.\nAll windows will revert back to\ntheir state on entry into this session");
+    gtk_style_context_add_class(gtk_widget_get_style_context(tmp_vbox), "cancel");
 
     /* The Main HBox */
 

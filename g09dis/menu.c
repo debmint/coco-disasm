@@ -16,7 +16,7 @@ hlp_about (GtkMenuItem * mi, glbls *hbuf)
     GtkWidget *dialog;
     gchar *msg;
 
-    msg = g_strconcat ("  -- G09Dis V ",VERSION," --\n\n",
+    msg = g_strconcat ("  -- G09Dis V ",VERSION, " --\n\n",
                        "  A graphical front-end to \"os9disasm\"\n",
                        "  This version is strictly BETA!!!",
                        NULL);
