@@ -1,9 +1,9 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Invoking and Running OS9Disasm</title><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="up" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="prev" href="ar01s03.html" title="Installation"><link rel="next" href="ar01s05.html" title="The Command File in Detail"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Invoking and Running <span class="command"><strong>OS9Disasm</strong></span></th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ar01s03.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s05.html">Next</a></td></tr></table><hr></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="odrun"></a>Invoking and Running <span class="command"><strong>OS9Disasm</strong></span></h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm405"></a>Invoking <span class="command"><strong>OS9Disasm</strong></span></h3></div></div></div><p>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Invoking and Running OS9Disasm</title><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="up" href="index.html" title="Os9Disasm - A Cross Disassembler for the m6809"><link rel="prev" href="ar01s03.html" title="Installation"><link rel="next" href="ar01s05.html" title="The Command File in Detail"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Invoking and Running <span class="command"><strong>OS9Disasm</strong></span></th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ar01s03.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ar01s05.html">Next</a></td></tr></table><hr></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="odrun"></a>Invoking and Running <span class="command"><strong>OS9Disasm</strong></span></h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm422"></a>Invoking <span class="command"><strong>OS9Disasm</strong></span></h3></div></div></div><p>
       <span class="command"><strong>OS9Disasm</strong></span> is invoked by issuing the command in the following format: 
       </p><pre class="screen"><span class="command"><strong>
       os9disasm &lt;options&gt; [module-name] &lt;options&gt;
       </strong></span></pre><p>
-    </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm412"></a>Output from <span class="command"><strong>OS9Disasm</strong></span> - what goes where</h4></div></div></div><p>To be clear on the output from <span class="command"><strong>OS9Disasm</strong></span> and where everything
+    </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm429"></a>Output from <span class="command"><strong>OS9Disasm</strong></span> - what goes where</h4></div></div></div><p>To be clear on the output from <span class="command"><strong>OS9Disasm</strong></span> and where everything
         goes, a note about the difference between the formatted listing
         and the assembly source may be in order.
       </p><p><b>The formatted listing. </b>The formatted listing - something like you'd get with the
@@ -236,7 +236,7 @@
         '<span class="command"><strong>OS9</strong></span>' opcode can be automatically disassembled using
         the standard system names. This automatic generation of
         '<span class="command"><strong>OS9</strong></span>' calls can be turned off if desired.
-       </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm691"></a>CONCEPTS</h3></div></div></div><p>Before discussing the actual commands used to instruct <span class="command"><strong>OS9Disasm</strong></span> to
+       </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm708"></a>CONCEPTS</h3></div></div></div><p>Before discussing the actual commands used to instruct <span class="command"><strong>OS9Disasm</strong></span> to
       disassemble an object file, it is perhaps wise to study the various ways
       in which a file can be disassembled. In particular, it is important that
       the concepts of label classes, standard labels, offsets, and data areas
@@ -426,7 +426,7 @@
             classes by addressing modes is taken up under the discussion of
             the command file later in this manual.  See <a class="xref" href="ar01s05.html#laddrmod" title="Label Addressing Mode Specification Command Line">the section called &#8220;Label Addressing Mode Specification Command Line&#8221;</a>.
           </li></ol></div><p>
-      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm931"></a>Standard Labels</h4></div></div></div><p>
+      </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm948"></a>Standard Labels</h4></div></div></div><p>
        As can be seen in the above section, <span class="command"><strong>OS9Disasm</strong></span> can generate many labels
        within a program. These labels, though, formed by appending a label
        class letter to a four digit hexadecimal value, do not produce
@@ -446,7 +446,7 @@
        '<code class="computeroutput">SPACE</code>' is generated. Also, the system
        function name label class, '!', will generate standard names for certain
        values, e.g.  F$Link for $00.
-     </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm940"></a>Generating your own Label names</h5></div></div></div><p>With the standard label abilities of <span class="command"><strong>OS9Disasm</strong></span>, you can generate
+     </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm957"></a>Generating your own Label names</h5></div></div></div><p>With the standard label abilities of <span class="command"><strong>OS9Disasm</strong></span>, you can generate
          your own standard names (in fact, it is possible to use your own
          standard names for ASCII control characters of system functions).
        </p><p>One use of standard labels is simply giving meaningful names to
@@ -503,7 +503,7 @@
         to by the name given the first byte with an offset of 1, e.g.
         <code class="computeroutput">D0020+1</code> instead of
         <code class="computeroutput">D0021</code>.
-      </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm975"></a>More complex offsets</h5></div></div></div><p>While most offsets are one of these simple forms, a small offset
+      </p><div class="section"><div class="titlepage"><div><div><h5 class="title"><a name="idm992"></a>More complex offsets</h5></div></div></div><p>While most offsets are one of these simple forms, a small offset
           to be printed as plus or minus some decimal value, <span class="command"><strong>OS9Disasm</strong></span> also
           allows more complicated variations.
         </p><p>When specifying an offset to be used in an instruction, <span class="command"><strong>OS9Disasm</strong></span>

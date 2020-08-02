@@ -405,7 +405,7 @@
       (usually addressing mode 1 byte immediate) with
       <code class="filename">MiscOS9lbl</code>  being used will result in the standard
       error name being used.
-    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm1506"></a>Defining your own Label Classes</h3></div></div></div><p>The real power of <span class="command"><strong>OS9Disasm</strong></span> comes from the ability one has to define
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm1523"></a>Defining your own Label Classes</h3></div></div></div><p>The real power of <span class="command"><strong>OS9Disasm</strong></span> comes from the ability one has to define
       his own label classes.  By the use of label files, and additional classes,
       you are pretty free to define any disassemblies as you wish.
     </p><p>You can use
@@ -455,7 +455,7 @@
       6800</code> computer systems. <code class="filename">Sbuglbl</code> is the
       standard label file for <code class="literal">S-BUG (TM)</code>, the system
       monitor in <code class="literal">SWTPc 6809</code> computer systems.
-    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm1571"></a>The System Name File</h3></div></div></div><p>The system name file is used by <span class="command"><strong>OS9Disasm</strong></span> to supply the proper names to
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm1588"></a>The System Name File</h3></div></div></div><p>The system name file is used by <span class="command"><strong>OS9Disasm</strong></span> to supply the proper names to
      the function bytes used in <code class="computeroutput">OS9</code> system
      calls, via the <code class="computeroutput">OS9</code> opcode. For instance,
      the call to end a program, <code class="computeroutput">OS9 F$Exit</code>, is
@@ -500,7 +500,7 @@
       </p><p>This will work if you create your own custom label files.  You
         can override any of the "standard" label names in your custom file or
         override your own custom definitions in subsequent files.
-      </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm1609"></a>Disassembly Particulars</h3></div></div></div><p><span class="command"><strong>OS9Disasm</strong></span> is a two-pass disassembler. On the first pass, the object code
+      </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="idm1626"></a>Disassembly Particulars</h3></div></div></div><p><span class="command"><strong>OS9Disasm</strong></span> is a two-pass disassembler. On the first pass, the object code
       is searched for all label references, they are classifled, and recorded
       with the raw, &lt;class&gt;address names. As detailed under other
       sections, the production of labels is governed by the use of label
@@ -522,7 +522,7 @@
     </p><p>The code produced by <span class="command"><strong>OS9Disasm</strong></span> should always reassemble into code which
       is identical with the original module, regardless of how much or little
       has been done with command and label files..
-      <a href="#ftn.idm1619" class="footnote" name="idm1619"><sup class="footnote">[3]</sup></a>
+      <a href="#ftn.idm1636" class="footnote" name="idm1636"><sup class="footnote">[3]</sup></a>
     </p><p><b>Forcing the addressing mode. </b>
       Some addressing modes, though, can generate either 8 bit or 16 bit
       references, especially on the 6809. To ensure that such references will
@@ -578,7 +578,7 @@
       checksum, but can be longer if desired. <span class="command"><strong>OS9Disasm</strong></span> will disassemble only a
       single module per object file. Any code following the
       <code class="computeroutput">EMOD</code> is assumed to be non-module code.
-    </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm1657"></a>Particulars about RS Dos mode</h4></div></div></div><p>There are no especially outstanding quirks regarding the RS Dos
+    </p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm1674"></a>Particulars about RS Dos mode</h4></div></div></div><p>There are no especially outstanding quirks regarding the RS Dos
         mode.  You mainly need to go through and add several entries in the
         <code class="literal">command file</code> to get the addressing modes the way
         you like.  Many will need to be given the <code class="literal">direct</code>
@@ -612,7 +612,7 @@
       </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>These will be generated <span class="emphasis"><em>after</em></span> the
         <code class="literal">org</code> statement.</p></div><p>This is another thing that might be worked around, but for now,
         hopefully this will suffice.
-      </p></div></div><div class="footnotes"><br><hr style="width:100; text-align:left;margin-left: 0"><div id="ftn.idm1619" class="footnote"><p><a href="#idm1619" class="simpara"><sup class="simpara">[3] </sup></a>Once in a while, it won't come out exactly the same.  On
+      </p></div></div><div class="footnotes"><br><hr style="width:100; text-align:left;margin-left: 0"><div id="ftn.idm1636" class="footnote"><p><a href="#idm1636" class="simpara"><sup class="simpara">[3] </sup></a>Once in a while, it won't come out exactly the same.  On
           occasion, a given assembler won't generate exactly the same mode,
           although, unless something is wrong with one of the assemblers, the
           code should do the same thing.  Often this is a case of <span class="command"><strong>OS9Disasm</strong></span>

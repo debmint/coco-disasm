@@ -336,15 +336,33 @@
        </para>
      </formalpara>
    </section>
+   <section id="gdisconfinst">
+     <title>Installing &g09dis; Configuration files</title>
+     <para>&g09dis; requires some configuration files to be installed.</para>
+     <para>The location for these files is <filename>$HOME/.config/g09dis
+       </filename>.  These files are <filename>gdis.css</filename> and
+       the files found in the folder <filename>glade</filename> found
+       in the <filename>g09dis</filename> directory.
+     </para>
+     <para>The file <filename> gdis.css</filename> and the
+       <filename>glade</filename> directory should be copied to this
+       directory (after creating the <filename>$HOME/.config/g09dis</filename>
+       directory itself).
+     </para>
+     <note><formalpara><title>Using links</title>
+         Instead of copying, symbolic links to these files and directory
+         in the source can be made if the source is to remain as is.
+     </formalpara></note>
+   </section>
    <section><title>Installing the Standard Label Files</title>
     <para>In the top level directory, there is a directory named <filename>
       defs</filename>.  In this directory, you will find several files ending
-      in "lbl".  These are the <command>standard label files</command>.
+      in "lbl".  These are the <command>standard label files</command>
+      used by &odis;.
     </para>
     <para>Copy all these files into whatever directory you wish your DEFS files
-      to reside.  The default is <filename>/dd/defs</filename>.  wish your
-      "defs" directory to reside.  <filename>/dd/defs</filename> is the default
-      location, but you can specify any path with the <command>-d</command>
+      to reside.  <filename>/dd/defs</filename> is the default location,
+      but you can specify any path with the <command>-d</command>
       command-line option.
     </para>
     <formalpara id="dd-dir"><title>Getting /dd on a unix-style system</title>

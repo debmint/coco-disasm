@@ -214,13 +214,24 @@
          <span class="command"><strong>os9disasm.xml</strong></span> and create any output you wish.  The
          file <span class="command"><strong>os9disasm.xml</strong></span> will include all the rest of
          the files.
-       </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm381"></a>Installing the Standard Label Files</h4></div></div></div><p>In the top level directory, there is a directory named <code class="filename">
+       </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="gdisconfinst"></a>Installing <span class="command"><strong>G09Dis</strong></span> Configuration files</h4></div></div></div><p><span class="command"><strong>G09Dis</strong></span> requires some configuration files to be installed.</p><p>The location for these files is <code class="filename">$HOME/.config/g09dis
+       </code>.  These files are <code class="filename">gdis.css</code> and
+       the files found in the folder <code class="filename">glade</code> found
+       in the <code class="filename">g09dis</code> directory.
+     </p><p>The file <code class="filename"> gdis.css</code> and the
+       <code class="filename">glade</code> directory should be copied to this
+       directory (after creating the <code class="filename">$HOME/.config/g09dis</code>
+       directory itself).
+     </p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p><b>Using links. </b>
+         Instead of copying, symbolic links to these files and directory
+         in the source can be made if the source is to remain as is.
+     </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a name="idm398"></a>Installing the Standard Label Files</h4></div></div></div><p>In the top level directory, there is a directory named <code class="filename">
       defs</code>.  In this directory, you will find several files ending
-      in "lbl".  These are the <span class="command"><strong>standard label files</strong></span>.
+      in "lbl".  These are the <span class="command"><strong>standard label files</strong></span>
+      used by <span class="command"><strong>OS9Disasm</strong></span>.
     </p><p>Copy all these files into whatever directory you wish your DEFS files
-      to reside.  The default is <code class="filename">/dd/defs</code>.  wish your
-      "defs" directory to reside.  <code class="filename">/dd/defs</code> is the default
-      location, but you can specify any path with the <span class="command"><strong>-d</strong></span>
+      to reside.  <code class="filename">/dd/defs</code> is the default location,
+      but you can specify any path with the <span class="command"><strong>-d</strong></span>
       command-line option.
     </p><p><a name="dd-dir"></a><b>Getting /dd on a unix-style system. </b>
       There are a couple of ways to get <code class="filename">/dd</code> to exist on
