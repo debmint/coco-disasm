@@ -327,30 +327,6 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="mnuView">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">_View</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkMenuItem" id="chgfont">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Change Font settings for labels, listing, and command displays</property>
-                        <property name="label" translatable="yes">Font/Color</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="fonts_main_dialog" swapped="no"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
               <object class="GtkMenuItem" id="mnuTools">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>

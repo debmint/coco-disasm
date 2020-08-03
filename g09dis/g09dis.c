@@ -301,7 +301,6 @@ GtkWidget *
 create_main_window(gchar *home)
 {
     GtkBuilder *builder;
-    GtkStyleContext *ctx;
     GtkCssProvider *prvdr = gtk_css_provider_new();
     gchar *pathlist;
 
@@ -323,7 +322,6 @@ create_main_window(gchar *home)
 
     if (gtk_css_provider_load_from_path(prvdr, pathlist, NULL))
     {
-        ctx = gtk_widget_get_style_context(w_main);
         gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
                 GTK_STYLE_PROVIDER(prvdr), GTK_STYLE_PROVIDER_PRIORITY_USER);
     }
