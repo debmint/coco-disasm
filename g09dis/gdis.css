@@ -36,11 +36,17 @@ button.cancel {
 
 button.ok, button.cancel, button.browsebtn {
     border-radius: 15px;
-    border-color: #a0a0a0;
+    border-color: #b0a0a0;
     border-left-width: 5px;
     border-right-width: 5px;
     border-top-width: 3px;
     border-bottom-width: 3px;
+}
+
+frame border {
+    border-color: #808080;
+    border-width: 2px;
+    border-radius: 5px;
 }
 
 entry {
@@ -49,13 +55,17 @@ entry {
     color: black;
 }
 
+entry:disabled {
+    color: gray;
+}
+
 menu {
     background-color: #b0b0d0;
     color: black;
 }
 
-radiobutton radio, checkbutton check {
-    background: #c0c0c0;
+radiobutton radio, checkbutton check, spinbutton entry {
+    background: #909090;
     color: black;
 }
 

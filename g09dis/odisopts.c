@@ -3,7 +3,7 @@
  * odisopts.c - setup options to pass to assembler                      $
  *                                                                      $
  * NOTE:  This newer version will create the widgets within a single    $
- *        table rather than stacking hboxes within the dialog->vbox     $
+ *        GtkGrid rather than stacking hboxes within the dialog->vbox   $
  *                                                                      $
  * $Id::                                                                $
  * ******************************************************************** */
@@ -13,31 +13,19 @@
 #include <glib/gprintf.h>
 #include "g09dis.h"
 
-struct fontsel_data {
-    gchar * oldfont,
-          * newfont;
-    GtkWidget * font_btn,
-              * cb_fg,
-              * cb_bg;
-    GHashTable * list_to_widg;
-    GtkStyle * style;
-};
-
-static GtkWidget * selected_view;
-
 /* ************************************************ *
- * newspin1() - create a new spin button            *
+ * Create a new spin button                         *
  *    Passed: default value for button              *
  *    Returns: the spin button widget ptr           *
  * ************************************************ */
 
 GtkWidget *
-newspin1 (int defval)
+newspin1(int defval)
 {
     GtkWidget *spin;
 
-    spin = gtk_spin_button_new_with_range ((gdouble) 40, (gdouble) 200, 1);
-    gtk_spin_button_set_value (GTK_SPIN_BUTTON (spin), (gdouble) defval);
+    spin = gtk_spin_button_new_with_range((gdouble)40, (gdouble)200, 1);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin), (gdouble)defval);
 
     return spin;
 }
@@ -77,7 +65,7 @@ browse_files(GtkButton *button, FILE_WIDGET *wp)
         LastPath = g_strdup(O9Dis.filename_to_return);
     }
 
-    free_filename_to_return (&(O9Dis.filename_to_return));
+    free_filename_to_return(&(O9Dis.filename_to_return));
 }
 
 /* **************************************************** *
@@ -135,18 +123,18 @@ build_entry_frame (const gchar *title, GtkWidget **m_frame)
  * **************************************************************** */
 
 static GtkWidget *
-build_entry_entry (GtkWidget * entry_box, gchar * filnam)
+build_entry_entry(GtkWidget *parent, gchar *filnam)
 {
     GtkWidget *entry;
 
     entry = gtk_entry_new ();
     gtk_widget_set_size_request( entry, 300, -1 );
-    gtk_box_pack_start (GTK_BOX (entry_box), GTK_WIDGET (entry),
-                        FALSE, FALSE, 3);
+    gtk_box_pack_start(GTK_BOX(parent), GTK_WIDGET(entry),
+                    FALSE, FALSE, 3);
 
     if (filnam != NULL)
     {
-        gtk_entry_set_text (GTK_ENTRY (entry), filnam);
+        gtk_entry_set_text(GTK_ENTRY(entry), filnam);
     }
 
     return entry;
@@ -273,42 +261,45 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
     
     /* Program file to be disassembled */
     
-    bin_entry = build_entry_box (prog_wdg, grid, &m_frame);
-    gtk_grid_attach( GTK_GRID(grid), m_frame, 0, 0, 1, 1);
+    bin_entry = build_entry_box(prog_wdg, grid, &m_frame);
+    gtk_frame_set_label_align(GTK_FRAME(m_frame), 0.10, 0.50);
+    gtk_grid_attach(GTK_GRID(grid), m_frame, 0, 0, 1, 1);
 
      /* Command file  */
     
-    cmd_entry = build_entry_box (cmd_wdg, grid, &m_frame);
-    gtk_grid_attach( GTK_GRID(grid), m_frame, 1, 0, 1, 1);
+    cmd_entry = build_entry_box(cmd_wdg, grid, &m_frame);
+    gtk_frame_set_label_align(GTK_FRAME(m_frame), 0.10, 0.50);
+    gtk_grid_attach(GTK_GRID(grid), m_frame, 1, 0, 1, 1);
 
      /*  output file ( -o option ) */
 
-    entry_box = build_entry_frame ("Assembly Source File", &m_frame);
-    gtk_grid_attach( GTK_GRID(grid), m_frame, 1, 1, 1, 1);
+    entry_box = build_entry_frame("Assembly Source File", &m_frame);
+    gtk_frame_set_label_align(GTK_FRAME(m_frame), 0.10, 0.50);
+    gtk_grid_attach(GTK_GRID(grid), m_frame, 1, 1, 1, 1);
 
     ofile_toggle = gtk_check_button_new_with_label (
                                     "Generate .asm source file");
     gtk_widget_set_tooltip_text(ofile_toggle,
            "Generate a source file that (should) assemble into a valid binary");
     gtk_box_pack_start (GTK_BOX (entry_box), ofile_toggle, FALSE, FALSE, 2);
-    asmout_wdg->o_entry = build_entry_entry (entry_box,
+    asmout_wdg->o_entry = build_entry_entry(entry_box,
                         asmout_wdg->fname ? asmout_wdg->fname : "output.a");
-    asmout_wdg->browse_button = build_browse_button (entry_box,
-                                                     asmout_wdg,
-                                                     TRUE);
+    asmout_wdg->browse_button = build_browse_button(entry_box,
+                                     asmout_wdg, TRUE);
 
-    g_signal_connect (G_OBJECT (ofile_toggle), "toggled",
-                      G_CALLBACK (on_ofile_tgle), asmout_wdg);
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ofile_toggle),
+    g_signal_connect(G_OBJECT(ofile_toggle), "toggled",
+                    G_CALLBACK(on_ofile_tgle), asmout_wdg);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON (ofile_toggle),
                                   write_obj);
     
-    on_ofile_tgle (GTK_TOGGLE_BUTTON (ofile_toggle), asmout_wdg);
-    gtk_widget_show_all (m_frame);
+    on_ofile_tgle(GTK_TOGGLE_BUTTON(ofile_toggle), asmout_wdg);
+    gtk_widget_show_all(m_frame);
 
     /*  path to defs files */
 
-    entry_box = build_entry_frame ("\"Defs\" files", &m_frame);
-    gtk_grid_attach( GTK_GRID(grid), m_frame, 1, 3, 2, 3);
+    entry_box = build_entry_frame("\"Defs\" files", &m_frame);
+    gtk_frame_set_label_align(GTK_FRAME(m_frame), 0.05, 0.50);
+    gtk_grid_attach(GTK_GRID(grid), m_frame, 1, 2, 1, 1);
 
     defs_toggle = gtk_check_button_new_with_label (
                                     "Specify (alternate) path");
@@ -329,12 +320,13 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
     /* send Listing to file ( > filename ) */
 
     entry_box = build_entry_frame("Formatted File Listing ", &m_frame);
-    gtk_grid_attach(GTK_GRID(grid), m_frame, 0, 2, 1, 1);
+    gtk_frame_set_label_align(GTK_FRAME(m_frame), 0.10, 0.50);
+    gtk_grid_attach(GTK_GRID(grid), m_frame, 0, 1, 1, 2);
     
     gtk_widget_show_all(m_frame);
     vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
     
-    gtk_widget_set_size_request(vbx,300,-1);
+    //gtk_widget_set_size_request(vbx,300,-1);
     list_radio_file = gtk_radio_button_new_with_label (NULL,
                                                        "Output to file/stdout");
     g_signal_connect (G_OBJECT (list_radio_file), "toggled",
@@ -344,7 +336,7 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
     
     gtk_widget_set_tooltip_text(list_radio_file,
                           "Write the formatted listing to file\nor stdout if filename is blank.\nThis is the regular, space-separated listing");
-    listing_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 2);
+    listing_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 2);
     listing_wdg->o_entry = build_entry_entry (listing_box,
             listing_wdg->fname ? listing_wdg->fname : "output.List");
     listing_wdg->browse_button = build_browse_button (listing_box,
@@ -384,18 +376,18 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
     
     /* Now pack them all into the vbox */
     
-    gtk_box_pack_start (GTK_BOX (vbx), gtk_separator_new (
-                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
+    /*gtk_box_pack_start (GTK_BOX (vbx), gtk_separator_new (
+                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);*/
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_gtk, FALSE, FALSE, 2);
-    gtk_box_pack_start (GTK_BOX (vbx), gtk_separator_new(
-                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
+    /*gtk_box_pack_start (GTK_BOX (vbx), gtk_separator_new(
+                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4); */
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_none, FALSE, FALSE, 2);
-    gtk_box_pack_start (GTK_BOX (vbx), gtk_separator_new(
-                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
+    /*gtk_box_pack_start (GTK_BOX (vbx), gtk_separator_new(
+                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4); */
     gtk_box_pack_start (GTK_BOX(vbx), list_radio_file, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX(vbx), listing_box, FALSE, FALSE, 2);
-    gtk_box_pack_start(GTK_BOX (vbx), gtk_separator_new(
-                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
+    /*gtk_box_pack_start(GTK_BOX (vbx), gtk_separator_new(
+                GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4); */
     gtk_container_add(GTK_CONTAINER(entry_box), vbx);
     gtk_widget_show_all (m_frame);
     
@@ -407,7 +399,7 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
      * **************************************************** */
 
     aprbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5); // Main vbox for appearance page */
-    vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL,5); // for Page Setup widgets
+    vbx = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);   // for Page Setup widgets
     gtk_container_set_border_width(GTK_CONTAINER(vbx), 10);
 
     /* Begin page setup
@@ -460,10 +452,8 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
     /* Frame to hold Appearance spinbuttons
      * Add Appearance vbx to frame, then frame to main aprbx */
 
-    frame = gtk_frame_new(0);
+    frame = gtk_frame_new("Appearance");
     lbl = gtk_label_new(0);
-    gtk_label_set_markup(GTK_LABEL(lbl), "<span face=\"Bitstream Sans Vera\"foreground=\"blue\" size=\"large\">Appearance</span>");
-    gtk_frame_set_label_widget(GTK_FRAME(frame), lbl);
     gtk_frame_set_label_align (GTK_FRAME(frame), .10, .50);
     
     gtk_container_add(GTK_CONTAINER(frame), vbx);
@@ -484,17 +474,14 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
 
     /* Disassemble RS-DOS code */
     
-    OS_toggle = gtk_check_button_new_with_label ("RS-DOS binary");
+    OS_toggle = gtk_check_button_new_with_label("RS-DOS binary");
     gtk_widget_set_tooltip_text(OS_toggle,
 		          "The file is an RS-DOS binary instead of OS9");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (OS_toggle),
                                   (gboolean) isrsdos);
     gtk_box_pack_start (GTK_BOX(vbx), OS_toggle, FALSE, FALSE, 2);
     
-    frame = gtk_frame_new(0);
-    lbl = gtk_label_new(0);
-    gtk_label_set_markup(GTK_LABEL(lbl), "<span face=\"Bitstream Sans Vera\"foreground=\"blue\" size=\"large\">Types</span>");
-    gtk_frame_set_label_widget(GTK_FRAME(frame), lbl);
+    frame = gtk_frame_new("Types");
     gtk_frame_set_label_align (GTK_FRAME(frame), .10, .50);
     
     gtk_container_add(GTK_CONTAINER(frame), vbx);
@@ -512,7 +499,7 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
 
     gtk_widget_show_all(dialog);
 
-    switch (result = gtk_dialog_run (GTK_DIALOG(dialog)))
+    switch (result = gtk_dialog_run(GTK_DIALOG(dialog)))
     {
     case GTK_RESPONSE_OK:
     case GTK_RESPONSE_ACCEPT:
@@ -536,10 +523,10 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
 
         if (cmd_wdg->fname != NULL)
         {
-            g_free (cmd_wdg->fname);
+            g_free(cmd_wdg->fname);
         }
 
-        cmd_wdg->fname = g_strdup (gtk_entry_get_text (GTK_ENTRY (cmd_entry)));
+        cmd_wdg->fname = g_strdup(gtk_entry_get_text(GTK_ENTRY(cmd_entry)));
 
         if (!strlen(cmd_wdg->fname))
         {
@@ -548,34 +535,34 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
         }
 
         cputype = (gint)
-            gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (CPU_toggle));
+            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(CPU_toggle));
         upcase = (gint)
-            gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (UpCase_toggle));
+            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(UpCase_toggle));
         isrsdos = (gboolean)
-            gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (OS_toggle));
+            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(OS_toggle));
         showzeros = (gboolean)
-            gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (Zero_toggle));
+            gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(Zero_toggle));
 
         if ((write_obj =
-             gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (ofile_toggle))))
+             gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ofile_toggle))))
         {
             if (asmout_wdg->fname != NULL)
             {
                 g_free (asmout_wdg->fname);
             }
             asmout_wdg->fname =
-                g_strdup (gtk_entry_get_text (GTK_ENTRY (asmout_wdg->o_entry)));
+                g_strdup(gtk_entry_get_text(GTK_ENTRY(asmout_wdg->o_entry)));
         }
 
         if ((alt_defs =
-             gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (defs_toggle))))
+             gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(defs_toggle))))
         {
             if (defs_wdg->fname != NULL)
             {
-                g_free (defs_wdg->fname);
+                g_free(defs_wdg->fname);
             }
             defs_wdg->fname =
-                g_strdup (gtk_entry_get_text (GTK_ENTRY (defs_wdg->o_entry)));
+                g_strdup(gtk_entry_get_text(GTK_ENTRY(defs_wdg->o_entry)));
         }
 
         /* Handle listing output */
@@ -606,5 +593,5 @@ set_dis_opts_cb (GtkMenuItem *mi, glbls *hbuf)
         break;
     }
 
-    gtk_widget_destroy (dialog);
+    gtk_widget_destroy(dialog);
 }

@@ -368,6 +368,7 @@ main (int argc, char *argv[])
     
     list_win = build_list_window (main_vbox, &O9Dis.list_file);
     fw = gtk_frame_new ("Program Listing");
+    gtk_container_set_border_width(GTK_CONTAINER(fw), 5);
     gtk_container_add (GTK_CONTAINER (fw), list_win);
     gtk_paned_pack1 (GTK_PANED (work_area), /*list_win */ fw, TRUE, TRUE);
     
@@ -378,14 +379,16 @@ main (int argc, char *argv[])
     
     cmd_win = build_cmd_window (work_area, &O9Dis.cmdfile);
     fw = gtk_frame_new ("Command File");
+    gtk_container_set_border_width(GTK_CONTAINER(fw), 5);
     gtk_frame_set_label_align (GTK_FRAME (fw), 1.0, 0.5);
     gtk_container_add (GTK_CONTAINER (fw), cmd_win);
     gtk_paned_pack1 (GTK_PANED (panedv), /*cmd_win */ fw, TRUE, TRUE);
 
     /* and the label file window to the bottom of right window */
     
-    lbl_win = new_lbl_win (&O9Dis.lblfile.tview);
-    fw = gtk_frame_new ("Label Files");
+    lbl_win = new_lbl_win(&O9Dis.lblfile.tview);
+    fw = gtk_frame_new("Label Files");
+    gtk_container_set_border_width(GTK_CONTAINER(fw), 5);
     gtk_frame_set_label_align (GTK_FRAME (fw), 1.0, 0.5);
     gtk_container_add (GTK_CONTAINER (fw), lbl_win);
     gtk_paned_pack2 (GTK_PANED (panedv), fw, TRUE, TRUE);
@@ -393,11 +396,6 @@ main (int argc, char *argv[])
     /* Show the widgets */
 
     gtk_widget_show_all (w_main);
-
-    /* Initialize font and colors */
-    update_lists (&O9Dis.list_file);
-    update_lists (&O9Dis.cmdfile);
-    update_lists (&O9Dis.lblfile);
 
     /* Finished - now enter continuous loop */
     gtk_main ();
