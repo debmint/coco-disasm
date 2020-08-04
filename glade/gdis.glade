@@ -286,24 +286,72 @@
                       <object class="GtkImageMenuItem" id="fil_sav">
                         <property name="label">gtk-save</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Save Cmd buffer to file</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="cmd_save" swapped="no"/>
+                        <child type="submenu">
+                          <object class="GtkMenu">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkMenuItem" id="mi_cmdsav">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Save Command file to original file</property>
+                                <property name="label" translatable="yes">Save Cmd File</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="cmd_save" swapped="no"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkMenuItem" id="mi_lblsave">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Save Label file to original file</property>
+                                <property name="label" translatable="yes">Save Label File</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="lbl_save" swapped="no"/>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="fil_savas">
                         <property name="label">gtk-save-as</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Save Cmd buffer, specifying filename</property>
+                        <property name="tooltip_text" translatable="yes">Save a Buffer, specifying filename</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="cmd_save_as" swapped="no"/>
+                        <child type="submenu">
+                          <object class="GtkMenu">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkMenuItem" id="mi_cmdsaveas">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Save command file specifing new filename</property>
+                                <property name="label" translatable="yes">Save CmdFile As...</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="cmd_save_as" swapped="no"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkMenuItem" id="mi_lblsaveas">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Save label file specifying new filename</property>
+                                <property name="label" translatable="yes">Save Label File As...</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="lbl_save_as" swapped="no"/>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                       </object>
                     </child>
                     <child>
